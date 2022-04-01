@@ -61,7 +61,7 @@ static int con_enable(const struct device * dev)
 		size_t newsize =
 			console_max ? console_max * 2 : CONSOLE_DEFAULT;
 		const struct device ** newdev =
-			krealloc(consoles, sizeof(*newdev) * newsize);
+			realloc(consoles, sizeof(*newdev) * newsize);
 		if (newdev == NULL)
 			return -ENOMEM;
 		consoles = newdev;
@@ -135,7 +135,7 @@ int console_reg(
 {
 	int err;
 
-	struct console * console = kmalloc(sizeof(*console));
+	struct console * console = malloc(sizeof(*console));
 	if (console == NULL)
 		return -ENOMEM;
 	console->update = update;

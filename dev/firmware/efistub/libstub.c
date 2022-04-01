@@ -30,7 +30,7 @@ static char * get_efi_cmdline(void)
 		return NULL;
 
 	size = efistub_image_proto()->load_options_size * 2;
-	cmdline = kmalloc(size);
+	cmdline = malloc(size);
 	if (cmdline == NULL) {
 		pr_err("Failed to allocate %zu bytes for the EFI "
 		       "cmdline buffer", size);
@@ -64,7 +64,7 @@ int efistub_cmdline(const char ** cmdline_dst)
 		size += sizeof(char); // space
 	size += strlen(extra_cmdline);
 
-	char * cmdline = kmalloc(size);
+	char * cmdline = malloc(size);
 	if (cmdline == NULL) {
 		pr_err("Failed to allocate %zu bytes for cmdline\n", 0);
 		kfree(efi_cmdline);

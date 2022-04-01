@@ -1,8 +1,10 @@
 @break entry_efi_s2
+@break kernel_main
 @break isr_handler if frame->interrupt < 32
 #@break do_call
-#break kernel_main
-break kernel/init.c:167
+#break kernel/init.c:146
+#*print i
+#*cont
 
 
 

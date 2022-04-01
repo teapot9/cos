@@ -52,7 +52,7 @@ static int fb_reg(
 {
 	int err;
 
-	struct fb * fb = kmalloc(sizeof(*fb));
+	struct fb * fb = malloc(sizeof(*fb));
 	if (fb == NULL)
 		return -ENOMEM;
 

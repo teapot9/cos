@@ -22,6 +22,7 @@ static inline bool is_overlap(void * a1, size_t s1, void * a2, size_t s2)
 		|| ia1 == ia2;
 }
 
+/* Is memory block 2 inside block 1 */
 static inline bool is_inside(void * a1, size_t s1, void * a2, size_t s2)
 {
 	return a1 <= a2
@@ -29,7 +30,7 @@ static inline bool is_inside(void * a1, size_t s1, void * a2, size_t s2)
 		>= (uint8_t *) a2 + s2;
 }
 
-static inline void * aligned(void * a, size_t align)
+static inline void * aligned_up(void * a, size_t align)
 {
 	if (align == 0)
 		return a;
@@ -37,6 +38,11 @@ static inline void * aligned(void * a, size_t align)
 	size_t mod = (size_t) ia % align;
 	uint8_t * aligned = ia - mod + (mod ? align : 0);
 	return aligned;
+}
+
+static inline void * aligned(void * a, size_t align)
+{
+	return aligned_up(a, align);
 }
 
 static inline void * aligned_down(void * a, size_t align)
@@ -49,9 +55,15 @@ static inline void * aligned_down(void * a, size_t align)
 	return aligned;
 }
 
-static inline size_t align_diff(void * a, size_t align)
+static inline size_t align_diff_down(void * a, size_t align)
 {
-	return (uint8_t *) aligned(a, align) - (uint8_t *) a;
+	return (uint8_t *) a - (uint8_t *) aligned_down(a, align);
+}
+
+#define align_diff align_diff_up
+static inline size_t align_diff_up(void * a, size_t align)
+{
+	return (uint8_t *) aligned_up(a, align) - (uint8_t *) a;
 }
 
 static inline bool is_aligned(void * a, size_t align)

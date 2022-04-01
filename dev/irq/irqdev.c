@@ -91,7 +91,7 @@ int irqdev_reg(
 	if (parent == NULL)
 		return -EINVAL;
 
-	struct irqdev * idev = kmalloc(sizeof(*idev));
+	struct irqdev * idev = malloc(sizeof(*idev));
 	if (idev == NULL)
 		return -ENOMEM;
 	idev->enable = enable;

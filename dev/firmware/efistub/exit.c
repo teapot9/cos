@@ -162,7 +162,7 @@ static int register_memmap(
 {
 	/*
 	map->desc_count = map_size / desc_size;
-	map->desc = kmalloc((map->desc_count) * sizeof(*map->desc));
+	map->desc = malloc((map->desc_count) * sizeof(*map->desc));
 	if (map->desc == NULL) {
 		map->desc_count = 0;
 		return -ENOMEM;
@@ -344,7 +344,7 @@ int efistub_memmap_and_exit(struct memmap * map)
 		       "got %d\n", status);
 		return -ENOTSUP;
 	}
-	efi_memmap = kmalloc(map_size);
+	efi_memmap = malloc(map_size);
 	if (efi_memmap == NULL) {
 		pr_err("Cannot allocate %d bytes for memory map\n", map_size);
 		return -ENOMEM;

@@ -22,7 +22,7 @@ char * strdup(const char * s)
 {
 	size_t len = strlen(s);
 	size_t alloc = (len + 1) * sizeof(char);
-	char * new = kmalloc(alloc);
+	char * new = malloc(alloc);
 	if (new == NULL)
 		return NULL;
 	strncpy(new, s, alloc);

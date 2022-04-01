@@ -18,7 +18,7 @@ static void add_to_thread(struct thread * t, struct semaphore * s)
 	if (l == NULL)
 		return;
 
-	struct semaphore_list * new = kmalloc(sizeof(**l));
+	struct semaphore_list * new = malloc(sizeof(**l));
 	if (new == NULL)
 		panic("cannot add to list of semaphore, maybe kill proc");
 
@@ -50,7 +50,7 @@ static void add_thread(struct semaphore * s, struct thread * t)
 
 	while (*l != NULL)
 		l = &(*l)->next;
-	struct thread_list * new = kmalloc(sizeof(**l));
+	struct thread_list * new = malloc(sizeof(**l));
 	if (new == NULL)
 		panic("cannot add to waiting list, maybe kill proc");
 
@@ -147,11 +147,13 @@ void semaphore_unlock_all(struct semaphore_list * l)
 	while (l != NULL) {
 		int waiting = 0;
 		int owned = 0;
-		while (del_thread(l->s, t) != -ENOENT)
+		struct semaphore_list * next = l->next;
+		struct semaphore * s = l->s;
+		while (del_thread(s, t) != -ENOENT)
 			waiting++;
-		while (del_from_thread(t, l->s) != -ENOENT)
+		while (del_from_thread(t, s) != -ENOENT)
 			owned++;
-		l->s->val += owned - waiting;
-		l = l->next;
+		s->val += owned - waiting;
+		l = next;
 	}
 }

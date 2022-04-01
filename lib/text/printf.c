@@ -58,7 +58,7 @@ size_t vasprintf(char ** dst, const char * fmt, va_list ap)
 	size_t len = vsprintf(NULL, fmt, aq) + 1;
 	va_end(aq);
 
-	*dst = kmalloc(len);
+	*dst = malloc(len);
 	if (*dst == NULL)
 		return 0;
 

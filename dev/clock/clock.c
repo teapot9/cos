@@ -53,7 +53,7 @@ int clock_reg(
 	int (*del)(void (*callback)(void))
 )
 {
-	struct clock * clock = kmalloc(sizeof(*clock));
+	struct clock * clock = malloc(sizeof(*clock));
 	if (clock == NULL)
 		return -ENOMEM;
 	clock->new = new;

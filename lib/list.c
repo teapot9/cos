@@ -23,9 +23,11 @@ static inline void add(struct list * l, struct list_head * prev,
 
 void list_free_all(struct list * l, bool free_list)
 {
-	struct list_head * elt;
-	list_foreach(elt, l->first) {
+	struct list_head * elt = l->first;
+	while (elt != NULL) {
+		struct list_head * next = elt->next;
 		kfree(elt);
+		elt = next;
 	}
 	if (free_list)
 		kfree(l);
@@ -87,7 +89,7 @@ int list_copy(struct list * dst, struct list * l, size_t elt_size)
 
 	struct list_head * cur;
 	list_foreach(cur, l->first) {
-		struct list_head * new = kmalloc(elt_size);
+		struct list_head * new = malloc(elt_size);
 		if (new == NULL) {
 			list_free_all(&new_list, true);
 			return -ENOMEM;

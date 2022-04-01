@@ -191,7 +191,7 @@ int memlist_add_elt(struct memlist * l, struct memlist_elt * elt, bool strict)
 /* public: memlist.h */
 int memlist_add(struct memlist * l, void * addr, size_t size, bool strict)
 {
-	struct memlist_elt * elt = kmalloc(sizeof(*elt));
+	struct memlist_elt * elt = malloc(sizeof(*elt));
 	elt->addr = addr;
 	elt->size = size;
 	int err = memlist_add_elt(l, elt, strict);
@@ -231,7 +231,7 @@ static int unmerge(
 			return 0;
 		}
 		// src is in the middle of dst
-		struct memlist_elt * left = kmalloc(l->elt_size);
+		struct memlist_elt * left = malloc(l->elt_size);
 		copy_user_data(l, left, dst);
 		left->addr = dst->addr;
 		left->size = src_start - dst_start;

@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <asm/cpu.h>
 #include <mm/paging.h>
+#include <cpp.h>
 
 #define KERNEL_PDPT_START 256
 #define KERNEL_PDPT_COUNT 256

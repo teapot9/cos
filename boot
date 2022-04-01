@@ -1,6 +1,8 @@
 #!/bin/bash
 # alias boot='./boot efi & ./boot egdb ; kill -0 $! 1>/dev/null 2>&1 && kill $!'
 # boot() { ./boot efi ${QEMU_ARGS} & ./boot egdb "$@" ; kill -0 $! 1>/dev/null 2>&1 && kill $! ; killall qemu-system-x86_64; }
+# ./boot efi -monitor stdio -display none
+# ./boot egdb
 set -x
 
 mode="${1:-all}"

@@ -50,7 +50,7 @@ int serial_reg(uint16_t base)
 {
 	int err;
 
-	struct serial * serial = kmalloc(sizeof(*serial));
+	struct serial * serial = malloc(sizeof(*serial));
 	if (serial == NULL)
 		return -ENOMEM;
 

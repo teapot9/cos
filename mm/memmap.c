@@ -97,7 +97,7 @@ int memmap_update(
 	if (err && err != -ENOENT)
 		return err;
 
-	struct memmap_elt * new = kmalloc(sizeof(*new));
+	struct memmap_elt * new = malloc(sizeof(*new));
 	new->l.addr = start;
 	new->l.size = size;
 	new->type = type;

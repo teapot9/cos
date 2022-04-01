@@ -65,7 +65,7 @@ ACPI_STATUS AcpiOsGetPhysicalAddress(
 
 void * AcpiOsAllocate(ACPI_SIZE Size)
 {
-	return kmalloc(Size);
+	return malloc(Size);
 }
 
 void AcpiOsFree(void * Memory)
@@ -118,7 +118,7 @@ void AcpiOsStall(UINT32 Microseconds)
 /*
 ACPI_STATUS AcpiOsCreateMutex(ACPI_MUTEX * OutHandle)
 {
-	int * m = kmalloc(sizeof(*m));
+	int * m = malloc(sizeof(*m));
 	if (m == NULL)
 		return AE_NO_MEMORY;
 	*m = 0;

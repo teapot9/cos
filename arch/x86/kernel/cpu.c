@@ -54,7 +54,7 @@ int cpu_reg(const struct device ** dev)
 	size_t nproc = 0;
 	struct cpu * cpu = NULL;
 
-	void * cpu_ptr = kmalloc(sizeof(*cpu) + CPU_ALIGN);
+	void * cpu_ptr = malloc(sizeof(*cpu) + CPU_ALIGN);
 	if (cpu_ptr == NULL)
 		return -ENOMEM;
 	cpu = aligned(cpu_ptr, CPU_ALIGN);

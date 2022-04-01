@@ -14,9 +14,11 @@ struct memblock {
 
 // kmm
 void * malloc(size_t size);
-void * kmalloc(size_t size);
+void free(void * ptr);
+void * realloc(void * oldptr, size_t newsize);
+void * kmalloc(size_t size, size_t align);
 void kfree(const void * ptr);
-void * krealloc(void * oldptr, size_t newsize);
+void * krealloc(void * oldptr, size_t newsize, size_t align);
 
 // vmm
 int vmap(pid_t pid, void * paddr, void * vaddr, size_t * size);

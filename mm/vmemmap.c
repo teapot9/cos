@@ -59,7 +59,7 @@ int vmemmap_map(
 			return err;
 	}
 
-	struct vmemmap_elt * new = kmalloc(sizeof(*new));
+	struct vmemmap_elt * new = malloc(sizeof(*new));
 	new->l.addr = start;
 	new->l.size = size;
 	new->map = map_addr;

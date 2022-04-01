@@ -46,7 +46,7 @@ static inline bool is_reg(const struct device * dev)
 
 static int add_dev(struct device * dev)
 {
-	struct dev_list * node = kmalloc(sizeof(*devices));
+	struct dev_list * node = malloc(sizeof(*devices));
 	if (node == NULL) {
 		pr_err("Cannot alocate memory for struct dev_list\n",
 		       0);
@@ -142,7 +142,7 @@ int device_create_varg(
 		return -EBUSY;
 	}
 
-	struct device * dev = kmalloc(sizeof(*dev));
+	struct device * dev = malloc(sizeof(*dev));
 	if (dev == NULL) {
 		kfree(name);
 		return -ENOMEM;

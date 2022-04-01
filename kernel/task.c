@@ -181,7 +181,7 @@ int thread_new(
 	struct process * proc, void (* start)(void)
 )
 {
-	struct tlist * new = kmalloc(sizeof(*new));
+	struct tlist * new = malloc(sizeof(*new));
 	if (new == NULL)
 		return -ENOMEM;
 

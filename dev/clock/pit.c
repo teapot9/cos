@@ -118,7 +118,7 @@ static int new(size_t msec, void (*callback)(void), size_t nbcall)
 	if (msec == 0 || callback == NULL)
 		return -EINVAL;
 
-	struct timer_list * t = kmalloc(sizeof(*t));
+	struct timer_list * t = malloc(sizeof(*t));
 	if (t == NULL)
 		return -ENOMEM;
 

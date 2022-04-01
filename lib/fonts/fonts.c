@@ -49,7 +49,7 @@ int font_new(const struct font ** dst_font,
 	*dst_font = NULL;
 
 	int ret;
-	struct font * font = kmalloc(sizeof(*font));
+	struct font * font = malloc(sizeof(*font));
 	if (font == NULL)
 		return -ENOMEM;
 

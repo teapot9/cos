@@ -41,7 +41,7 @@ int fbcon_reg(const struct device * fb)
 {
 	int err;
 
-	struct fbcon * fbcon = kmalloc(sizeof(*fbcon));
+	struct fbcon * fbcon = malloc(sizeof(*fbcon));
 	if (fbcon == NULL)
 		return -ENOMEM;
 
@@ -97,7 +97,7 @@ static int fbcon_putc(struct fbcon * con, const struct fb * fb, uint32_t c)
 	if (c == '\n')
 		return fbcon_newline(con, fb);
 
-	bool * bitmap = kmalloc(font_w * font_h * sizeof(*bitmap));
+	bool * bitmap = malloc(font_w * font_h * sizeof(*bitmap));
 	if (bitmap == NULL)
 		return -ENOMEM;
 

@@ -12,7 +12,7 @@ static int insert(struct memblock_list ** prev, void * addr, size_t size)
 	if (prev == NULL)
 		return -EINVAL;
 
-	struct memblock_list * new = kmalloc(sizeof(*new));
+	struct memblock_list * new = malloc(sizeof(*new));
 	new->addr = addr;
 	new->size = size;
 	new->next = *prev;

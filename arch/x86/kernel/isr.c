@@ -154,7 +154,7 @@ int isr_reg(unsigned isr, void (* callback)(void))
 	if (isr > ISR_MAX || callback == NULL)
 		return -EINVAL;
 
-	struct isr * new = kmalloc(sizeof(*new));
+	struct isr * new = malloc(sizeof(*new));
 	if (new == NULL)
 		return -ENOMEM;
 

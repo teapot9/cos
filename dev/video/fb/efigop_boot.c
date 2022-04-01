@@ -83,7 +83,7 @@ int gop_init(struct efigop_bdata ** data)
 
 	if (data == NULL)
 		return -EINVAL;
-	*data = kmalloc(sizeof(**data));
+	*data = malloc(sizeof(**data));
 	if (*data == NULL)
 		return -ENOMEM;
 	struct gop * gop = &(*data)->gop;

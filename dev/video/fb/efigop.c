@@ -71,7 +71,7 @@ int gop_init(struct efigop_bdata * data)
 {
 	int err;
 
-	struct gop * gop = kmalloc(sizeof(*gop));
+	struct gop * gop = malloc(sizeof(*gop));
 	memcpy(gop, &data->gop, sizeof(*gop));
 	gop->mode.info = &gop->info;
 
