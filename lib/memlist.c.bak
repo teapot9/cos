@@ -1,0 +1,255 @@
+#define pr_fmt(fmt) "memlist: " fmt
+#include <memlist.h>
+
+#include <errno.h>
+
+#include <mm/helper.h>
+#include <mm.h>
+#include <string.h>
+
+static inline bool check_compat(
+	struct memlist * l, struct memlist_elt * a, struct memlist_elt * b
+)
+{
+	return l->compat != NULL ? l->compat(a, b) : true;
+}
+
+static inline struct memlist_elt ** pelt(struct list_head ** h)
+{
+	return (struct memlist_elt **) h;
+}
+
+static inline struct memlist_elt * elt(struct list_head * h)
+{
+	return (struct memlist_elt *) h;
+}
+
+static int insert(struct memlist * l, struct memlist_elt * prev,
+                  struct memlist_elt * new)
+{
+	if (l == NULL || new == NULL)
+		return -EINVAL;
+	if (prev != NULL)
+		list_add_after(&l->l, &prev->l, &new->l);
+	else
+		list_push(&l->l, &new->l);
+	return 0;
+}
+
+static int quick_merge_next(struct memlist * l, struct memlist_elt * cur)
+{
+	struct memlist_elt * next = elt(cur->l.next);
+	if (!check_compat(l, cur, next))
+		return -EINVAL;
+
+	if (cur->addr > next->addr) {
+		cur->addr = next->addr;
+		cur->size += next->size;
+	}
+	cur->size += next->size;
+	list_del(&l->l, &next->l, true);
+	return 0;
+}
+
+static int merge_new(struct memlist * l, struct memlist_elt * cur,
+		     struct memlist_elt * new)
+{
+	if (cur == NULL
+	    || (!is_overlap(cur->addr, cur->size, new->addr, new->size)
+	        && !is_next(cur->addr, cur->size, new->addr, new->size))
+	    || !check_compat(l, cur, new))
+		return -EINVAL;
+
+	if (is_next(cur->addr, cur->size, new->addr, new->size)) {
+		int err = insert(l, elt(cur->l.next), new);
+		if (err)
+			return err;
+		return quick_merge_next(l, cur);
+	}
+
+	uint8_t * dst_start = cur->addr;
+	uint8_t * dst_end = dst_start + cur->size;
+	uint8_t * src_start = new->addr;
+	uint8_t * src_end = src_start + new->size;
+
+	if (src_start < dst_start) {
+		// append dst block on left
+		size_t diff = dst_start - src_start;
+		dst_start = src_start;
+		cur->addr = new->addr;
+		cur->size += diff;
+	}
+	if (src_end > dst_end) {
+		// append dst block on right
+		size_t diff = src_end - dst_end;
+		dst_end = src_end;
+		cur->size += diff;
+	}
+
+	return 0;
+}
+
+static int merge_current(struct memlist * l, struct memlist_elt * cur)
+{
+	if (l == NULL || cur == NULL)
+		return -EINVAL;
+	struct memlist_elt * next = elt(cur->l.next);
+	if (next == NULL)
+		return 0;
+
+	if (is_next(cur->addr, cur->size, next->addr, next->size))
+		return quick_merge_next(l, cur);
+	if (!is_overlap(cur->addr, cur->size, next->addr, next->size))
+		return 0;
+
+	int err = merge_new(l, cur, next);
+	if (err)
+		return err;
+
+	list_del(&l->l, &next->l, true);
+	return 0;
+}
+
+static int merge(struct memlist * l, struct memlist_elt * cur,
+                 struct memlist_elt * target)
+{
+	int err;
+	if (l == NULL || cur == NULL || target == NULL)
+		return -EINVAL;
+
+	err = merge_new(l, cur, target);
+	if (err)
+		return err;
+
+	err = merge_current(l, cur);
+	if (err)
+		return err;
+
+	return 0;
+}
+
+static int unmerge(struct memlist * l, struct memlist_elt * cur,
+                   void * addr, size_t size)
+{
+	if (l == NULL || cur == NULL)
+		return -EINVAL;
+
+	uint8_t * dst_start = cur->addr;
+	uint8_t * dst_end = dst_start + cur->size;
+	uint8_t * src_start = addr;
+	uint8_t * src_end = src_start + size;
+
+	if (src_start > dst_start) {
+		// keep left part of dst block
+		size_t diff = src_start - dst_start;
+		cur->size = diff;
+	}
+	if (src_end < dst_end) {
+		// keep right part of dst block
+		size_t diff = dst_end - src_end;
+		if (src_start > dst_start) {
+			struct memlist_elt * copy = kmalloc(l->elt_size);
+			memcpy(copy, cur, l->elt_size);
+			copy->addr = src_end;
+			copy->size = diff;
+			return insert(l, cur, copy);
+		}
+		cur->addr = src_end;
+		cur->size = diff;
+	}
+
+	return 0;
+}
+
+struct memlist_elt * memlist_search_size(struct memlist * l,
+				         size_t size, size_t align)
+{
+	if (l == NULL)
+		return NULL;
+
+	struct memlist_elt * cur;
+	list_foreach(cur, l->l.first) {
+		if (cur->size - align_diff(cur->addr, align) >= size)
+			return cur;
+	}
+	return NULL;
+}
+
+struct memlist_elt * memlist_search(struct memlist * l,
+				    void * addr, size_t size, bool full)
+{
+	if (l == NULL)
+		return NULL;
+
+	struct memlist_elt * cur;
+	list_foreach(cur, l->l.first) {
+		if ((uint64_t) cur->addr > (uint64_t) addr + size)
+			return elt(cur->l.prev);
+		if (full && is_inside(cur->addr, cur->size, addr, size))
+			return cur;
+		if (!full && is_overlap(cur->addr, cur->size, addr, size))
+			return cur;
+		if (!full && is_next(cur->addr, cur->size, addr, size))
+			return cur;
+	}
+	return NULL;
+}
+
+bool memlist_exists(struct memlist * l, void * addr, size_t size, bool full)
+{
+	struct memlist_elt * cur = memlist_search(l, addr, size, full);
+	if (cur == NULL)
+		return false;
+
+	return (full && is_inside(cur->addr, cur->size, addr, size))
+		|| (!full && is_overlap(cur->addr, cur->size, addr, size));
+}
+
+int memlist_add_elt(struct memlist * l, struct memlist_elt * new, bool strict)
+{
+	if (l == NULL)
+		return -EINVAL;
+
+	struct memlist_elt * cur =
+		memlist_search(l, new->addr, new->size, false);
+	//struct memlist_elt * prev = elt((*pprev)->l.prev);
+	//struct memlist_elt * cur = elt(l->l.first);
+
+	if (cur != NULL) {
+		if (is_overlap(cur->addr, cur->size, new->addr, new->size)) {
+			if (strict || !check_compat(l, cur, new))
+				return -EBUSY;
+			return merge(l, cur, new);
+		}
+		if (is_next(cur->addr, cur->size, new->addr, new->size)
+		    && check_compat(l, cur, new))
+			return merge(l, cur, new);
+	}
+	return insert(l, cur, new);
+}
+
+int memlist_add(struct memlist * l, void * addr, size_t size, bool strict)
+{
+	if (l == NULL)
+		return -EINVAL;
+	struct memlist_elt * new = kmalloc(sizeof(*new));
+	new->addr = addr;
+	new->size = size;
+	return memlist_add_elt(l, new, strict);
+}
+
+int memlist_del(struct memlist * l, void * addr, size_t size, bool strict)
+{
+	if (l == NULL)
+		return -EINVAL;
+	struct memlist_elt * cur = memlist_search(l, addr, size, false);
+
+	if (cur == NULL)
+		return -ENOENT;
+	if (!is_overlap(cur->addr, cur->size, addr, size))
+		return -ENOENT;
+	if (strict && !is_inside(cur->addr, cur->size, addr, size))
+		return -ENOENT;
+
+	return unmerge(l, cur, addr, size);
+}

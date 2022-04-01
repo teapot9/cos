@@ -3,11 +3,14 @@
 # Default rule
 obj-dirs := $(addprefix $(BUILD)/, $(filter %/, $(obj-y)))
 obj-files := $(addprefix $(BUILD)/, $(filter-out %/, $(obj-y)))
-all: $(BUILD)/modules.o
+bootloader-dirs := $(addprefix $(BUILD)/, $(filter %/, $(bootloader-y)))
+bootloader-files := $(addprefix $(BUILD)/, $(filter-out %/, $(bootloader-y)))
+bootloader-files := $(bootloader-files:.o=.bootloader.o)
+all: $(BUILD)/modules.o $(BUILD)/bootloader.o
 	$(info $(RELAPATH): built $^)
 
 # Dependencies
-bdeps := $(obj-files)
+bdeps := $(obj-files) $(bootloader-files)
 bdeps := $(bdeps:.o=.d)
 bdeps := $(bdeps:.i=.d)
 bdeps := $(bdeps:.s=.d)
@@ -37,56 +40,114 @@ module-files := $(obj-files) $(addsuffix modules.o, $(obj-dirs))
 $(BUILD)/modules.o: $(obj-files) $(addsuffix modules.o, $(obj-dirs))
 	[ -z "$^" ] && touch "$@" || $(LD) -r -o $@ $^
 
+# Rule for bootloader.o
+allbootloader := $(addsuffix bootloader.o, $(addprefix $(BUILD)/, $(wildcard */)))
+$(BUILD)/%/bootloader.o: $(BUILD)/%/
+	$(NOOP)
+
+bootloader-files := $(bootloader-files) $(addsuffix bootloader.o, $(bootloader-dirs))
+.PHONY: $(BUILD)/bootloader.o
+$(BUILD)/bootloader.o: $(bootloader-files) $(addsuffix bootloader.o, $(bootloader-dirs))
+	[ -z "$^" ] && touch "$@" || $(LD) -r -o $@ $^
+
 # Don't build source files
 noop := $(wildcard $(BUILD_ROOT)/.config $(SRC_ROOT)/Makefile.* Makefile $(SRC)/*.c)
 $(noop):
 	$(NOOP)
 
 # Clean rule
-clean-dirs := $(addprefix $(BUILD)/, $(filter %/, $(obj-y) $(obj-) $(clean-y)))
-clean-files := $(addprefix $(BUILD)/, $(filter-out %/, $(obj-y) $(obj-) $(clean-y)))
+clean-dirs := $(addprefix $(BUILD)/, $(filter %/, $(obj-y) $(obj-) $(clean-y) $(bootloader-y) $(bootloader-)))
+bootloader-clean := $(filter-out %/, $(bootloader-y) $(bootloader-))
+clean-files := $(addprefix $(BUILD)/, $(filter-out %/, $(obj-y) $(obj-) $(clean-y)) $(bootloader-clean:.o=.bootloader.o))
 .PHONY: clean
 clean: $(clean-dirs)
-	$(info bdeps = $(bdeps))
-	rm -f $(clean-files) $(bdeps) $(BUILD)/modules.o
+	rm -f $(clean-files) $(bdeps) $(BUILD)/modules.o $(BUILD)/bootloader.o
 
-# Generic build rules
+# C build rules
 
 $(BUILD)/%.i: $(SRC)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
 
 $(BUILD)/%.i: $(BUILD)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
 
 $(BUILD)/%.s: $(SRC)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -S -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -MMD -MP -S -o $@ $<
 
 $(BUILD)/%.s: $(BUILD)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -S -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -MMD -MP -S -o $@ $<
 
 $(BUILD)/%.s: $(BUILD)/%.i
-	$(CC) $(CFLAGS) -S -o $@ $<
-
-$(BUILD)/%.s: $(SRC)/%.S
-	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
-
-$(BUILD)/%.s: $(BUILD)/%.S
-	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) -S -o $@ $<
 
 $(BUILD)/%.o: $(SRC)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.o: $(BUILD)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.o: $(BUILD)/%.i
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) -c -o $@ $<
+
+# C++ build rules
+
+$(BUILD)/%.ii: $(SRC)/%.cc
+	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
+
+$(BUILD)/%.ii: $(BUILD)/%.cc
+	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
+
+$(BUILD)/%.s: $(SRC)/%.cc
+	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -S -o $@ $<
+
+$(BUILD)/%.s: $(BUILD)/%.cc
+	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -S -o $@ $<
+
+$(BUILD)/%.s: $(BUILD)/%.ii
+	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) -S -o $@ $<
+
+$(BUILD)/%.o: $(SRC)/%.cc
+	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
+
+$(BUILD)/%.o: $(BUILD)/%.cc
+	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
+
+$(BUILD)/%.o: $(BUILD)/%.ii
+	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) -c -o $@ $<
+
+# Language independant rules
+
+$(BUILD)/%.s: $(SRC)/%.S
+	$(CC) $(COMMON_FLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
+
+$(BUILD)/%.s: $(BUILD)/%.S
+	$(CC) $(COMMON_FLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
 
 $(BUILD)/%.o: $(SRC)/%.S
-	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.o: $(BUILD)/%.S
-	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.o: $(BUILD)/%.s
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(COMMON_FLAGS) -c -o $@ $<
+
+# Bootloader build rules
+
+$(BUILD)/%.bootloader.o: $(SRC)/%.c
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -DBOOTLOADER -MMD -MP -c -o $@ $<
+
+$(BUILD)/%.bootloader.o: $(BUILD)/%.bootloader.c
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -DBOOTLOADER -MMD -MP -c -o $@ $<
+
+$(BUILD)/%.bootloader.o: $(BUILD)/%.bootloader.i
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) -c -o $@ $<
+
+$(BUILD)/%.bootloader.o: $(SRC)/%.S
+	$(CC) $(COMMON_FLAGS) $(CPPFLAGS) -DBOOTLOADER -MMD -MP -c -o $@ $<
+
+$(BUILD)/%.bootloader.o: $(BUILD)/%.bootloader.S
+	$(CC) $(COMMON_FLAGS) $(CPPFLAGS) -DBOOTLOADER -MMD -MP -c -o $@ $<
+
+$(BUILD)/%.bootloader.o: $(BUILD)/%.bootloader.s
+	$(CC) $(COMMON_FLAGS) -c -o $@ $<

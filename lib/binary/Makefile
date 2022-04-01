@@ -1,6 +1,7 @@
 include $(SRC_ROOT)/Makefile.flags
 
-obj-y = boot/ kernel/ mm/
-bootloader-y += $(obj-y)
+obj-y = elf.o
+bootloader-y = elf.o
 
 include $(SRC_ROOT)/Makefile.rules
+

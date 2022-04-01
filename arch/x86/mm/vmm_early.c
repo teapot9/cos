@@ -6,7 +6,9 @@
 #include <stdbool.h>
 #include <errno.h>
 
+#include <mm/early.h>
 #include <mm/helper.h>
+#include <mm/memmap.h>
 #include <asm/cpu.h>
 #include "../../../mm/pmm.h"
 #include <print.h>
@@ -14,6 +16,7 @@
 
 static union pml4e * pml4 = NULL;
 static struct early_vmap * early_vmap_first = NULL;
+bool vmm_fully_init = false;
 
 union pml4e * kpml4(void)
 {
@@ -198,72 +201,6 @@ int vmm_init(void)
 	write_cr3(kcr3());
 	enable_paging();
 
+	vmm_fully_init = true;
 	return 0;
-}
-
-void _vmm_init(struct memmap map)
-{
-	uint64_t raw_cr4 = read_cr4();
-	struct cr4 * cr4 = (void *) &raw_cr4;
-	if (cr4->pcide) {
-		pr_notice("disabling CR4.PCIDE\n", 0);
-		cr4->pcide = false;
-		write_cr4(raw_cr4);
-	}
-
-	pml4 = pmalloc(NB_PML4_ENTRY * sizeof(*pml4), 4096);
-	if (pml4 == NULL) {
-		pr_emerg("failed to allocate PML4\n", 0);
-		return;
-	}
-
-	for (size_t i = 0; i < NB_PML4_ENTRY; i++) {
-		struct pml4_absent base_pml4e = {.present = false};
-		pml4[i].absent = base_pml4e;
-	}
-	vmap(pml4, pml4, 4096);
-	//map_page_pt(pml4, pml4, pml4);
-
-	for (size_t i = 0; i < map.desc_count; i++) {
-		// if (map.desc[i].phy_start <= 0xc0000000 && map.desc[i].phy_start + map.desc[i].size >= 0xc0000000)
-			// kbreak();
-		switch (map.desc[i].type) {
-		case MEMORY_TYPE_KERNEL_CODE:
-		case MEMORY_TYPE_KERNEL_DATA:
-		case MEMORY_TYPE_EFI_SERVICES:
-		case MEMORY_TYPE_ACPI_RECLAIMABLE:
-		case MEMORY_TYPE_ACPI_NVS:
-		case MEMORY_TYPE_HARDWARE:
-		case MEMORY_TYPE_RESERVED: // debug
-			/*
-			map_pages_pt(pml4, map.desc[i].phy_start,
-				     (uint8_t *) map.desc[i].phy_start
-				     + (size_t) map.desc[i].virt_start,
-				     map.desc[i].size);
-			*/
-			vmap(map.desc[i].phy_start,
-			     (uint8_t *) map.desc[i].phy_start
-			     + (size_t) map.desc[i].virt_start,
-			     map.desc[i].size);
-		default:;
-		}
-		//vmm_map(
-		//	map.desc[i].phy_start,
-		//	(uint8_t *) map.desc[i].phy_start
-		//	+ (size_t) map.desc[i].virt_start,
-		//	map.desc[i].size
-		//);
-	}
-
-	uint64_t raw_cr3 = read_cr3();
-	union cr3 * cr3 = (void *) &raw_cr3;
-	//print_vmmap_pml4((void *) (cr3->normal.pml4 << 12), 0);
-	//print_vmmap_pml4(pml4, 0);
-	cr3->normal.pml4 = (unsigned long int) pml4 >> 12;
-	asm volatile(intel("mov cr3, rax\n") : : "a" (raw_cr3));
-	//write_cr3(raw_cr3);
-
-	//union pml4e * pml4 = pzalloc(512 * sizeof(*pml4), 4096);
-	//disable_paging();
-	enable_paging();
 }

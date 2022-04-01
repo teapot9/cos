@@ -24,18 +24,22 @@ endif
 
 include $(SRC_ROOT)/Makefile.flags
 
+sections = $(BUILD)/arch/$(ARCH)/sections.lds
 obj-y = arch/ dev/ kernel/ lib/ mm/
-clean-y += $(COS_KERNEL).so
+bootloader-y = $(obj-y)
+clean-y += $(COS_KERNEL).elf $(sections)
+
 
 .PHONY: all
 all: image
 
 .PHONY: image
-image: $(BUILD)/$(COS_KERNEL).so
+image: $(BUILD)/$(COS_KERNEL).elf
 	$(Q)$(MAKE) -C arch/$(ARCH)/boot SRC_ROOT=$(SRC_ROOT) BUILD_ROOT=$(BUILD_ROOT) image
 
-$(BUILD)/$(COS_KERNEL).so: $(BUILD)/modules.o
-	$(LD) $(LDFLAGS) -o $@ $^
+$(BUILD)/$(COS_KERNEL).elf: $(BUILD)/modules.o
+	$(SED) -e 's/@@IMAGE_BASE@@/0xffffffff80000000/g' $(SRC)/arch/$(ARCH)/sections.lds.in >$(sections)
+	$(LD) -dT $(sections) $(LDFLAGS) -pie -static -entry=entry_efi_wrapper_s2 -o $@ $^
 
 include $(SRC_ROOT)/Makefile.rules
 

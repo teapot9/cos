@@ -122,6 +122,9 @@ static void dotest(void)
 	kthread_new(spintest);
 }
 
+extern uint8_t _binary__tmp_albert_bin_start[];
+extern uint8_t _binary__tmp_albert_bin_end[];
+
 /* public: init.h */
 noreturn void kernel_main(void)
 {

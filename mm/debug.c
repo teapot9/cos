@@ -7,6 +7,7 @@
 #include <mm.h>
 #include <print.h>
 
+#if 0
 static void print_memmap_desc(struct memmap_desc * desc)
 {
 	const char * type;
@@ -58,3 +59,11 @@ void print_memmap(struct memmap map)
 	for (size_t i = 0; i < map.desc_count; i++)
 		print_memmap_desc(&map.desc[i]);
 }
+#endif
+int register_memmap_desc;
+int register_used_pmem;
+int register_free_pmem;
+int pmm_acpi_register;
+int memmap_translate;
+int pmm_acpi_iter;
+int memmap_add;

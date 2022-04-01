@@ -12,7 +12,7 @@ PHDRS
 
 SECTIONS
 {
-	. = 0xffffffff80000000;
+	. = 0x1000;
 	.hash : { *(.hash) } :hash
 	.gnu.hash : { *(.gnu.hash) } :hash
 	. = ALIGN(4096);

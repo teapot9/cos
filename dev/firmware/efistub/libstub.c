@@ -3,6 +3,8 @@
 #include <firmware/efistub.h>
 #include "efistub.h"
 
+#include <errno.h>
+
 #include <print.h>
 #include <unicode.h>
 
@@ -48,8 +50,10 @@ static char * get_efi_cmdline(void)
 
 /* firmware/efistub.h */
 /* Return cmdline in a dynamically allocated buffer */
-char * efistub_cmdline(void)
+int efistub_cmdline(const char ** cmdline_dst)
 {
+	if (cmdline_dst == NULL)
+		return -EINVAL;
 	size_t size = 0;
 	size_t start = 0;
 	char * efi_cmdline = get_efi_cmdline();
@@ -64,7 +68,8 @@ char * efistub_cmdline(void)
 	if (cmdline == NULL) {
 		pr_err("Failed to allocate %zu bytes for cmdline\n", 0);
 		kfree(efi_cmdline);
-		return NULL;
+		*cmdline_dst = "";
+		return -ENOMEM;
 	}
 
 #ifndef CONFIG_CMDLINE_OVERRIDE
@@ -89,7 +94,8 @@ char * efistub_cmdline(void)
 #endif
 
 	kfree(efi_cmdline);
-	return cmdline;
+	*cmdline_dst = cmdline;
+	return 0;
 }
 
 void efistub_parse_configuration_table(void)
@@ -104,13 +110,17 @@ void efistub_parse_configuration_table(void)
 	for (efi_uintn i = 0; i < sys->number_of_table_entries; i++) {
 		if (efi_guid_t_eq(cfg[i].vendor_guid,
 		                  (efi_guid_t) EFI_ACPI_20_TABLE_GUID)) {
+#if 0
 #ifdef CONFIG_ACPI
 			acpi_register_rsdp(cfg[i].vendor_table);
 #endif
+#endif
 		} else if (efi_guid_t_eq(cfg[i].vendor_guid,
 		                         (efi_guid_t) ACPI_10_TABLE_GUID)) {
+#if 0
 #ifdef CONFIG_ACPI
 			acpi_register_rsdp(cfg[i].vendor_table);
+#endif
 #endif
 		}
 	}

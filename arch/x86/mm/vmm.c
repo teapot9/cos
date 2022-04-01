@@ -9,6 +9,8 @@
 #include "../../../mm/pmm.h"
 #include <print.h>
 
+extern bool vmm_fully_init;
+
 void * get_paddr(union pml4e * pml4, void * ptr)
 {
 	union lin_addr * addr = (union lin_addr *) &ptr;
@@ -158,6 +160,8 @@ static int map_page_pt(union pml4e * pml4, void * paddr, void * vaddr)
 					     PAGE_SIZE_PT);
 		if (pdpt == NULL)
 			return -ENOMEM;
+		if (vmm_fully_init)
+			map_page_pt(pml4, pdpt, pdpt); // TODO: error?
 		for (size_t i = 0; i < NB_PDPT_ENTRY; i++)
 			pdpt[i].absent.present = false;
 
@@ -174,7 +178,8 @@ static int map_page_pt(union pml4e * pml4, void * paddr, void * vaddr)
 		};
 		pg.page.pml4->pdpt = pml4e;
 
-		map_page_pt(pml4, pdpt, pdpt); // TODO: error?
+		if (!vmm_fully_init)
+			map_page_pt(pml4, pdpt, pdpt); // TODO: error?
 		return map_page_pt(pml4, paddr, vaddr);
 		pg = get_page(pml4, vaddr);
 		if (pg.type != PAGE_TYPE_PDPT)
@@ -187,6 +192,8 @@ static int map_page_pt(union pml4e * pml4, void * paddr, void * vaddr)
 					 PAGE_SIZE_PT);
 		if (pd == NULL)
 			return -ENOMEM;
+		if (vmm_fully_init)
+			map_page_pt(pml4, pd, pd); // TODO: error?
 		for (size_t i = 0; i < NB_PD_ENTRY; i++)
 			pd[i].absent.present = false;
 
@@ -203,7 +210,8 @@ static int map_page_pt(union pml4e * pml4, void * paddr, void * vaddr)
 		};
 		pg.page.pdpt->pd = pdpte;
 
-		map_page_pt(pml4, pd, pd); // TODO: error?
+		if (!vmm_fully_init)
+			map_page_pt(pml4, pd, pd); // TODO: error?
 		return map_page_pt(pml4, paddr, vaddr);
 		pg = get_page(pml4, vaddr);
 		if (pg.type != PAGE_TYPE_PD)
@@ -216,6 +224,8 @@ static int map_page_pt(union pml4e * pml4, void * paddr, void * vaddr)
 					 PAGE_SIZE_PT);
 		if (pt == NULL)
 			return -ENOMEM;
+		if (vmm_fully_init)
+			map_page_pt(pml4, pt, pt); // TODO: error?
 		for (size_t i = 0; i < NB_PT_ENTRY; i++)
 			pt[i].absent.present = false;
 
@@ -232,7 +242,8 @@ static int map_page_pt(union pml4e * pml4, void * paddr, void * vaddr)
 		};
 		pg.page.pd->pt = pde;
 
-		map_page_pt(pml4, pt, pt); // TODO: error?
+		if (!vmm_fully_init)
+			map_page_pt(pml4, pt, pt); // TODO: error?
 		return map_page_pt(pml4, paddr, vaddr);
 		pg = get_page(pml4, vaddr);
 		if (pg.type != PAGE_TYPE_PT)

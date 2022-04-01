@@ -4,77 +4,71 @@ export COS_VERSION := 0
 export COS_KERNEL := cos
 export ARCH ?= $(shell uname -m)
 export CC ?= cc
+export CXX ?= c++
 export LD ?= ld
 export OBJCOPY ?= objcopy
 export STRIP ?= strip
 export AR ?= ar
 export RANLIB ?= ranlib
+export SED ?= sed
 
 include $(BUILD_ROOT)/.config
 
 RELAPATH := $(shell realpath --relative-to=$(SRC_ROOT) .)
 SRC := $(abspath $(SRC_ROOT)/$(RELAPATH))
-#SRC := $(shell realpath --relative-to=. $(SRC_ROOT)/$(RELAPATH))
 BUILD := $(abspath $(BUILD_ROOT)/$(RELAPATH))
-#BUILD := $(shell realpath --relative-to=. $(BUILD_ROOT)/$(RELAPATH))
-$(info SRC = $(SRC))
-$(info BUILD = $(BUILD))
-#ARCHDSRC := $(shell realpath --relative-to=. $(SRC_ROOT)/arch/$(ARCH)/$(RELAPATH))
-#STDSRC := $(shell realpath --relative-to=. $(SRC_ROOT)/$(RELAPATH:arch/$(ARCH:x86_64=x86)/%=%))
+#$(info SRC = $(SRC))
+#$(info BUILD = $(BUILD))
 
-CFLAGS += -msse3
-CFLAGS += -ffreestanding -fpic -fPIC -fpie -fstack-protector-all #-fno-stack-protector
-CFLAGS += -mno-red-zone -mabi=sysv
-CFLAGS += -Wall -Wextra -Wpedantic -std=c18
-CFLAGS += -Wtype-limits -Wstrict-prototypes -Wtype-limits
-CFLAGS += -Wframe-larger-than=$(CONFIG_KERNEL_FRAME_SIZE)
-CFLAGS += -I$(SRC_ROOT)/arch/$(ARCH)/include -I$(SRC_ROOT)/include
-CPPFLAGS += -DARCHSRC=$(ARCHDSRC) -DSTDSRC=$(STDSRC)
-LDFLAGS += -znodefaultlib -nostdlib -znocombreloc -Bsymbolic
-LDFLAGS += -unresolved-symbols=report-all
+COMMON_FLAGS += -msse3
+COMMON_FLAGS += -mno-red-zone -mabi=sysv
+COMMON_FLAGS += -ffreestanding -fpic -fPIC -fpie -fstack-protector-all #-fno-stack-protector
+COMMON_FLAGS += -Wall -Wextra -Wpedantic
+COMMON_FLAGS += -Wtype-limits -Wstrict-prototypes -Wtype-limits
+COMMON_FLAGS += -Wframe-larger-than=$(CONFIG_KERNEL_FRAME_SIZE)
+COMMON_FLAGS += -I$(SRC_ROOT)/arch/$(ARCH)/include -I$(SRC_ROOT)/include
+CFLAGS += -std=c18
+CXXFLAGS += -fno-rtti -fno-exceptions
+LDFLAGS += -znodefaultlib -nostdlib -znocombreloc
+LDFLAGS += -unresolved-symbols=report-all --orphan-handling=warn
 LDFLAGS += --warn-common --warn-alternate-em
-LDFLAGS += -shared -dT $(SRC_ROOT)/arch/$(ARCH)/sections.lds
 
 ifeq ($(CC), gcc)
-	CFLAGS += -mgeneral-regs-only
+	COMMON_FLAGS += -mgeneral-regs-only
 endif
 
 ifeq ($(CONFIG_X86_64), y)
-	CFLAGS += -m64
+	COMMON_FLAGS += -m64
 endif
 ifeq ($(CONFIG_X86_32), y)
-	CFLAGS += -m32
+	COMMON_FLAGS += -m32
 endif
 
 ifeq ($(CONFIG_DEBUG), y)
-	CFLAGS += -g
+	COMMON_FLAGS += -g
 endif
 
 ifeq ($(CONFIG_CC_OPTIMIZE_O0), y)
-	CFLAGS += -O0
+	COMMON_FLAGS += -O0
 endif
 ifeq ($(CONFIG_CC_OPTIMIZE_O1), y)
-	CFLAGS += -O1
+	COMMON_FLAGS += -O1
 endif
 ifeq ($(CONFIG_CC_OPTIMIZE_O2), y)
-	CFLAGS += -O2
+	COMMON_FLAGS += -O2
 endif
 ifeq ($(CONFIG_CC_OPTIMIZE_O3), y)
-	CFLAGS += -O3
+	COMMON_FLAGS += -O3
 endif
 ifeq ($(CONFIG_CC_OPTIMIZE_OS), y)
-	CFLAGS += -Os
+	COMMON_FLAGS += -Os
 endif
 
 ifeq ($(CONFIG_ASM_DEFAULT_INTEL), y)
-	CFLAGS += -masm=intel
+	COMMON_FLAGS += -masm=intel
 endif
 ifeq ($(CONFIG_ASM_DEFAULT_ATT), y)
-	CFLAGS += -masm=att
-endif
-
-ifeq ($(CONFIG_BOOT_EFISTUB), y)
-	LDFLAGS += -entry=entry_efi_wrapper
+	COMMON_FLAGS += -masm=att
 endif
 
 BIN2C = $(SRC_ROOT)/scripts/bin2c

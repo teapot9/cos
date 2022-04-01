@@ -7,10 +7,9 @@ import os.path
 import time
 
 TIMEOUT = 10
-EFI = 'cos.so'
-DEBUG = 'cos.so'
-#EFI = 'cos.elf'
-#DEBUG = 'cos.elf'
+EFI = 'arch/x86/boot/cos.so'
+DEBUG = 'arch/x86/boot/cos.so'
+KERNEL = 'cos.elf'
 
 PLIST_FUN = '''\
 define plist
@@ -124,6 +123,12 @@ class CommandEfi(gdb.Command):
 
         gdb.execute(PLIST_FUN)
 
+        trampoline = gdb.Breakpoint('trampoline')
+        trampoline.commands = (
+            f'add-symbol-file {KERNEL}\n'
+            'continue\n'
+        )
+
         try:
             with open(CMD_FILE, 'r') as cmd_file:
                 for cmd in cmd_file:
@@ -135,7 +140,8 @@ class CommandEfi(gdb.Command):
                             silent = False
                         gdb.execute(cmd, to_string=silent)
         except OSError:
-            gdb.execute('break entry_efi')
+            gdb.execute('break entry_efi_s1')
+            gdb.execute('break entry_efi_s2')
             gdb.execute('continue')
 
 class CommandQQ(gdb.Command):

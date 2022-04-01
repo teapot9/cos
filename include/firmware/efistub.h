@@ -8,6 +8,9 @@
 #include <mm.h>
 #include <string.h>
 
+struct memmap;
+struct memlist;
+
 /**
  * @brief Kernel EFI image handle
  */
@@ -26,11 +29,11 @@ const efi_loaded_image_protocol_t * efistub_image_proto(void);
 /**
  * @brief Get memory map and exit boot services
  */
-int efistub_memmap_and_exit(void);
+int efistub_memmap_and_exit(struct memmap * map);
 
 /**
  * @brief Get kernel cmdline
  */
-char * efistub_cmdline(void);
+int efistub_cmdline(const char ** cmdline_dst);
 
 #endif // FIRMWARE_EFI_H

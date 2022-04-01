@@ -1,7 +1,12 @@
+#include "entry_efi.h"
+
 #include <errno.h>
 #include <stddef.h>
 #include <stdnoreturn.h>
 
+#include <list.h>
+#include <memlist.h>
+#include <mm/memmap.h>
 #include <sched.h>
 #include <task.h>
 #include "../../../kernel/task.h"
@@ -27,14 +32,17 @@
 #include <setup.h>
 #include <cmdline.h>
 #include <panic.h>
+#include <mm/memmap.h>
+#include <setup.h>
+#include <elf.h>
 
-noreturn void entry_efi(efi_handle_t image_handle,
-                        efi_system_table_t * system_table);
+struct entry_efi_data boot_data;
+extern uint8_t _binary_cos_elf_start[];
+extern uint8_t _binary_cos_elf_end[];
 
 extern noreturn void entry_efi_wrapper(
 	efi_handle_t image_handle, efi_system_table_t * system_table
 );
-extern noreturn void set_kstack(void * kstack, void (* fcn)(void));
 
 #ifdef CONFIG_DEBUG
 static void debug_base_addr(efi_handle_t image_handle,
@@ -57,59 +65,73 @@ static void debug_base_addr(efi_handle_t image_handle,
 }
 #endif
 
-noreturn void entry_efi(efi_handle_t image_handle,
-                        efi_system_table_t * system_table)
+noreturn static void trampoline(void (* fcn)(void))
 {
-	int ret = 0;
+	fcn();
+	panic("second stage boot should not return");
+}
+
+noreturn void entry_efi_s1(efi_handle_t image_handle,
+                           efi_system_table_t * system_table)
+{
+	int err = 0;
 
 #ifdef CONFIG_DEBUG
 	debug_base_addr(image_handle, system_table);
-	//bool tmp = false;
-	//while (!tmp);
+	bool tmp = false;
+	while (!tmp);
 #endif
 
-	efistub_init(image_handle, system_table);
+	/* EFI stub */
+	err = efistub_init(&boot_data.efistub, image_handle, system_table);
+	if (err)
+		panic("failed to initialize EFI stub, errno = %d", err);
 	pr_info("Early init: EFI stub\n", 0);
 
-	efistub_console_init();
-	pr_info("Early init: EFI console\n", 0);
+	/* EFI console */
+	err = efistub_console_init();
+	if (err)
+		pr_err("Early init: failed to initialize EFI console, "
+		       "errno = %d\n", err);
+	else
+		pr_info("Early init: EFI console\n", 0);
 
-	kernel_cmdline = efistub_cmdline();
-	if (kernel_cmdline == NULL)
-		pr_crit("Failed to get cmdline\n", 0);
+	/* cmdline */
+	err = efistub_cmdline(&boot_data.cmdline);
+	kernel_cmdline = boot_data.cmdline;
+	if (err)
+		panic("failed to get cmdline, errno = %d", err);
 	pr_info("Early init: cmdline: %s\n", kernel_cmdline);
 
-	gop_init();
+	/* EFI GOP */
+	gop_init(&boot_data.gop);
 	pr_info("Early init: EFI GOP\n", 0);
 
-	if ((ret = efistub_memmap_and_exit())) {
+	/* memmap & EFI exit */
+	struct memmap map = memmap_new();
+	if ((err = efistub_memmap_and_exit(&map))) {
 		panic("Cannot get memory map or exit boot services"
-		      ", errno = %d\n", ret);
+		      ", errno = %d\n", err);
 	}
 	pr_info("Early init: exited boot services\n", 0);
+#ifdef CONFIG_MM_DEBUG
+	memmap_print(&map, "pmemmap");
+#endif
 
 #ifdef CONFIG_SERIAL_EARLY_DEBUG
+	/* Serial debug */
 	serial_init();
 #endif
 
-	pmm_init();
-	pr_info("Early init: PMM\n", 0);
+	/* pmm */
+	pmm_init(&map);
+	memmap_free(&map, false);
 
+	/* vmm */
 	vmm_init();
-	pr_info("Early init: VMM\n", 0);
 
-	int main_pid = process_new(NULL, kernel_main);
-	if (main_pid > 0)
-		main_pid = -EINVAL;
-	if (main_pid)
-		panic("Failed to create kernel process, errno = %d",
-		      main_pid);
-
-	ret = cpu_reg(NULL);
-	if (ret)
-		panic("Failed CPU0 initialization, errno = %d", ret);
-	pr_info("Early init: CPU0\n", 0);
-
-	sched_enable();
-	cpu_start();
+	void (* kentry)(void);
+	elf_load(&kentry, _binary_cos_elf_start,
+	         _binary_cos_elf_end - _binary_cos_elf_end);
+	trampoline(kentry);
 }
