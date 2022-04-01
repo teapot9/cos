@@ -1,0 +1,13 @@
+config FB
+	bool "Framebuffer support"
+	default y
+	help
+	  Generic framebuffer support.
+
+config FB_EFIGOP
+	bool "EFI GOP framebuffer"
+	default EFISTUB
+	depends on FB
+	depends on EFISTUB
+	help
+	  EFI framebuffer provided by boot services

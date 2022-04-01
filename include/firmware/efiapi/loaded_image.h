@@ -3,6 +3,7 @@
 
 #include <firmware/efiapi/device_path.h>
 #include <firmware/efiapi/system_table.h>
+#include <firmware/efiapi/boot.h>
 
 #define EFI_LOADED_IMAGE_PROTOCOL_GUID \
 	{0x5B1B31A1, 0x9562, 0x11d2, \

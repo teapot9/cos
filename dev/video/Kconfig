@@ -1,0 +1,10 @@
+menuconfig VIDEO
+	bool "Video drivers"
+	default y
+	depends on FONT
+	help
+	  Enable video support.
+
+if VIDEO
+source "dev/video/fb/Kconfig"
+endif

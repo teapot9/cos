@@ -1,0 +1,38 @@
+menuconfig FONT
+	bool "Font support"
+	default y
+	help
+	  Support for fonts.
+
+if FONT
+
+choice
+	prompt "Default font"
+	default FONT_BUILTIN_TERMINUS_8X16
+	depends on FONT
+	help
+	  Selects the default font for the graphical console.
+
+config FONT_BUILTIN_TERMINUS_8X16
+	bool "Terminus 8x16"
+	depends on FONT_PSF
+
+endchoice
+
+config FONT_DEFAULT_PATH
+	string
+	default "font_ter_v16n.psf" if FONT_BUILTIN_TERMINUS_8X16
+	default ""
+	help
+	  Select default font for graphical console.
+
+comment "No default font selected"
+	depends on FONT_DEFAULT_PATH = ""
+
+config FONT_PSF
+	bool "PSF file format support"
+	default y
+	help
+	  Support the PC Screen Font format.
+
+endif

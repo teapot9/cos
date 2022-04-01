@@ -1,0 +1,5 @@
+include $(SRC_ROOT)/Makefile.flags
+
+obj-y = console.o printf.o printk.o string.o unicode.o
+
+include $(SRC_ROOT)/Makefile.rules

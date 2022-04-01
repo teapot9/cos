@@ -1,0 +1,7 @@
+mainmenu "cos $(ARCH) $(COS_VERSION) kernel configuration"
+
+source "arch/Kconfig"
+
+source "dev/Kconfig"
+
+source "lib/Kconfig"

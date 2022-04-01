@@ -1,0 +1,43 @@
+#
+# Automatically generated file; DO NOT EDIT.
+# cos x86_64 0 kernel configuration
+#
+
+#
+# Architecture options
+#
+CONFIG_ASM_DEFAULT_INTEL=y
+# CONFIG_ASM_DEFAULT_ATT is not set
+CONFIG_CMDLINE=""
+# CONFIG_CMDLINE_OVERRIDE is not set
+CONFIG_X86=y
+CONFIG_64BIT=y
+CONFIG_X86_64=y
+CONFIG_BOOTLOADER=y
+CONFIG_BOOT_EFISTUB=y
+# end of Architecture options
+
+#
+# Device drivers
+#
+
+#
+# Firmware drivers
+#
+CONFIG_EFISTUB=y
+CONFIG_EFISTUB_CONSOLE=y
+# end of Firmware drivers
+
+CONFIG_VIDEO=y
+CONFIG_FB=y
+CONFIG_FB_EFIGOP=y
+# end of Device drivers
+
+#
+# Libraries
+#
+CONFIG_FONT=y
+CONFIG_FONT_BUILTIN_TERMINUS_8X16=y
+CONFIG_FONT_DEFAULT_PATH="font_ter_v16n.psf"
+CONFIG_FONT_PSF=y
+# end of Libraries

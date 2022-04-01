@@ -4,8 +4,9 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
-#include <asm.h>
+#include <asm/asm.h>
 
 static inline uint64_t read_cr0(void)
 {

@@ -1,0 +1,101 @@
+#include <firmware/efistub.h>
+#include "efistub.h"
+
+#include <errno.h>
+#include <stdbool.h>
+#include <stddef.h>
+
+#include <firmware/efiapi/loaded_image.h>
+#include <device.h>
+#include <module.h>
+#include <print.h>
+
+const struct module efistub_mod = {
+	.name = "efistub",
+};
+const struct device * efiboot_dev = NULL;
+
+static bool is_init = false;
+static efi_handle_t _image_handle = NULL;
+static const efi_system_table_t * _system_table = NULL;
+static const efi_loaded_image_protocol_t * _image_proto = NULL;
+
+static efi_loaded_image_protocol_t * get_image(
+	efi_handle_t handle, const efi_system_table_t * system_table
+)
+{
+	efi_status_t status;
+	efi_guid_t image_guid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
+	efi_loaded_image_protocol_t * image = NULL;
+
+	status = system_table->boot_services->handle_protocol(
+		handle, &image_guid, (void *) &image
+	);
+	if (status != EFI_SUCCESS) {
+		pr_err("Failed to get EFI loaded image protocol handle "
+		       "(error %d)\n", status);
+		return NULL;
+	}
+	return image;
+}
+
+static int efistub_init(void)
+{
+	int ret;
+	if (efistub_is_init())
+		return 0;
+
+	if (_image_handle == NULL) {
+		pr_err("No EFI image handle provided\n", 0);
+		return -EINVAL;
+	}
+	if (_system_table == NULL) {
+		pr_err("No EFI system table provided\n", 0);
+		return -EINVAL;
+	}
+	if (_image_proto == NULL)
+		pr_err("No EFI loaded image protocol available\n", 0);
+
+	ret = device_create(&efiboot_dev, &efistub_mod, NULL, "firmware", "api",
+	                    NULL, NULL, NULL, "efiboot");
+	if (ret)
+		return ret;
+
+	is_init = true;
+	return 0;
+}
+module_init(efistub_init, early);
+
+bool efistub_is_init(void)
+{
+	return is_init;
+}
+
+/* firmware/efistub.h */
+void efistub_early_setup(efi_handle_t image_handle,
+                         const efi_system_table_t * system_table)
+{
+	if (efistub_is_init())
+		return;
+	_image_handle = image_handle;
+	_system_table = system_table;
+	_image_proto = get_image(image_handle, system_table);
+}
+
+/* firmware/efistub.h */
+efi_handle_t efistub_image_handle(void)
+{
+	return efistub_is_init() ? _image_handle : NULL;
+}
+
+/* firmware/efistub.h */
+const efi_system_table_t * efistub_system_table(void)
+{
+	return efistub_is_init() ? _system_table : NULL;
+}
+
+/* firmware/efistub.h */
+const efi_loaded_image_protocol_t * efistub_image_proto(void)
+{
+	return efistub_is_init() ? _image_proto : NULL;
+}

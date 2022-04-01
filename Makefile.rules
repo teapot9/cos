@@ -1,0 +1,80 @@
+# Default make rules
+
+# Default rule
+obj-dirs := $(addprefix $(BUILD)/, $(filter %/, $(obj-y)))
+obj-files := $(addprefix $(BUILD)/, $(filter-out %/, $(obj-y)))
+all: $(BUILD)/modules.o
+	$(info $(RELAPATH): built $^)
+
+# Rule for errors
+.DEFAULT:
+	$(error No rules for $@ (deps = $^) (pwd = $(shell pwd)))
+
+# Rule for directories
+alldirs := $(addprefix $(BUILD)/, $(wildcard */))
+.PHONY: $(alldirs)
+$(alldirs):
+	$(info $(relapath): descending into $@)
+	$(Q)$(MAKE) -C $(dir $@) SRC_ROOT=$(SRC_ROOT) BUILD_ROOT=$(BUILD_ROOT) $(MAKECMDGOALS)
+
+# Rule for modules.o
+allmods := $(addsuffix modules.o, $(addprefix $(BUILD)/, $(wildcard */)))
+$(BUILD)/%/modules.o: $(BUILD)/%/
+	$(NOOP)
+
+.PHONY: $(BUILD)/modules.o
+$(BUILD)/modules.o: $(obj-files) $(addsuffix modules.o, $(obj-dirs))
+	$(LD) -r -o $@ $^
+
+# Don't build source files
+noop := $(wildcard $(BUILD_ROOT)/.config $(SRC_ROOT)/Makefile.* Makefile $(SRC)/*.c)
+$(noop):
+	$(NOOP)
+
+# Clean rule
+clean-dirs := $(addprefix $(BUILD)/, $(filter %/, $(obj-y) $(obj-) $(clean-y)))
+clean-files := $(addprefix $(BUILD)/, $(filter-out %/, $(obj-y) $(obj-) $(clean-y)))
+.PHONY: clean
+clean: $(clean-dirs)
+	rm -f $(clean-files) $(BUILD)/modules.o
+
+# Generic build rules
+
+$(BUILD)/%.i: $(SRC)/%.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -E -o $@ $^
+
+$(BUILD)/%.i: $(BUILD)/%.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -E -o $@ $^
+
+$(BUILD)/%.s: $(SRC)/%.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -S -o $@ $^
+
+$(BUILD)/%.s: $(BUILD)/%.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -S -o $@ $^
+
+$(BUILD)/%.s: $(BUILD)/%.i
+	$(CC) $(CFLAGS) -S -o $@ $^
+
+$(BUILD)/%.s: $(SRC)/%.S
+	$(CC) $(CFLAGS) $(CPPFLAGS) -E -o $@ $^
+
+$(BUILD)/%.s: $(BUILD)/%.S
+	$(CC) $(CFLAGS) $(CPPFLAGS) -E -o $@ $^
+
+$(BUILD)/%.o: $(SRC)/%.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^
+
+$(BUILD)/%.o: $(BUILD)/%.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^
+
+$(BUILD)/%.o: $(BUILD)/%.i
+	$(CC) $(CFLAGS) -c -o $@ $^
+
+$(BUILD)/%.o: $(SRC)/%.S
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^
+
+$(BUILD)/%.o: $(BUILD)/%.S
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^
+
+$(BUILD)/%.o: $(BUILD)/%.s
+	$(CC) $(CFLAGS) -c -o $@ $^

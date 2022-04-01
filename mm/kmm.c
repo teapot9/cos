@@ -89,6 +89,7 @@ static struct free_memory_info * find_free_mem_block(size_t size)
 	return find_free_mem_list(size, new);
 }
 
+/* public: mm.h */
 void * kmalloc(size_t size)
 {
 	struct free_memory_info * free_mem;
@@ -158,6 +159,7 @@ static void create_entry_block(
 	create_entry_list(ptr, cur);
 }
 
+/* public: mm.h */
 void kfree(const void * ptr)
 {
 	if (ptr == NULL)
@@ -168,8 +170,12 @@ void kfree(const void * ptr)
 	create_entry_block(eptr);
 }
 
+/* public: mm.h */
 void * krealloc(void * oldptr, size_t newsize)
 {
+	if (oldptr == NULL)
+		return kmalloc(newsize);
+
 	struct used_memory_header * oldeptr =
 		(void *) ((uint8_t *) oldptr - sizeof(*oldeptr));
 	void * newptr = kmalloc(newsize);

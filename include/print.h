@@ -43,6 +43,24 @@ size_t printk(const char * fmt, ...);
 size_t vprintk(const char * fmt, va_list ap);
 
 /**
+ * @brief Format a string to a allocated buffer
+ * @param dst Where to store the pointer to the allocated buffer
+ * @param fmt Format to use
+ * @param ... Arguments to use for formatting
+ * @return Number of characters written, excluding NUL
+ */
+size_t asprintf(char ** dst, const char * fmt, ...);
+
+/**
+ * @brief Format a string to a allocated buffer
+ * @param dst Where to store the pointer to the allocated buffer
+ * @param fmt Format to use
+ * @param ap Arguments to use for formatting
+ * @return Number of characters written, excluding NUL
+ */
+size_t vasprintf(char ** dst, const char * fmt, va_list ap);
+
+/**
  * @brief Format a string to a buffer
  * @param dst Buffer to write into
  * @param fmt Format to use

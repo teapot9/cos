@@ -9,10 +9,10 @@
 
 /* EFI base types */
 
-#if defined(CONFIG_IS_X64)
+#if defined(CONFIG_X86_64)
 typedef uint64_t efi_uintn;
 typedef int64_t efi_intn;
-#elif defined(CONFIG_IS_X32)
+#elif defined(CONFIG_X86_32)
 typedef uint32_t efi_uintn;
 typedef int32_t efi_intn;
 #else
@@ -23,10 +23,12 @@ typedef uint8_t efi_bool;
 
 /* EFI status */
 
-#if defined(CONFIG_IS_X64)
-#define EFI_UINTN_HIGH_BIT (1UL << 63)
-#elif defined(CONFIG_IS_X32)
-#define EFI_UINTN_HIGH_BIT (1U << 31)
+#if defined(CONFIG_X86_64)
+# define EFI_UINTN_HIGH_BIT (1UL << 63)
+#elif defined(CONFIG_X86_32)
+# define EFI_UINTN_HIGH_BIT (1U << 31)
+#else
+# error Architecture must be 32 or 64 bits
 #endif
 
 typedef efi_uintn efi_status_t;

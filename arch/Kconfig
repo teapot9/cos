@@ -1,0 +1,54 @@
+menu "Architecture options"
+
+choice
+	prompt "Default assembly syntax"
+	default ASM_DEFAULT_INTEL
+	help
+	  When compiling to assembly, this selects the default syntax.
+
+config ASM_DEFAULT_INTEL
+	bool "Intel"
+
+config ASM_DEFAULT_ATT
+	bool "AT&T"
+
+endchoice
+
+config CMDLINE
+	string "Built-in kernel command-line"
+	default ""
+	help
+	  Set a default kernel cmdline.
+
+config CMDLINE_OVERRIDE
+	bool "Built-in cmdline override normal one"
+	help
+	  Built-in command-line override the one provided by the
+	  firmware / bootloader.
+
+source "arch/$(ARCH)/Kconfig"
+
+choice
+	prompt "Compiler optimization"
+	default CC_OPTIMIZE_O2
+	help
+	  Select compiler optimization options.
+
+config CC_OPTIMIZE_O0
+	bool "-O0"
+
+config CC_OPTIMIZE_O1
+	bool "-O1"
+
+config CC_OPTIMIZE_O2
+	bool "-O2"
+
+config CC_OPTIMIZE_O3
+	bool "-O3"
+
+config CC_OPTIMIZE_OS
+	bool "-Os"
+
+endchoice
+
+endmenu

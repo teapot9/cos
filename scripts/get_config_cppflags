@@ -11,8 +11,9 @@ shquote() {
 		}' "$@"
 }
 
-[ "${1:-}" = -e ] || exec env -i -- "$0" -e
-. "$(pwd)"/.config
+[ "${1:-}" = -e ] || exec env -i -- "$0" -e "$@"
+shift
+. "$1"/.config
 set | grep '^CONFIG_' | while read -r line; do
 	printf -- "-D%s " "${line}"
 done

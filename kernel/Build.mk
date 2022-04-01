@@ -1,2 +1,0 @@
-OBJECTS = \
-	kbreak.o

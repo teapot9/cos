@@ -1,0 +1,5 @@
+menu "Firmware drivers"
+
+source "dev/firmware/efistub/Kconfig"
+
+endmenu

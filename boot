@@ -1,5 +1,6 @@
 #!/bin/bash
 # alias boot='./boot efi & ./boot egdb ; kill -0 $! 1>/dev/null 2>&1 && kill $!'
+# boot() { ./boot efi & ./boot egdb "$@" ; kill -0 $! 1>/dev/null 2>&1 && kill $! ; }
 set -x
 
 mode="${1:-all}"
@@ -8,11 +9,12 @@ mode="${1:-all}"
 KERNEL="${KERNEL:-cos}"
 BUILD="${BUILD:-.}"
 DEBUG_LOG="${DEBUG_LOG:-debug.log}"
+BOOT=arch/x86/boot
 
 if [ "${mode}" = efi ]; then
 	exec 3>&1 1>&2
 	mkdir -pv "${BUILD}"/test/EFI/BOOT
-	cp -v "${KERNEL}.efi" "${BUILD}"/test/EFI/BOOT/BOOTX64.EFI
+	cp -v "${BOOT}/${KERNEL}.efi" "${BUILD}"/test/EFI/BOOT/BOOTX64.EFI
 	chmod +x "${BUILD}"/test/EFI/BOOT/BOOTX64.EFI
 	# tmp efi shell:
 	#cp -v /usr/share/edk2-ovmf/Shell.efi "${BUILD}"/test/EFI/BOOT/BOOTX64.EFI
@@ -33,7 +35,7 @@ if [ "${mode}" = efi ]; then
 		-global isa-debugcon.iobase=0x402 \
 		-serial file:debug.log \
 		-s \
-		"$@" &
+		"$@"
 	trap "kill $!" TERM
 	trap "kill $!" INT
 	wait
@@ -52,7 +54,8 @@ elif [ "${mode}" = egdb ]; then
 	for arg in "$@"; do [ -n "${arg}" ] && args+=( -ex "$arg" ); done
 	gdb \
 		-ex 'source uefi.py' \
-		-ex 'efi'
+		-ex 'efi' \
+		"$@"
 elif [ "${mode}" = all ]; then
 	rm debug.log
 	"$0" efi &

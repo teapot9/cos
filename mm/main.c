@@ -5,15 +5,14 @@
 
 #include <stdbool.h>
 
-bool mm_is_init = false;
-
+/* public: mm.h */
 void mm_init_early(void)
 {
 	if (kmm_early_init())
 		return;
-	mm_is_init = true;
 }
 
+/* public: mm.h */
 void mm_init(struct memmap map) {
 	pmm_init(map);
 	vmm_init(map);

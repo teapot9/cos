@@ -1,0 +1,96 @@
+SECTIONS
+{
+	. = 4096;
+	ImageBase = .;
+	.hash : { *(.hash) }
+	.gnu.hash : { *(.gnu.hash) }
+	. = ALIGN(4096);
+	.eh_frame : { *(.eh_frame) }
+	. = ALIGN(4096);
+	.text :
+	{
+		_text = .;
+		. = ALIGN(8);
+		*(.multiboot)
+		. = ALIGN(8);
+		*(.text)
+		*(.text.*)
+		*(.gnu.linkonce.t.*)
+		. = ALIGN(16);
+	}
+	_etext = .;
+	_text_size = . - _text;
+	. = ALIGN(4096);
+	.reloc :
+	{
+		LONG(_data);
+		LONG(10);
+		SHORT(0);
+		*(.reloc)
+	}
+	. = ALIGN(4096);
+	.rdata :
+	{
+		_data = .;
+		*(.got.plt)
+		*(.got)
+		*(.rodata*)
+		*(.srodata)
+		*(.gnu.linkonce.r.*)
+		__initcalltest = .;
+		KEEP(*(.initcall.test))
+		__initcall_early = .;
+		KEEP(*(.initcall.early))
+		__initcall_core = .;
+		KEEP(*(.initcall.core))
+		__initcall_device = .;
+		KEEP(*(.initcall.device))
+		__initcall_misc = .;
+		KEEP(*(.initcall.misc))
+		__initcall_end = .;
+	}
+	. = ALIGN(4096);
+	.data :
+	{
+		*(.data*)
+		*(.sdata*)
+		*(.gnu.linkonce.d.*)
+	}
+	. = ALIGN(4096);
+	.bss :
+	{
+		*(.sbss)
+		*(.scommon)
+		*(.dynbss)
+		*(.bss)
+		*(.gnu.linkonce.b.*)
+		*(COMMON)
+	}
+	. = ALIGN(4096);
+	.note.gnu.build-id : { *(.note.gnu.build-id) }
+
+	_edata = .;
+	_data_size = . - _etext;
+	. = ALIGN(4096);
+	.dynamic  : { *(.dynamic) }
+	. = ALIGN(4096);
+	.rel :
+	{
+		*(.rel.data)
+		*(.rel.data.*)
+		*(.rel.got)
+		*(.rel.stab)
+	}
+	. = ALIGN(4096);
+	.dynsym   : { *(.dynsym) }
+	. = ALIGN(4096);
+	.dynstr   : { *(.dynstr) }
+	. = ALIGN(4096);
+	/DISCARD/ :
+	{
+		*(.rel.reloc)
+		*(.eh_frame)
+		*(.note*)
+		*(.comment*)
+	}
+}

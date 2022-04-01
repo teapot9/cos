@@ -1,32 +1,24 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-struct driver;
+struct device;
 
 // Use a struct kmsg {int lvl; int categ; char * msg};
 
 // Update console at driver initialization
 
-/**
- * @brief Add a console to the list of consoles to write to
- * @param id Console identifier
- * @param update Function to update the console
- * @param reset Function to reset the console
- * @return 0 on success, non-zero on failure
- */
-int console_add(void * id, void (* update)(void * id),
-                void (* reset)(void * id));
+int console_reg(
+	const struct device * dev,
+	void (*update)(const struct device *),
+	void (*clear)(const struct device *),
+	int (*enable)(const struct device *),
+	void (*disable)(const struct device *)
+);
 
-/**
- * @brief Remove a console from the list of consoles to write to
- * @param id Console identifier
- * @return 0 on success, non-zero on failure
- */
-int console_remove(void * id);
-
-/**
- * @brief Update consoles text
- */
 void console_update(void);
+
+void console_clear(void);
+
+void console_reset(void);
 
 #endif // CONSOLE_H

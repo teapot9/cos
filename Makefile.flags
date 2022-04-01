@@ -1,0 +1,64 @@
+# Environment variables
+
+export COS_VERSION := 0
+export COS_KERNEL := cos
+export ARCH ?= $(shell uname -m)
+export CC ?= cc
+export LD ?= ld
+export OBJCOPY ?= objcopy
+export STRIP ?= strip
+export AR ?= ar
+export RANLIB ?= ranlib
+
+include $(BUILD_ROOT)/.config
+
+RELAPATH := $(shell realpath --relative-to=$(SRC_ROOT) .)
+SRC := $(abspath $(SRC_ROOT)/$(RELAPATH))
+#SRC := $(shell realpath --relative-to=. $(SRC_ROOT)/$(RELAPATH))
+BUILD := $(abspath $(BUILD_ROOT)/$(RELAPATH))
+#BUILD := $(shell realpath --relative-to=. $(BUILD_ROOT)/$(RELAPATH))
+$(info SRC = $(SRC))
+$(info BUILD = $(BUILD))
+
+CFLAGS += -ffreestanding -fpic -fPIC -fpie -fno-stack-protector
+CFLAGS += -mno-red-zone -mabi=sysv
+CFLAGS += -Wall -Wextra -Wpedantic -std=c18
+CFLAGS += -Wtype-limits -Wstrict-prototypes -Wtype-limits
+CFLAGS += -I$(SRC_ROOT)/include -I$(SRC_ROOT)/arch/$(ARCH)/include
+CFLAGS += -g
+LDFLAGS += -znodefaultlib -nostdlib -znocombreloc -Bsymbolic
+LDFLAGS += -unresolved-symbols=report-all
+LDFLAGS += --warn-common --warn-alternate-em
+LDFLAGS += -shared -dT $(SRC_ROOT)/arch/$(ARCH)/sections.lds
+
+ifeq ($(CC), gcc)
+	CFLAGS += -mgeneral-regs-only
+endif
+
+ifeq ($(CONFIG_X86_64), y)
+	CFLAGS += -m64
+endif
+ifeq ($(CONFIG_X86_32), y)
+	CFLAGS += -m32
+endif
+
+ifeq ($(CONFIG_OPTIMIZE_O0), y)
+	CFLAGS += -O0
+endif
+ifeq ($(CONFIG_OPTIMIZE_O1), y)
+	CFLAGS += -O1
+endif
+ifeq ($(CONFIG_OPTIMIZE_O2), y)
+	CFLAGS += -O2
+endif
+ifeq ($(CONFIG_OPTIMIZE_O3), y)
+	CFLAGS += -O3
+endif
+
+ifeq ($(CONFIG_BOOT_EFISTUB), y)
+	LDFLAGS += -entry=entry_efi
+endif
+
+BIN2C = $(SRC_ROOT)/scripts/bin2c
+
+CPPFLAGS += $(shell $(SRC_ROOT)/scripts/get_config_cppflags $(SRC_ROOT))

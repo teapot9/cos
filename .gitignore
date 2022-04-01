@@ -1,6 +1,8 @@
 *.d
 *.o
 
+/include/config
+/include/generated
 /tags
 /Build
 /cos.*

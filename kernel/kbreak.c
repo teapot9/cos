@@ -2,10 +2,9 @@
 
 #include <stdbool.h>
 
+/* public: debug.h */
 void kbreak(void)
 {
 	bool cont = false;
-
-	while (!cont)
-		cont = false;
+	while (!cont);
 }

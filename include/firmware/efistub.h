@@ -3,76 +3,40 @@
 
 #include <stdbool.h>
 
-#include <driver.h>
 #include <firmware/efiapi/system_table.h>
+#include <firmware/efiapi/loaded_image.h>
 #include <mm.h>
 #include <string.h>
 
-static inline bool efi_guid_t_eq(efi_guid_t a, efi_guid_t b)
-{
-	return a.data1 == b.data1 && a.data2 == b.data2 && a.data3 == b.data3
-		&& memcmp(a.data4, b.data4, sizeof(a.data4)) == 0;
-}
+/**
+ * @brief Early setup, called with firmware parameters
+ */
+void efistub_early_setup(efi_handle_t image_handle,
+                         const efi_system_table_t * system_table);
 
 /**
- * @var Boolean to check if the driver is initialized
+ * @brief Kernel EFI image handle
  */
-extern bool efistub_is_init;
+efi_handle_t efistub_image_handle(void);
 
 /**
- * @var Boolean to check if the console is initialized
+ * @brief EFI system table pointer
  */
-extern bool efistub_console_is_init;
-
-extern bool efistub_boot_services;
+const efi_system_table_t * efistub_system_table(void);
 
 /**
- * @var EFI image handle pointer
+ * @brief Get EFI loaded image protocol
  */
-extern efi_handle_t efistub_image_handle;
+const efi_loaded_image_protocol_t * efistub_image_proto(void);
 
 /**
- * @var EFI system table pointer
+ * @brief Get memory map and exit boot services
  */
-extern efi_system_table_t * efistub_system_table;
-
-/**
- * @brief Driver entry point
- */
-void efistub_init(void);
-
-/**
- * @brief Initialize the EFI console
- * @param driver EFI driver structure
- * @return 0 on success, non-zero on failure
- */
-int efistub_console_init(struct driver * driver);
-
-/**
- * @brief Disable the EFI console
- * @return 0 on success, error code if error
- */
-int efistub_console_disable(void);
-
-/**
- * @brief Clear the EFI console
- * @return 0 on success, error code if error
- */
-int efistub_console_clear(void);
-
-/**
- * @brief Reset the EFI console
- * @param id Reserved
- */
-void efistub_console_reset(__attribute__((unused)) void * id);
-
-/**
- * @brief Update the EFI console
- * @param id Reserved
- */
-void efistub_console_update(__attribute__((unused)) void * id);
-
-/// TODO: doc
 int efistub_memmap_and_exit(struct memmap * map);
+
+/**
+ * @brief Get kernel cmdline
+ */
+char * efistub_cmdline(void);
 
 #endif // FIRMWARE_EFI_H

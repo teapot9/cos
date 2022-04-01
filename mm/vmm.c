@@ -7,56 +7,6 @@
 #include "pmm.h"
 #include <print.h>
 
-#if 0
-struct page get_page(const union cr3 cr3, void * ptr)
-{
-	union lin_addr * addr = (union lin_addr *) &ptr;
-
-	unsigned long int pml4_int;
-	union pml4e * pml4;
-	if (read_cr4() & (1 << 17))
-		pml4_int = (cr3.pcide.pml4 << 12);
-	else
-		pml4_int = (cr3.normal.pml4 << 12);
-	//pml4 |= (ptr & (0x1FF << 39)) >> (39 - 3);
-	pml4_int |= (addr->pt.pml4 << 3);
-	pml4 = (void *) pml4_int;
-
-	//union pdpte * pdpte = pml4->pml4_pdpt.pdpt << 12
-	//	| (ptr & (0x1FF << 30)) >> (30 - 3);
-	unsigned long int pdpte_int = pml4->pdpt.pdpt << 12
-		| (addr->pt.pdpt << 3);
-	union pdpte * pdpte = (void *) pdpte_int;
-
-	if (pdpte->page.page_size)
-		return (struct page) {
-			.type = PAGE_TYPE_PDPT,
-			.page.pdpt = &pdpte->page,
-		};
-	//union pde * pde = pdpte->pdpte_pd.pd << 12
-	//	| (ptr & (0x1FF << 21)) >> (21 - 3);
-	unsigned long int pde_int = pdpte->pd.pd << 12
-		| (addr->pt.pd << 3);
-	union pde * pde = (void *) pde_int;
-
-	if (pde->page.page_size)
-		return (struct page) {
-			.type = PAGE_TYPE_PD,
-			.page.pd = &pde->page,
-		};
-	//union pte * pte = pde->pt.pt << 12
-	//	| (ptr & (0x1FF << 12)) >> (12 - 3);
-	unsigned long int pte_int = pde->pt.pt << 12
-		| (addr->pt.pt << 3);
-	union pte * pte = (void *) pte_int;
-
-	return (struct page) {
-		.type = PAGE_TYPE_PT,
-		.page.pt = &pte->page,
-	};
-}
-#endif
-
 void * get_paddr(union pml4e * pml4, void * ptr)
 {
 	union lin_addr * addr = (union lin_addr *) &ptr;
@@ -198,51 +148,6 @@ static bool is_free_page_pt(union pml4e * pml4, void * addr, size_t n)
 	}
 }
 
-#if 0
-static bool is_free_page_pt(struct pml4e * pml4, void * addr, size_t n)
-{
-	if (!n)
-		return true;
-
-	union lin_addr * a = &addr;
-	union pml4e * pml4e = pml4[a->pt.pml4];
-	if (!pml4e->pml4_absent.present)
-		return is_free_page_pt(
-			pml4, (uint8_t *) addr + PAGE_SIZE_PML4,
-			n - PAGE_SIZE_PML4 / PAGE_SIZE_PT
-		);
-
-	union pdpte * pdpt = pml4e->pdpt.pdpt << 64 - 40;
-	union pdpte * pdpte = pdpt[a->pt.pdpt];
-	if (!pdpte->pdpt_absent.present)
-		return is_free_page_pt(
-			pml4, (uint8_t *) addr + PAGE_SIZE_PDPT,
-			n - PAGE_SIZE_PDPT / PAGE_SIZE_PT
-		);
-	if (pdpte->page.page_size)
-		return false;
-
-	union pde * pd = pdpte->pd.pd << 64 - 40;
-	union pde * pde = pd[a->pt.pd];
-	if (!pde->pd_absent.present)
-		return is_free_page_pt(
-			pml4, (uint8_t *) addr + PAGE_SIZE_PD,
-			n - PAGE_SIZE_PD / PAGE_SIZE_PT
-		);
-	if (pde->page.page_size)
-		return false;
-
-	union pte * pt = pde->pt.pt << 64 - 40;
-	union pte * pte = pt[a->pt.pt];
-	if (!pte->pt_absent.present)
-		return is_free_page_pt(
-			pml4, (uint8_t *) addr + PAGE_SIZE_PT,
-			n - PAGE_SIZE_PT / PAGE_SIZE_PT
-		);
-	return false;
-}
-#endif
-
 static void * find_free_page_pt(union pml4e * pml4, size_t n)
 {
 	void * addr = 0;
@@ -255,6 +160,7 @@ static void * find_free_page_pt(union pml4e * pml4, size_t n)
 
 static int map_page_pt(union pml4e * pml4, void * paddr, void * vaddr)
 {
+	//pr_debug("map_page_pt(paddr=%p, vaddr=%p)\n", paddr, vaddr);
 	struct page pg = get_page(pml4, vaddr);
 
 	switch (pg.type) {
@@ -371,6 +277,7 @@ static int map_page_pt(union pml4e * pml4, void * paddr, void * vaddr)
 static int map_pages_pt(union pml4e * pml4, void * paddr, void * vaddr,
                         size_t size)
 {
+	pr_debug("map_pages_pt(paddr=%p, vaddr=%p, size=%zu)\n", paddr, vaddr, size);
 	int ret;
 	size_t nb_pages = size / PAGE_SIZE_PT;
 	if (size % PAGE_SIZE_PT)
@@ -570,7 +477,7 @@ static void print_vmmap_pdpt(union pdpte * pdpt, uint8_t * base)
 	}
 }
 
-void print_vmmap_pml4(union pml4e * pml4, uint8_t * base)
+static void print_vmmap_pml4(union pml4e * pml4, uint8_t * base)
 {
 	for (size_t i = 0; i < 512; i++, base += 512*1024*1024*1024) {
 		if (!pml4[i].absent.present)
@@ -593,6 +500,8 @@ void print_vmmap_pml4(union pml4e * pml4, uint8_t * base)
 }
 
 static union pml4e * pml4 = NULL;
+
+#include <debug.h>
 
 void vmm_init(struct memmap map)
 {
@@ -617,6 +526,8 @@ void vmm_init(struct memmap map)
 	map_page_pt(pml4, pml4, pml4);
 
 	for (size_t i = 0; i < map.desc_count; i++) {
+		if (map.desc[i].phy_start <= 0xc0000000 && map.desc[i].phy_start + map.desc[i].size >= 0xc0000000)
+			kbreak();
 		switch (map.desc[i].type) {
 		case MEMORY_TYPE_KERNEL_CODE:
 		case MEMORY_TYPE_KERNEL_DATA:
@@ -624,6 +535,7 @@ void vmm_init(struct memmap map)
 		case MEMORY_TYPE_ACPI_RECLAIMABLE:
 		case MEMORY_TYPE_ACPI_NVS:
 		case MEMORY_TYPE_HARDWARE:
+		case MEMORY_TYPE_RESERVED: // debug
 			map_pages_pt(pml4, map.desc[i].phy_start,
 				     (uint8_t *) map.desc[i].phy_start
 				     + (size_t) map.desc[i].virt_start,
@@ -638,15 +550,16 @@ void vmm_init(struct memmap map)
 		//);
 	}
 
-	disable_paging();
 	uint64_t raw_cr3 = read_cr3();
 	union cr3 * cr3 = (void *) &raw_cr3;
 	//print_vmmap_pml4((void *) (cr3->normal.pml4 << 12), 0);
 	//print_vmmap_pml4(pml4, 0);
 	cr3->normal.pml4 = (unsigned long int) pml4 >> 12;
-	write_cr3(raw_cr3);
+	asm volatile(intel("mov cr3, rax\n") : : "a" (raw_cr3));
+	//write_cr3(raw_cr3);
 
 	//union pml4e * pml4 = pzalloc(512 * sizeof(*pml4), 4096);
-	enable_paging();
+	//disable_paging();
+	//enable_paging();
 }
 

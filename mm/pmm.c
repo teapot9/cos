@@ -141,6 +141,19 @@ void * pmalloc(size_t size, size_t align)
 	return NULL;
 }
 
+void * pzalloc(size_t size, size_t align)
+{
+	void * alloc = pmalloc(size, align);
+	if (alloc == NULL)
+		return alloc;
+
+	uint8_t * mem = alloc;
+	for (size_t i = 0; i < size; i++)
+		mem[i] = 0;
+
+	return alloc;
+}
+
 void pfree(void * ptr, size_t size)
 {
 	free_block(ptr, size);
