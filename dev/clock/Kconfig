@@ -1,0 +1,5 @@
+config CLOCK_PIT
+	bool "PIT (Programmable Interval Timer)"
+	default y
+	help
+	  Basic x86 timer chip.

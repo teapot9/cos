@@ -25,6 +25,7 @@ static bool is_class(const char * class)
 		|| _is_class("virtual")
 		|| _is_class("tty")
 		|| _is_class("cpu")
+		|| _is_class("clock")
 	)
 		return true;
 	return false;

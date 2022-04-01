@@ -1,5 +1,6 @@
 include $(SRC_ROOT)/Makefile.flags
 
-obj-y = panic.o device.o init.o cmdline.o halt.o task.o sched/
+obj-y = clock.o
+obj-$(CONFIG_CLOCK_PIT) += pit.o
 
 include $(SRC_ROOT)/Makefile.rules

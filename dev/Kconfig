@@ -3,5 +3,6 @@ menu "Device drivers"
 source "dev/firmware/Kconfig"
 source "dev/video/Kconfig"
 source "dev/tty/Kconfig"
+source "dev/clock/Kconfig"
 
 endmenu

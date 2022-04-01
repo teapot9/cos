@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <stdatomic.h>
 
+#include <irq.h>
 #include <isr.h>
 #include <device.h>
 #include <cpu.h>
@@ -123,18 +124,20 @@ static int new(size_t msec, void (*callback)(void), size_t nbcall)
 	return 0;
 }
 
-static void del(void (*callback)(void))
+static int del(void (*callback)(void))
 {
 	for (struct timer_list * t = timers; t != NULL; t = t->next) {
 		if (t->callback == callback)
 			remove_timer(t);
 	}
+	return 0;
 }
 
-int reg(const struct device * dev)
+static int reg(const struct device * dev)
 {
 	int err;
 
+	set_reload(PIT_DEFAULT_DIV);
 	err = clock_reg(NULL, dev, new, del);
 	if (err) {
 		pr_err("failed to create clock device, errno = %d\n", err);
@@ -146,11 +149,12 @@ int reg(const struct device * dev)
 		pr_err("failed to register ISR handler, errno = %d\n", err);
 		return err;
 	}
+	irq_unmask(0); // maybe in isr_reg (detect if irq)
 
 	return 0;
 }
 
-void unreg(UNUSED const struct device * dev)
+static void unreg(UNUSED const struct device * dev)
 {
 }
 
@@ -165,4 +169,7 @@ static int pit_init(void)
 		pr_crit("failed to create pit device, errno = %d\n", err);
 		return err;
 	}
+
+	return 0;
 }
+module_init(pit_init, early);

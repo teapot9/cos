@@ -64,8 +64,8 @@ noreturn void entry_efi(efi_handle_t image_handle,
 
 #ifdef CONFIG_DEBUG
 	debug_base_addr(image_handle, system_table);
-	//bool tmp = false;
-	//while (!tmp);
+	bool tmp = false;
+	while (!tmp);
 #endif
 
 	efistub_init(image_handle, system_table);
@@ -110,5 +110,6 @@ noreturn void entry_efi(efi_handle_t image_handle,
 		panic("Failed CPU0 initialization, errno = %d", ret);
 	pr_info("Early init: CPU0\n", 0);
 
-	cpu_start(0, 0);
+	sched_enable();
+	cpu_start();
 }

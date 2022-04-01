@@ -9,6 +9,8 @@ import time
 TIMEOUT = 10
 EFI = 'cos.so'
 DEBUG = 'cos.so'
+#EFI = 'cos.elf'
+#DEBUG = 'cos.elf'
 
 PLIST_FUN = '''\
 define plist

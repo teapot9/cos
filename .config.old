@@ -52,6 +52,7 @@ CONFIG_FONT=y
 CONFIG_FONT_BUILTIN_TERMINUS_8X16=y
 CONFIG_FONT_DEFAULT_PATH="font_ter_v16n.psf"
 CONFIG_FONT_PSF=y
+# CONFIG_UBSAN is not set
 # end of Libraries
 
 #

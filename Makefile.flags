@@ -22,6 +22,7 @@ $(info BUILD = $(BUILD))
 #ARCHDSRC := $(shell realpath --relative-to=. $(SRC_ROOT)/arch/$(ARCH)/$(RELAPATH))
 #STDSRC := $(shell realpath --relative-to=. $(SRC_ROOT)/$(RELAPATH:arch/$(ARCH:x86_64=x86)/%=%))
 
+CFLAGS += -msse3
 CFLAGS += -ffreestanding -fpic -fPIC -fpie -fstack-protector-all #-fno-stack-protector
 CFLAGS += -mno-red-zone -mabi=sysv
 CFLAGS += -Wall -Wextra -Wpedantic -std=c18

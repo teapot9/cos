@@ -6,21 +6,25 @@
 #include <stdbool.h>
 
 struct device;
+struct cpu;
 struct thread;
+struct interrupt_frame;
 
 void disable_nmi(void);
 void enable_nmi(void);
 void disable_interrupts(void);
 void restore_interrupts(void);
+noreturn void hang(void);
 
 int cpu_reg(const struct device ** dev);
-noreturn void cpu_start(size_t pid, size_t tid);
+noreturn void cpu_start(void);
+void cpu_set_state(struct cpu * cpu, struct interrupt_frame * state);
 
-const struct device * cpu_current(void);
-struct process * cpu_proc(const struct device * dev);
-struct thread * cpu_thread(const struct device * dev);
-void cpu_set_kstack(const struct device * cpu, void * kstack);
-void cpu_update_task(const struct device * cpu,
-                     struct process * p, struct thread * t);
+struct cpu * cpu_current(void);
+struct thread * cpu_running(struct cpu * cpu);
+void cpu_load_state(struct cpu * cpu, struct interrupt_frame * state);
+void cpu_save_state(struct cpu * cpu, struct interrupt_frame * state);
+void cpu_load_kstack(struct cpu * cpu, void * kstack);
+void cpu_set_task(struct cpu * cpu, struct thread * t);
 
 #endif // CPU_H

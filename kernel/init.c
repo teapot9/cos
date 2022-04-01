@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+#include <lock.h>
 #include <debug.h>
 #include <print.h>
 #include <module.h>
@@ -9,6 +10,7 @@
 #include <panic.h>
 #include <cpu.h>
 #include <sched.h>
+#include <task.h>
 
 extern initcall_entry_t __initcall_early[];
 extern initcall_entry_t __initcall_core[];
@@ -86,12 +88,48 @@ void kernel_initcalls(void)
 		kernel_initcall_level(i);
 }
 
+static void t1test(void)
+{
+	while (1) {
+		pr_debug("1", 0);
+		asm volatile (intel("hlt\n"));
+	}
+}
+
+static void t2test(void)
+{
+	while (1) {
+		pr_debug("2", 0);
+		asm volatile (intel("hlt\n"));
+	}
+}
+
+static void spintest(void)
+{
+	static struct semaphore sem = mutex_init();
+	static int v = 0;
+	mutex_lock(&sem);
+	v++;
+	for (int i = 0; i < 1000; i++) {
+		pr_debug("%d ", v);
+	}
+	mutex_unlock(&sem);
+}
+
+static void dotest(void)
+{
+	kthread_new(spintest);
+	kthread_new(spintest);
+}
+
 /* public: init.h */
 noreturn void kernel_main(void)
 {
 	pr_info("Kernel main thread started\n", 0);
 	setup();
-	kbreak();
+	//kbreak();
+	dotest();
+	while(1) asm volatile (intel("hlt\n"));
 	halt();
 	panic("Kernel should never exit main function\n");
 }

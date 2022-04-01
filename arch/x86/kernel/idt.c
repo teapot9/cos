@@ -8,7 +8,7 @@
 #include <asm/asm.h>
 #include <string.h>
 
-#define IDT_SIZE 48
+#define IDT_SIZE ISR_MAX + 1
 
 static struct idt_desc idt[IDT_SIZE];
 
@@ -47,6 +47,7 @@ void isr44(void);
 void isr45(void);
 void isr46(void);
 void isr47(void);
+void isr48(void);
 
 #if 0
 static inline uint16_t read_cs(void)
@@ -133,6 +134,7 @@ static int idt_create(void)
 	set_idt(45, (void *) isr45);
 	set_idt(46, (void *) isr46);
 	set_idt(47, (void *) isr47);
+	set_idt(48, (void *) isr48);
 
 	is_init = true;
 	return 0;

@@ -14,7 +14,8 @@ struct PACKED cpu_interrupt_frame {
 };
 
 struct isr {
-	void (* callback)(struct interrupt_frame * frame);
+	unsigned isr;
+	void (* callback)(void);
 	struct isr * next;
 };
 

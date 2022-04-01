@@ -2,6 +2,7 @@
 #include <task.h>
 #include "task.h"
 
+#include <lock.h>
 #include <print.h>
 #include <cpu.h>
 #include <panic.h>
@@ -10,6 +11,7 @@
 #include <gdt.h>
 #include <errno.h>
 #include <mm/helper.h>
+#include <sched.h>
 
 #define kstack_aligned(x) ((uint8_t *) aligned(x, KSTACK_ALIGN) + KSTACK_SIZE)
 
@@ -57,6 +59,7 @@ static bool is_tid_available(struct process * p, tid_t tid)
 	while (t != NULL) {
 		if (t->thread.tid == tid)
 			return false;
+		t = t->next;
 	}
 	return true;
 }
@@ -69,28 +72,27 @@ static tid_t new_tid(struct process * p)
 	return cur;
 }
 
-static inline void save_state(struct thread * t, struct interrupt_frame * state)
+noreturn static void kthread_wrapper(void (*start)(void))
 {
-	pr_debug("Saving [%zu:%zu] state\n", t->parent->pid, t->tid);
-	t->task_state = *state;
+	start();
+	thread_kill(cpu_running(cpu_current()));
+	sched_yield();
+	hang();
 }
 
-static inline void load_state(struct thread * t, struct interrupt_frame * state)
-{
-	pr_debug("Saving [%zu:%zu] state\n", t->parent->pid, t->tid);
-	*state = t->task_state;
-}
-
-int thread_init(
+static int thread_init(
 	struct thread * thread, struct process * parent, void (* start)(void)
 )
 {
 	if (thread == NULL || parent == NULL || start == NULL)
 		return -EINVAL;
 
+	thread->lock = mutex_init();
 	thread->parent = parent;
 	thread->tid = new_tid(parent);
 	thread->state = TASK_READY;
+	thread->running = NULL;
+	thread->semaphores = NULL;
 
 	void * stack;
 	if (is_kernel_process(parent)) {
@@ -121,7 +123,7 @@ int thread_init(
 	return 0;
 }
 
-int process_init(
+static int process_init(
 	pid_t pid, struct process * parent
 )
 {
@@ -189,6 +191,24 @@ int thread_new(
 }
 
 /* public: task.h */
+int kthread_new(void (*start)(void))
+{
+	if (!is_used(0))
+		return -EAGAIN;
+	tid_t tid = thread_new(&processes[0], start);
+
+	struct thread * t = thread_get(&processes[0], tid);
+	if (t == NULL)
+		panic("cannot find newly created thread [0:%zu]", tid);
+	mutex_lock(&t->lock);
+	t->task_state.ip = (uword_t) kthread_wrapper;
+	t->task_state.di = (uword_t) start;
+	mutex_unlock(&t->lock);
+
+	return tid;
+}
+
+/* public: task.h */
 int process_new(struct process * parent, void (* start)(void))
 {
 	int err;
@@ -209,6 +229,28 @@ int process_new(struct process * parent, void (* start)(void))
 		return -EINVAL;
 
 	return proc->pid;
+}
+
+/* public: task.h */
+void thread_delete(struct thread * t)
+{
+	struct tlist ** cur = &t->parent->threads;
+	while (*cur != NULL && (*cur)->thread.tid != t->tid)
+		cur = &(*cur)->next;
+	if (*cur) {
+		struct tlist * tmp = *cur;
+		*cur = (*cur)->next;
+		kfree(tmp);
+	}
+}
+
+/* public: task.h */
+void thread_kill(struct thread * t)
+{
+	mutex_lock(&t->lock);
+	t->state = TASK_TERMINATED;
+	semaphore_unlock_all(t->semaphores);
+	mutex_unlock(&t->lock);
 }
 
 /* public: task.h */
@@ -233,32 +275,58 @@ void * thread_kstack_ptr(struct thread * thread)
 }
 
 /* public: task.h */
-void task_switch(struct process * new_proc, struct thread * new_thread,
-                 struct interrupt_frame * state)
+void task_switch(struct cpu * cpu, struct thread * new)
 {
-	const struct device * cpu = cpu_current();
-	struct process * old_proc = cpu_proc(cpu);
-	struct thread * old_thread = cpu_thread(cpu);
+	struct thread * old = cpu_running(cpu);
+	if (new != NULL)
+		mutex_lock(&new->lock);
+	if (old != NULL && old != new)
+		mutex_lock(&old->lock);
 
-	if (old_proc != NULL && old_thread != NULL) {
-		save_state(old_thread, state);
-		if (old_thread->state == TASK_RUNNING)
-			panic("Switching from still running task\n");
+	if (old != NULL) {
+		if (old->state == TASK_RUNNING)
+			panic("currnt task still running");
+		cpu_save_state(cpu, &old->task_state);
 	}
 
-	if (new_proc == NULL || new_thread == NULL
-	    || new_thread->state != TASK_READY)
+	if (new == NULL || new->state != TASK_READY)
 		panic("no task to switch from [%zu:%zu]",
-		      old_proc->pid, old_thread->tid);
+		      old->parent->pid, old->tid);
 
-	cpu_update_task(cpu, new_proc, new_thread);
-	if (old_proc == NULL
-	    || old_proc->pid != new_proc->pid
-	    || old_thread->tid != new_thread->tid) {
-		if (old_proc == NULL || old_proc->pid != new_proc->pid)
-			write_cr3(new_proc->cr3);
-		load_state(new_thread, state);
-		cpu_set_kstack(cpu, thread_kstack_ptr(new_thread));
-		new_thread->state = TASK_RUNNING;
+	if (old == NULL
+	    || old->parent->pid != new->parent->pid
+	    || old->tid != new->tid) {
+		if (old == NULL || old->parent->pid != new->parent->pid)
+			write_cr3(new->parent->cr3);
+		cpu_set_task(cpu, new);
+		cpu_load_state(cpu, &new->task_state);
+		cpu_load_kstack(cpu, thread_kstack_ptr(new));
 	}
+	new->state = TASK_RUNNING;
+
+	if (new != NULL)
+		mutex_unlock(&new->lock);
+	if (old != NULL && old != new)
+		mutex_unlock(&old->lock);
+}
+
+/* public: task.h */
+void task_set_state(struct thread * t, enum tstate state)
+{
+	mutex_lock(&t->lock);
+	if (t->state != TASK_TERMINATED)
+		t->state = state;
+	mutex_unlock(&t->lock);
+}
+
+/* public: task.h */
+enum tstate task_get_state(struct thread * t)
+{
+	return t->state;
+}
+
+/* public: task.h */
+struct semaphore_list ** task_semaphores(struct thread * t)
+{
+	return &t->semaphores;
 }

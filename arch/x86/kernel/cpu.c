@@ -19,6 +19,18 @@
 
 #define CPU_ALIGN 16
 
+static int interrupt_state = 0;
+
+static inline void _disable_interrupts(void)
+{
+	asm volatile (intel("cli\n"));
+}
+
+static inline void _enable_interrupts(void)
+{
+	asm volatile (intel("sti\n"));
+}
+
 static int dev_reg(const struct device * dev)
 {
 	//write_msr(MSR_FS_BASE, (uint64_t) NULL);
@@ -33,6 +45,7 @@ static void dev_unreg(const struct device * dev)
 	kfree(dev->driver_data);
 }
 
+#if 0
 static struct cpu * get_cpu(const struct device * dev)
 {
 	if (dev != NULL
@@ -41,16 +54,45 @@ static struct cpu * get_cpu(const struct device * dev)
 		return dev->driver_data;
 	return NULL;
 }
-
-#if 0
-static bool is_current_cpu(const struct cpu * cpu)
-{
-	if (cpu == NULL)
-		return false;
-	struct gdtr gdtr = sgdt();
-	return gdtr.offset == &cpu->gdt;
-}
 #endif
+
+/* public: cpu.h */
+void disable_nmi(void)
+{
+	outb(0x70, inb(0x70) | 0x80);
+	inb(0x71);
+}
+
+/* public: cpu.h */
+void enable_nmi(void)
+{
+	outb(0x70, inb(0x70) & 0x7F);
+	inb(0x71);
+}
+
+/* public: cpu.h */
+void disable_interrupts(void)
+{
+	interrupt_state++;
+	_disable_interrupts();
+}
+
+/* public: cpu.h */
+void restore_interrupts(void)
+{
+	interrupt_state--;
+	if (interrupt_state < 0)
+		interrupt_state = 0;
+	if (!interrupt_state)
+		_enable_interrupts();
+}
+
+/* public: cpu.h */
+noreturn void hang(void)
+{
+	while (1)
+		asm volatile (intel("hlt\n"));
+}
 
 /* public: cpu.h */
 int cpu_reg(const struct device ** dev)
@@ -64,8 +106,9 @@ int cpu_reg(const struct device ** dev)
 		return -ENOMEM;
 	cpu = aligned(cpu_ptr, CPU_ALIGN);
 
-	cpu->running_proc = NULL;
-	cpu->running_thread = NULL;
+	cpu->alloc_ptr = cpu_ptr;
+	cpu->running = NULL;
+	cpu->state = NULL;
 
 	err = idt_create_load();
 	if (err) {
@@ -90,105 +133,66 @@ int cpu_reg(const struct device ** dev)
 }
 
 /* public: cpu.h */
-noreturn void cpu_start(size_t pid, size_t tid)
+noreturn void cpu_start(void)
 {
-	struct process * p = process_get(pid);
-	struct thread * t = thread_get(p, tid);
+	struct cpu * cpu = cpu_current();
+
 	struct interrupt_frame base_frame __attribute__((aligned(16)));
-	task_switch(p, t, &base_frame);
-	jmp_to_frame(&base_frame);
+	cpu->state = &base_frame;
+
+	struct thread * next;
+	int err = sched_next(&next, NULL);
+	if (err)
+		panic("no process to run on this cpu, errno = %d", err);
+
+	task_switch(cpu, next);
+
+	jmp_to_frame(cpu->state);
 }
 
 /* public: cpu.h */
-const struct device * cpu_current(void)
+void cpu_set_state(struct cpu * cpu, struct interrupt_frame * state)
 {
-#if 0
-	struct device_iter iter = device_iter_init("cpu", "cpu");
-	struct device * dev;
-	while ((dev = device_iter_next(&iter)) != NULL
-	       && !is_current_cpu(get_cpu(dev)));
-	return dev;
-#endif
-	return (void *) read_msr(MSR_KGS_BASE);
+	if (cpu != NULL && state != NULL)
+		cpu->state = state;
 }
 
 /* public: cpu.h */
-struct process * cpu_proc(const struct device * dev)
+struct cpu * cpu_current(void)
 {
-	struct cpu * cpu = get_cpu(dev);
-	if (cpu == NULL)
-		return NULL;
-	return cpu->running_proc;
+	return ((struct device *) read_msr(MSR_KGS_BASE))->driver_data;
 }
 
 /* public: cpu.h */
-struct thread * cpu_thread(const struct device * dev)
+struct thread * cpu_running(struct cpu * cpu)
 {
-	struct cpu * cpu = get_cpu(dev);
-	if (cpu == NULL)
-		return NULL;
-	return cpu->running_thread;
+	return cpu == NULL ? NULL : cpu->running;
 }
 
 /* public: cpu.h */
-void disable_nmi(void)
+void cpu_load_state(struct cpu * cpu, struct interrupt_frame * state)
 {
-	outb(0x70, inb(0x70) | 0x80);
-	inb(0x71);
+	if (cpu != NULL && state != NULL)
+		*cpu->state = *state;
 }
 
 /* public: cpu.h */
-void enable_nmi(void)
+void cpu_save_state(struct cpu * cpu, struct interrupt_frame * state)
 {
-	outb(0x70, inb(0x70) & 0x7F);
-	inb(0x71);
-}
-
-static int interrupt_state = 0;
-
-static inline void _disable_interrupts(void)
-{
-	asm volatile (intel("cli\n"));
-}
-
-static inline void _enable_interrupts(void)
-{
-	asm volatile (intel("sti\n"));
+	if (cpu != NULL && state != NULL)
+		*state = *cpu->state;
 }
 
 /* public: cpu.h */
-void disable_interrupts(void)
+void cpu_load_kstack(struct cpu * cpu, void * kstack)
 {
-	interrupt_state++;
-	_disable_interrupts();
+	if (cpu != NULL && kstack != NULL)
+		tss_set_kstack(&cpu->tss, kstack);
 }
 
 /* public: cpu.h */
-void restore_interrupts(void)
+void cpu_set_task(struct cpu * cpu, struct thread * t)
 {
-	interrupt_state--;
-	if (interrupt_state < 0)
-		interrupt_state = 0;
-	if (!interrupt_state)
-		_enable_interrupts();
-}
-
-/* public: cpu.h */
-void cpu_set_kstack(const struct device * cpu, void * kstack)
-{
-	struct cpu * cpudev = get_cpu(cpu);
-	if (cpudev == NULL)
-		return;
-	tss_set_kstack(&cpudev->tss, kstack);
-}
-
-/* public: cpu,h */
-void cpu_update_task(const struct device * cpu,
-                     struct process * p, struct thread * t)
-{
-	struct cpu * cpudev = get_cpu(cpu);
-	if (cpudev == NULL)
-		return;
-	cpudev->running_proc = p;
-	cpudev->running_thread = t;
+	if (cpu != NULL && t != NULL)
+		cpu->running = t;
 }

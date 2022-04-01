@@ -46,7 +46,7 @@ struct PACKED interrupt_frame {
 };
 
 noreturn void jmp_to_frame(struct interrupt_frame * frame);
-int isr_reg(unsigned isr, void (* callback)(struct interrupt_frame * frame));
-int isr_unreg(unsigned isr, void (* callback)(struct interrupt_frame * frame));
+int isr_reg(unsigned isr, void (* callback)(void));
+int isr_unreg(unsigned isr, void (* callback)(void));
 
 #endif // ISR_H

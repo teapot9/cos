@@ -32,9 +32,10 @@ allmods := $(addsuffix modules.o, $(addprefix $(BUILD)/, $(wildcard */)))
 $(BUILD)/%/modules.o: $(BUILD)/%/
 	$(NOOP)
 
+module-files := $(obj-files) $(addsuffix modules.o, $(obj-dirs))
 .PHONY: $(BUILD)/modules.o
 $(BUILD)/modules.o: $(obj-files) $(addsuffix modules.o, $(obj-dirs))
-	$(LD) -r -o $@ $^
+	[ -z "$^" ] && touch "$@" || $(LD) -r -o $@ $^
 
 # Don't build source files
 noop := $(wildcard $(BUILD_ROOT)/.config $(SRC_ROOT)/Makefile.* Makefile $(SRC)/*.c)

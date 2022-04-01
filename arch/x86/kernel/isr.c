@@ -12,8 +12,9 @@
 #include <irq.h>
 #include <cpp.h>
 #include <gdt.h>
+#include <cpu.h>
 
-static struct isr * isrs[ISR_MAX] = {NULL};
+static struct isr * isrs[ISR_MAX + 1] = {NULL};
 
 static inline void dobreak(void)
 {
@@ -101,7 +102,9 @@ static const char * str_int(uword_t i)
 
 void isr_handler(struct interrupt_frame * frame)
 {
-	if (frame->interrupt >= ISR_MAX) {
+	cpu_set_state(cpu_current(), frame);
+
+	if (frame->interrupt > ISR_MAX) {
 		pr_err("unexpected interrupt number: %u\n", frame->interrupt);
 		return;
 	}
@@ -126,33 +129,36 @@ void isr_handler(struct interrupt_frame * frame)
 
 	struct isr * cur = isrs[frame->interrupt];
 	while (cur != NULL) {
-		cur->callback(frame);
+		if (cur->isr == frame->interrupt)
+			cur->callback();
 		cur = cur->next;
 	}
 }
 
-int isr_reg(unsigned isr, void (* callback)(struct interrupt_frame * frame))
+int isr_reg(unsigned isr, void (* callback)(void))
 {
-	if (isr >= ISR_MAX || callback == NULL)
+	if (isr > ISR_MAX || callback == NULL)
 		return -EINVAL;
 
 	struct isr * new = kmalloc(sizeof(*new));
 	if (new == NULL)
 		return -ENOMEM;
 
+	new->isr = isr;
 	new->callback = callback;
 	new->next = isrs[isr];
 	isrs[isr] = new;
 	return 0;
 }
 
-int isr_unreg(unsigned isr, void (* callback)(struct interrupt_frame * frame))
+int isr_unreg(unsigned isr, void (* callback)(void))
 {
-	if (isr >= ISR_MAX || callback == NULL)
+	if (isr > ISR_MAX || callback == NULL)
 		return -EINVAL;
 
 	struct isr ** cur = &isrs[isr];
-	while (*cur != NULL && (*cur)->callback != callback)
+	while (*cur != NULL && (*cur)->isr != isr
+	       && (*cur)->callback != callback)
 		cur = &(*cur)->next;
 	if (*cur == NULL)
 		return -ENOENT;

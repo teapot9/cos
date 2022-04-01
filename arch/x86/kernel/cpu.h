@@ -14,8 +14,8 @@ struct thread;
 
 struct __attribute__((aligned(16))) cpu {
 	void * alloc_ptr;
-	struct process * running_proc;
-	struct thread * running_thread;
+	struct thread * running;
+	struct interrupt_frame * state;
 	struct gdt __attribute__((aligned(16))) gdt;
 	struct tss __attribute__((aligned(16))) tss;
 };

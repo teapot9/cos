@@ -40,6 +40,8 @@
 #define IRQ_ATA1 0x2E
 #define IRQ_ATA2 0x2F
 
+#define ISR_YIELD 0x30
+
 #define is_exc(i) ((i) < 0x20)
 #define is_pic1(i) ((i) >= 0x20 && (i) < 0x28)
 #define is_pic2(i) ((i) >= 0x28 && (i) < 0x30)
