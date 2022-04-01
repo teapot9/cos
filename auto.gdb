@@ -1,4 +1,18 @@
-@break entry_efi_s1
 @break entry_efi_s2
-@break isr_handler
-#@break entry_efi_s1.c:180
+@break isr_handler if frame->interrupt < 32
+#@break do_call
+#break kernel_main
+break kernel/init.c:167
+
+
+
+
+@break entry_efi_wrapper_s2
+*symbol-file
+*symbol-file -readnow cos.elf
+*cont
+
+@break entry_efi_s1
+@bt
+@set tmp=1
+@cont

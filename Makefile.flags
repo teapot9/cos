@@ -27,7 +27,7 @@ endif
 
 COMMON_FLAGS += -msse3
 COMMON_FLAGS += -mno-red-zone -mabi=sysv
-COMMON_FLAGS += -ffreestanding -fpic -fPIC -fpie -fstack-protector-all #-fno-stack-protector
+COMMON_FLAGS += -ffreestanding -fpic -fPIC -fpie
 COMMON_FLAGS += -Wall -Wextra -Wpedantic
 COMMON_FLAGS += -Wtype-limits -Wstrict-prototypes -Wtype-limits
 COMMON_FLAGS += -Wframe-larger-than=$(CONFIG_KERNEL_FRAME_SIZE)
@@ -74,6 +74,12 @@ ifeq ($(CONFIG_ASM_DEFAULT_INTEL), y)
 endif
 ifeq ($(CONFIG_ASM_DEFAULT_ATT), y)
 	COMMON_FLAGS += -masm=att
+endif
+
+ifeq ($(CONFIG_STACK_PROTECTOR), y)
+	COMMON_FLAGS += -fstack-protector-all -mstack-protector-guard=global
+else
+	COMMON_FLAGS += -fno-stack-protector
 endif
 
 BIN2C = $(SRC_ROOT)/scripts/bin2c

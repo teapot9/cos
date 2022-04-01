@@ -28,11 +28,6 @@ int efistub_console_init(void);
 
 int idt_init(void);
 
-#ifdef BOOTLOADER
 int vmm_init(void);
-#else
-struct vmemmap;
-int vmm_init(struct vmemmap * map);
-#endif
 
 #endif // PLATFORM_SETUP_H

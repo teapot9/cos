@@ -30,17 +30,13 @@
 #include <cmdline.h>
 #include <panic.h>
 #include <mm/memmap.h>
-#include <mm/vmemmap.h>
 #include "../kernel/idt.h"
+#include <elf.h>
+#include "../mm/debug.h"
 
 noreturn void entry_efi_s2(const struct entry_efi_data * info)
 {
 	int err;
-
-#ifdef CONFIG_DEBUG
-	//bool tmp = false;
-	//while (!tmp);
-#endif
 
 #ifdef CONFIG_SERIAL_EARLY_DEBUG
 	/* Serial debug */
@@ -48,10 +44,10 @@ noreturn void entry_efi_s2(const struct entry_efi_data * info)
 #endif
 
 	/* Create GDT & IDT */
-	cpu_reg(NULL);
-
-	/* Create process 0 */
-	err = process_new(NULL, NULL);
+	err = cpu_reg(NULL);
+	if (err)
+		panic("Failed CPU0 initialization, errno = %d", err);
+	pr_info("Early init: CPU0\n", 0);
 
 	/* EFI stub */
 	err = efistub_init(info->efistub);
@@ -66,13 +62,21 @@ noreturn void entry_efi_s2(const struct entry_efi_data * info)
 	pr_info("Early init: PMM\n", 0);
 
 	/* vmm */
-	vmemmap_print(info->vmemmap, "vmemmap");
-	vmm_init(info->vmemmap);
-	pr_info("Early init: VMM\n", 0);
-	int a = 0;
-	int b = 2333/a;
+	err = vmm_init();
+	if (err)
+		panic("could not initialize VMM, errno = %d\n", err);
+#ifdef CONFIG_MM_DEBUG
+	pr_debug("===== start of dump current VMM =====\n", 0);
+	dump_vmm_current();
+	pr_debug("===== end of dump current VMM =====\n", 0);
+	pr_debug("===== start of dump new VMM =====\n", 0);
+	dump_vmm((void *) &kernel_cr3);
+	pr_debug("===== end of dump new VMM =====\n", 0);
+#endif
+	pr_info("Early init: VMM initialized\n", 0);
 
-	/* Clear bootloader memory */
+	/* Clear bootloader memory: TODO */
+#if 0
 	struct memlist_elt * cur;
 	list_foreach (cur, info->bootmem->l.first) {
 		err = memmap_update(&memmap, cur->addr, cur->size,
@@ -82,6 +86,7 @@ noreturn void entry_efi_s2(const struct entry_efi_data * info)
 			        "%p (%zu bytes), errno = %d\n",
 			        cur->addr, cur->size, err);
 	}
+#endif
 
 	/* EFI GOP */
 	err = gop_init(info->gop);
@@ -91,24 +96,29 @@ noreturn void entry_efi_s2(const struct entry_efi_data * info)
 		pr_info("Early init: EFI GOP\n", 0);
 
 	/* cmdline */
-	kernel_cmdline = info->cmdline;
-	if (err)
+	kernel_cmdline = strdup(info->cmdline);
+	if (kernel_cmdline == NULL)
 		panic("failed to get cmdline, errno = %d", err);
 	pr_info("Early init: cmdline: %s\n", kernel_cmdline);
 
+	/* load vmm */
+	vmm_enable_paging();
+	pr_info("Early init: VMM loaded\n", 0);
+
+	/* Create process 0 */
+	err = process_new(NULL, NULL);
+	if (err < 0)
+		panic("could not create kernel process PID0\n");
+	if (err > 0)
+		panic("invalid process created: PID0 != PID%d\n", err);
+
 	/* Thread 0 */
-	int main_pid = process_new(NULL, kernel_main);
+	int main_pid = kthread_new(kernel_main);
 	if (main_pid > 0)
 		main_pid = -EINVAL;
 	if (main_pid)
 		panic("Failed to create kernel process, errno = %d",
 		      main_pid);
-
-	/* CPU 0 */
-	err = cpu_reg(NULL);
-	if (err)
-		panic("Failed CPU0 initialization, errno = %d", err);
-	pr_info("Early init: CPU0\n", 0);
 
 	/* Start scheduling + trampoline */
 	sched_enable();

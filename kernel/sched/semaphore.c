@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <stdatomic.h>
 
+#include <print.h>
 #include <sched.h>
 #include <task.h>
 #include <cpu.h>
@@ -104,8 +105,10 @@ static void wake_next_thread(struct thread_list * l)
 
 void semaphore_lock(struct semaphore * s)
 {
-	struct cpu * cpu = cpu_current();
-	struct thread * t = cpu_running(cpu);
+	struct thread * t = cpu_running(cpu_current());
+	if (t == NULL) {
+		return;
+	}
 
 	unsigned expected;
 	unsigned desired;
@@ -127,6 +130,9 @@ void semaphore_lock(struct semaphore * s)
 void semaphore_unlock(struct semaphore * s)
 {
 	struct thread * t = cpu_running(cpu_current());
+	if (t == NULL) {
+		return;
+	}
 	del_from_thread(t, s); // remove from thread's semaphores
 	s->val++;
 	wake_next_thread(s->threads);
@@ -135,6 +141,9 @@ void semaphore_unlock(struct semaphore * s)
 void semaphore_unlock_all(struct semaphore_list * l)
 {
 	struct thread * t = cpu_running(cpu_current());
+	if (t == NULL) {
+		return;
+	}
 	while (l != NULL) {
 		int waiting = 0;
 		int owned = 0;

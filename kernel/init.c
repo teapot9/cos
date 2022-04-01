@@ -11,6 +11,7 @@
 #include <cpu.h>
 #include <sched.h>
 #include <task.h>
+#include <mm.h>
 
 extern initcall_entry_t __initcall_early[];
 extern initcall_entry_t __initcall_core[];
@@ -42,6 +43,11 @@ static inline initcall_t initcall_from_entry(initcall_entry_t * entry)
 	return (initcall_t) ((unsigned long) entry + *entry);
 }
 
+static inline int do_call(initcall_t call)
+{
+	return call();
+}
+
 static void kernel_initcall_level(size_t level)
 {
 	int err;
@@ -57,7 +63,7 @@ static void kernel_initcall_level(size_t level)
 	     fn < initcall_end(level); fn++) {
 		initcall_t call = initcall_from_entry(fn);
 		pr_debug("Initcall: %p\n", call);
-		err = call();
+		err = do_call(call);
 		if (err)
 			pr_warn("Initcall %p failed, errno = %d\n", call, err);
 	}
@@ -131,6 +137,35 @@ noreturn void kernel_main(void)
 	pr_info("Kernel main thread started\n", 0);
 	setup();
 	//kbreak();
+#define bytes 10000
+#define _xcount 100
+#define _total_count 100
+#define _mymod 97
+	void ** l = kmalloc(_xcount * sizeof(*l));;
+	for (int i = 0; i < _total_count; i++){
+	for (int k = 0; k < _xcount; k++) {
+		//l[k] = kmalloc(bytes);
+		size_t tsize = bytes;
+		l[k] = valloc(0, &tsize, 1024, 1024, true, false, false);
+		if (l[k] == NULL)
+			kbreak();
+	}
+	for (int k = 0; k < _xcount; k++) {
+		char * c = l[k];
+		for (int b = 0; b < bytes; b++)
+			c[b] = k % _mymod;
+	}
+	for (int k = 0; k < _xcount; k++) {
+		char * c = l[k];
+		for (int b = 0; b < bytes; b++) {
+			if (c[b] != k % _mymod)
+				kbreak();
+		}
+	}
+	for (int k = 0; k < _xcount; k++) {
+		vfree(0, l[k], bytes);
+	}
+	}
 	dotest();
 	while(1) asm volatile (intel("hlt\n"));
 	halt();

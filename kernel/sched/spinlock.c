@@ -8,11 +8,11 @@ void spinlock_lock(struct spinlock * s)
 {
 	bool expected = true;
 	bool desired = false;
-	_mm_monitor(&s->val, 0, 0);
+	//_mm_monitor(&s->val, 0, 0);
 	while (!atomic_compare_exchange_strong(&s->val, &expected, desired)) {
 		expected = true;
 		desired = false;
-		_mm_mwait(0, 0);
+		//_mm_mwait(0, 0);
 	}
 }
 

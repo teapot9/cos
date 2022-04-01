@@ -54,4 +54,9 @@ static inline size_t align_diff(void * a, size_t align)
 	return (uint8_t *) aligned(a, align) - (uint8_t *) a;
 }
 
+static inline bool is_aligned(void * a, size_t align)
+{
+	return !((uintptr_t) a % align);
+}
+
 #endif // MM_HELPER_H

@@ -102,15 +102,18 @@ static const char * str_int(uword_t i)
 
 void isr_handler(struct interrupt_frame * frame)
 {
+	static int depth = 0;
+	depth++;
 	cpu_set_state(cpu_current(), frame);
+	//interrupt_start(); // TODO: remove this and support nested int
+			   // PIT callback should not do callback if callback
+			   // already in progress
+	disable_interrupts();
 
 	if (frame->interrupt > ISR_MAX) {
 		pr_err("unexpected interrupt number: %u\n", frame->interrupt);
 		return;
 	}
-
-	if (is_irq(frame->interrupt))
-		irq_eoi(isr_to_irq(frame->interrupt));
 
 	switch (frame->interrupt) {
 	case EXC_DEBUG:
@@ -127,12 +130,23 @@ void isr_handler(struct interrupt_frame * frame)
 			      str_int(frame->interrupt));
 	}
 
+	if (!is_exc(frame->interrupt))
+		restore_interrupts();
+
 	struct isr * cur = isrs[frame->interrupt];
 	while (cur != NULL) {
 		if (cur->isr == frame->interrupt)
 			cur->callback();
 		cur = cur->next;
 	}
+
+	if (is_irq(frame->interrupt))
+		irq_eoi(isr_to_irq(frame->interrupt));
+
+	if (is_exc(frame->interrupt))
+		restore_interrupts();
+	//interrupt_end();
+	depth--;
 }
 
 int isr_reg(unsigned isr, void (* callback)(void))

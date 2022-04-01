@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <cpu.h>
+#include <lock.h>
 #include <print.h>
 #include <mm.h>
 #include <cpp.h>
@@ -17,6 +19,15 @@
 
 static uint8_t early_memory_buffer[EARLY_MEMORY_BUFFER_SIZE];
 static struct memory_block * first_block = NULL;
+static struct spinlock kmm_lock = spinlock_init();
+#define lock() do { \
+	disable_interrupts(); \
+	spinlock_lock(&kmm_lock); \
+} while (0)
+#define unlock() do { \
+	spinlock_unlock(&kmm_lock); \
+	restore_interrupts(); \
+} while (0)
 
 static void init_block(struct memory_block * block, size_t size)
 {
@@ -36,6 +47,8 @@ static inline bool kmm_is_init(void)
 
 static void kmm_early_init(void)
 {
+	if (unlikely(kmm_is_init()))
+		return;
 	first_block = (void *) early_memory_buffer;
 	init_block(first_block, sizeof(early_memory_buffer));
 }
@@ -63,15 +76,17 @@ static struct free_memory_info * find_free_mem_list(
 			new->size = cur->size - size;
 			*pprev = new;
 
-			return cur;
+			goto exit;
 		} else {
 			// Remove free region
 			*pprev = cur->next;
-			return cur;
+			goto exit;
 		}
 	}
+	cur = NULL;
 
-	return NULL;
+exit:
+	return cur;
 }
 
 static struct free_memory_info * find_free_mem_block(size_t size)
@@ -88,13 +103,14 @@ static struct free_memory_info * find_free_mem_block(size_t size)
 	}
 
 #define DEFAULT_KMM_BLOCK_SIZE 4096
-	struct page_perms perms = {.exec = false, .user = false, .write = true};
-	void * alloc = valloc(0, DEFAULT_KMM_BLOCK_SIZE, 0, 0, perms);
+	size_t kmm_block_size = DEFAULT_KMM_BLOCK_SIZE;
+	void * alloc = valloc(0, &kmm_block_size, 0, 0,
+	                      true, false, false);
 	if (alloc == NULL)
 		return NULL;
 
 	struct memory_block * new = alloc;
-	init_block(new, size);
+	init_block(new, DEFAULT_KMM_BLOCK_SIZE);
 	*pprec = new;
 	return find_free_mem_list(size, new);
 }
@@ -131,7 +147,8 @@ static void create_entry_list(
 	new->next = cur;
 	new->size = size;
 
-	merge_entry_list(prev, 2);
+	if (prev != NULL)
+		merge_entry_list(prev, 2);
 }
 
 static void create_entry_block(
@@ -147,11 +164,8 @@ static void create_entry_block(
 	create_entry_list(ptr, cur);
 }
 
-/* public: mm.h */
-void * kmalloc(size_t size)
+static void * _kmalloc(size_t size)
 {
-	if (unlikely(!kmm_is_init()))
-		kmm_early_init();
 	struct free_memory_info * free_mem;
 
 	size += sizeof(struct used_memory_header);
@@ -172,10 +186,26 @@ void * kmalloc(size_t size)
 }
 
 /* public: mm.h */
-void kfree(const void * ptr)
+void * malloc(size_t size)
+{
+#define DEFAULT_ALIGN 8
+	return kmalloc(size);
+	//return kmalloc(size, DEFAULT_ALIGN);
+}
+
+/* public: mm.h */
+void * kmalloc(size_t size)
 {
 	if (unlikely(!kmm_is_init()))
 		kmm_early_init();
+	lock();
+	void * ret = _kmalloc(size);
+	unlock();
+	return ret;
+}
+
+static void _kfree(const void * ptr)
+{
 	if (ptr == NULL)
 		return;
 
@@ -185,16 +215,25 @@ void kfree(const void * ptr)
 }
 
 /* public: mm.h */
-void * krealloc(void * oldptr, size_t newsize)
+void kfree(const void * ptr)
+{
+	if (unlikely(!kmm_is_init()))
+		kmm_early_init();
+	lock();
+	_kfree(ptr);
+	unlock();
+}
+
+static void * _krealloc(void * oldptr, size_t newsize)
 {
 	if (unlikely(!kmm_is_init()))
 		kmm_early_init();
 	if (oldptr == NULL)
-		return kmalloc(newsize);
+		return _kmalloc(newsize);
 
 	struct used_memory_header * oldeptr =
 		(void *) ((uint8_t *) oldptr - sizeof(*oldeptr));
-	void * newptr = kmalloc(newsize);
+	void * newptr = _kmalloc(newsize);
 
 	if (newptr == NULL) {
 		pr_alert("Out of memory: cannot realloc %zs to %zs bytes\n",
@@ -203,6 +242,17 @@ void * krealloc(void * oldptr, size_t newsize)
 	}
 
 	memcpy(newptr, oldptr, oldeptr->size);
-	kfree(oldeptr->start);
+	_kfree(oldeptr->start);
 	return newptr;
+}
+
+/* public: mm.h */
+void * krealloc(void * oldptr, size_t newsize)
+{
+	if (unlikely(!kmm_is_init()))
+		kmm_early_init();
+	lock();
+	void * ret = _krealloc(oldptr, newsize);
+	unlock();
+	return ret;
 }

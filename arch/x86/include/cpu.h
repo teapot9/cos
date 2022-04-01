@@ -14,6 +14,8 @@ void disable_nmi(void);
 void enable_nmi(void);
 void disable_interrupts(void);
 void restore_interrupts(void);
+void interrupt_start(void);
+void interrupt_end(void);
 noreturn void hang(void);
 
 int cpu_reg(const struct device ** dev);

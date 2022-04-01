@@ -284,3 +284,16 @@ int memlist_del(struct memlist * l, void * addr, size_t size, bool strict)
 	int err = memlist_del_elt(l, &elt, strict);
 	return err;
 }
+
+/* public: memlist.h */
+size_t memlist_virtual_size(struct memlist * l) {
+	uint8_t * max_addr = (void *) 0;
+	struct memlist_elt * cur = (struct memlist_elt *) l->l.first;
+	while (cur != NULL) {
+		uint8_t * local_max = (uint8_t *) cur->addr + cur->size;
+		if (local_max > max_addr)
+			max_addr = local_max;
+		cur = (struct memlist_elt *) cur->l.next;
+	}
+	return (size_t) max_addr;
+}

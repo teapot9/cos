@@ -13,26 +13,22 @@ struct memblock {
 };
 
 // kmm
+void * malloc(size_t size);
 void * kmalloc(size_t size);
 void kfree(const void * ptr);
 void * krealloc(void * oldptr, size_t newsize);
 
 // vmm
-struct page_perms {
-	bool write;
-	bool user;
-	bool exec;
-};
-
-int vmap(pid_t pid, void * paddr, void * vaddr, size_t size,
-         struct page_perms perms);
+int vmap(pid_t pid, void * paddr, void * vaddr, size_t * size);
+int vreset(pid_t pid, void * vaddr, size_t size,
+           bool write, bool user, bool exec);
 int vunmap(pid_t pid, void * vaddr, size_t size);
-void * mmap(pid_t pid, void * paddr, size_t size, size_t valign,
-	    struct page_perms perms);
-void * valloc(pid_t pid, size_t size, size_t palign, size_t valign,
-	      struct page_perms perms);
+
+void * mmap(pid_t pid, void * paddr, size_t * size, size_t valign,
+	    bool write, bool user, bool exec);
+void * valloc(pid_t pid, size_t * size, size_t palign, size_t valign,
+	      bool write, bool user, bool exec);
 int vfree(pid_t pid, void * vaddr, size_t size);
-int vinit(pid_t pid, void * vaddr, size_t size, struct page_perms perms);
 
 // pmm
 int pmap(pid_t pid, void * paddr, size_t size);

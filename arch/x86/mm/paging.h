@@ -1,29 +1,25 @@
-#ifndef MM_PAGE_H
-#define MM_PAGE_H
+#ifndef _MM_PAGING_H
+#define _MM_PAGING_H
 
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
 
+#include "vmm.h"
+#include <mm/helper.h>
 #include <mm.h>
 #include <asm/asm.h>
+#include <cpp.h>
 
-#define IMAGE_BASE (void *) 0xffffffff80000000
+#define PAGE_TABLE_ELEMENTS 512
+#define PAGE_TABLE_SIZE 4096
+#define PAGE_SIZE_PT (size_t) 4096
+#define PAGE_SIZE_PD PAGE_SIZE_PT * 512
+#define PAGE_SIZE_PDPT PAGE_SIZE_PD * 512
+#define PAGE_SIZE_PML4 PAGE_SIZE_PDPT * 512
 
-#define NB_PML4_ENTRY 512
-#define NB_PDPT_ENTRY 512
-#define NB_PD_ENTRY 512
-#define NB_PT_ENTRY 512
-
-#define PAGE_SIZE_PT 4096L
-#define PAGE_SIZE_PD (NB_PT_ENTRY * PAGE_SIZE_PT)
-#define PAGE_SIZE_PDPT (NB_PD_ENTRY * PAGE_SIZE_PD)
-#define PAGE_SIZE_PML4 (NB_PDPT_ENTRY * PAGE_SIZE_PDPT)
-
-#define MIN_PAGE_SIZE PAGE_SIZE_PT
-#define PAGE_TABLE_ALIGN MIN_PAGE_SIZE
-#define VIRTUAL_MEMORY_SIZE (NB_PML4_ENTRY * PAGE_SIZE_PML4)
+/* Data types */
 
 union cr3 {
 	struct __attribute__((packed)) cr3_normal {
@@ -172,7 +168,7 @@ union pte {
 static_assert(sizeof(union pte) == 8 && sizeof(struct pt_page) == 8
               && sizeof(struct pt_absent) == 8, "pte must be 64 bits");
 
-union lin_addr {
+union linear_addr {
 	struct __attribute__((packed)) lin_addr_pdpt {
 		unsigned long int offset : 30;
 		unsigned long int pdpt : 9;
@@ -195,74 +191,96 @@ union lin_addr {
 		unsigned long int _unused : 16;
 	} pt;
 };
-static_assert(sizeof(union lin_addr) == 8
+static_assert(sizeof(union linear_addr) == 8
               && sizeof(struct lin_addr_pdpt) == 8
 	      && sizeof(struct lin_addr_pd) == 8
 	      && sizeof(struct lin_addr_pt) == 8,
-	      "lin_addr must be 64 bits");
+	      "linear_addr must be 64 bits");
 
-struct page {
-	size_t size;
-	union {
-		union cr3 * cr3;
-		union pml4e * pml4;
-		union pdpte * pdpt;
-		union pde * pd;
-		union pte * pt;
-	} page;
-};
+/* Low level paging functions */
 
-struct table_vaddr {
-	void * vaddr;
-	struct table_vaddr * subtables;
-};
+// Informational
+void * virt_to_phys_raw(union cr3 * cr3, void * vaddr);
 
-static inline bool _ptr_aligned(void * addr, size_t size)
+// Initialize existing table
+void table_init_pml4(union pml4e * table);
+void table_init_pdpt(union pdpte * table);
+void table_init_pd(union pde * table);
+void table_init_pt(union pte * table);
+
+// Map physical page to virtual address
+int page_map_pdpt(union pdpte * entry, void * paddr);
+int page_map_pd(union pde * entry, void * paddr);
+int page_map_pt(union pte * entry, void * paddr);
+
+// Unmap physical page
+int page_unmap_pdpt(union pdpte * entry);
+int page_unmap_pd(union pde * entry);
+int page_unmap_pt(union pte * entry);
+
+// Configure existing mapping
+int page_set_pdpt(union pdpte * entry, bool write, bool user, bool exec,
+                  bool accessed, bool dirty);
+int page_set_pd(union pde * entry, bool write, bool user, bool exec,
+		bool accessed, bool dirty);
+int page_set_pt(union pte * entry, bool write, bool user, bool exec,
+		bool accessed, bool dirty);
+
+// Add initialized table to its parent
+int table_add_pml4(union cr3 * cr3, void * paddr);
+int table_add_pdpt(union pml4e * entry, void * paddr,
+		   bool write, bool user, bool exec);
+int table_add_pd(union pdpte * entry, void * paddr,
+		 bool write, bool user, bool exec);
+int table_add_pt(union pde * entry, void * paddr,
+		 bool write, bool user, bool exec);
+
+// Conversion functions
+static inline union pml4e * get_pml4(const union cr3 * cr3)
 {
-	return (unsigned long) addr % size == 0;
+	return (void *) (cr3->normal.table << 12);
+}
+static inline union pdpte * get_pdpt(const union pml4e * entry)
+{
+	if (!entry->absent.p)
+		return NULL;
+	return (void *) (entry->pdpt.table << 12);
+}
+static inline union pde * get_pd(const union pdpte * entry)
+{
+	if (!entry->absent.p || entry->page.ps)
+		return NULL;
+	return (void *) (entry->pd.table << 12);
+}
+static inline union pte * get_pt(const union pde * entry)
+{
+	if (!entry->absent.p || entry->page.ps)
+		return NULL;
+	return (void *) (entry->pt.table << 12);
 }
 
-static inline size_t page_size_max(void * vaddr, void * paddr, size_t size)
-{
-	if (_ptr_aligned(vaddr, PAGE_SIZE_PDPT)
-	    && _ptr_aligned(paddr, PAGE_SIZE_PDPT)
-	    && size >= PAGE_SIZE_PDPT)
+/* Helper */
+static inline size_t target_page_size(size_t needed_size) {
+	if (needed_size >= PAGE_SIZE_PDPT)
 		return PAGE_SIZE_PDPT;
-	if (_ptr_aligned(vaddr, PAGE_SIZE_PD)
-	    && _ptr_aligned(paddr, PAGE_SIZE_PD)
-	    && size >= PAGE_SIZE_PD)
+	if (needed_size >= PAGE_SIZE_PD)
 		return PAGE_SIZE_PD;
-	if (_ptr_aligned(vaddr, PAGE_SIZE_PT)
-	    && _ptr_aligned(paddr, PAGE_SIZE_PT)
-	    && size >= PAGE_SIZE_PT)
-		return PAGE_SIZE_PT;
-	return 0;
+	return PAGE_SIZE_PT;
 }
 
-static inline void invlpg(void * ptr)
-{
-	asm volatile (intel("invlpg [rax]\n") : : "a" (ptr));
+/* Process level paging functions */
+
+static inline bool is_kmem(void * base, size_t size) {
+	return is_overlap(
+		base, size, KERNEL_SPACE_START,
+		(uint64_t) KERNEL_SPACE_END - (uint64_t) KERNEL_SPACE_START
+	);
+}
+static inline bool is_umem(void * base, size_t size) {
+	return is_overlap(
+		base, size, USER_SPACE_START,
+		(uint64_t) USER_SPACE_END - (uint64_t) USER_SPACE_START
+	);
 }
 
-struct page page_get(pid_t pid, void * vaddr, bool p);
-void * page_paddr(pid_t pid, void * vaddr);
-void * page_find_free(pid_t pid, size_t align, size_t count);
-
-int page_map(pid_t pid, void * vaddr, void * paddr,
-             size_t size, struct page_perms perms);
-int page_unmap(pid_t pid, void * vaddr, size_t size);
-int page_set(pid_t pid, void * vaddr, size_t size,
-             struct page_perms perms, bool accessed, bool dirty);
-
-void * virt_to_phys(pid_t pid, void * vaddr);
-int page_new_vm(union cr3 * cr3, struct table_vaddr ** vroot);
-struct memlist;
-int page_kmem_setup(struct memlist * l, union cr3 cr3,
-                    struct table_vaddr ** vroot);
-int page_kmem_finalize(struct table_vaddr * kvroot, struct table_vaddr * vroot);
-
-#ifdef BOOTLOADER
-int page_identity(union cr3 * cr3);
-#endif // BOOTLOADER
-
-#endif // MM_PAGE_H
+#endif

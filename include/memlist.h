@@ -48,6 +48,8 @@ struct memlist_elt * memlist_search(
 	struct memlist * l, size_t size, size_t align
 );
 
+size_t memlist_virtual_size(struct memlist * l);
+
 #if 0
 struct memlist_elt * memlist_search_size(
 	struct memlist * l, size_t size, size_t align

@@ -21,13 +21,18 @@ static struct module pit_mod = {
 	.name = "pit",
 };
 
-static size_t ms_boot = 0;
+static size_t us_boot = 0;
 static size_t jiffy_usec = 0;
 static struct timer_list * timers = NULL;
 
 // These will be set during pit_init
 static size_t jiffies_trigger = SIZE_MAX;
 static unsigned reload_value = -1;
+
+static inline size_t ms_boot(void)
+{
+	return us_boot / 1000;
+}
 
 static void remove_timer(struct timer_list * t)
 {
@@ -39,9 +44,9 @@ static void remove_timer(struct timer_list * t)
 static void do_timer_calls(void)
 {
 	for (struct timer_list * t = timers; t != NULL; t = t->next) {
-		if (ms_boot - t->last < t->msec)
+		if (ms_boot() - t->last < t->msec)
 			continue;
-		t->last = ms_boot;
+		t->last = ms_boot();
 		t->callback();
 		if (t->nb_call && unlikely(!--t->nb_call))
 			remove_timer(t);
@@ -53,16 +58,19 @@ static void irq0_callback(void)
 	static size_t jiffies = 0;
 	jiffies++;
 	if (unlikely(jiffies > jiffies_trigger)) {
-		jiffies -= 1000;
-		ms_boot++;
+		us_boot += jiffies * jiffy_usec;
+		jiffies = 0;
 		do_timer_calls();
 	}
 }
 
+#define USEC_TRIGGER 1000 // 1ms
 static void update_jiffy_usec(void)
 {
+	// how many usec per jiffy
 	jiffy_usec = 1000000 / (PIT_FREQUENCY / reload_value);
-	jiffies_trigger = 1000 / jiffy_usec;
+	// how many jiffy before at least USEC_TRIGGER usec elapsed
+	jiffies_trigger = USEC_TRIGGER / jiffy_usec + 1;
 }
 
 static void set_reload(unsigned val)

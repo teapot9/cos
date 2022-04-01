@@ -8,7 +8,7 @@
 #include <cpp.h>
 
 #define PIT_FREQUENCY 1193182UL
-#define PIT_DEFAULT_DIV 1000
+#define PIT_DEFAULT_DIV 10000
 
 #define PIT_IO_CHAN0 0x40
 #define PIT_IO_CHAN1 0x41

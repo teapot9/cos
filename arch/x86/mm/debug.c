@@ -1,7 +1,7 @@
 #define pr_fmt(fmt) "vmm: " fmt
 
 #include "vmm.h"
-#include "page.h"
+#include "paging.h"
 
 #include <asm/cpu.h>
 #include <mm.h>

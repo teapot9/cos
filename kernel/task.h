@@ -25,7 +25,6 @@ struct process {
 	size_t pid;
 	struct tlist * threads;
 	uword_t cr3;
-	struct table_vaddr * root_table_vaddr;
 	size_t last_tid;
 };
 

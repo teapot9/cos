@@ -27,6 +27,8 @@ void do_switch(enum tstate reason)
 	if (err)
 		panic("no task to switch to, errno = %d", err);
 
+	if (next == cur)
+		return;
 	task_switch(cpu, next);
 }
 

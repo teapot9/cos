@@ -22,4 +22,6 @@ int serial_init(void);
 extern struct vmemmap kvmemmap;
 #endif
 
+int process_pid0(void);
+
 #endif // SETUP_H

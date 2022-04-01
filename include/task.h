@@ -36,6 +36,5 @@ enum tstate task_get_state(struct thread * t);
 struct semaphore_list ** task_semaphores(struct thread * t);
 
 union cr3 * process_cr3(struct process * proc);
-struct table_vaddr ** process_vrtable(struct process * proc);
 
 #endif // TASK_H

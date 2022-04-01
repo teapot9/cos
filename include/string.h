@@ -11,6 +11,8 @@
  */
 size_t strlen(const char * s);
 
+char * strdup(const char * s);
+
 /**
  * @brief Compare strings
  * @param s1 First string to read

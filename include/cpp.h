@@ -19,6 +19,7 @@
 #define SECTION(x) __attribute__((section(x)))
 #define ISR_AVAILABLE __attribute__((no_caller_saved_registers))
 #define ISR_DEFINE __attribute__((interrupt))
+#define ALIGNED(x) __attribute__((aligned(x)))
 
 #define _IDENT(x) x
 #define _PATH(x, y) stringify(_IDENT(x)_IDENT(y))

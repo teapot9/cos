@@ -2,3 +2,8 @@ config UBSAN
 	bool "ubsan"
 	help
 	  Undefined behavior sanitizer.
+
+config STACK_PROTECTOR
+	bool "Stack protector"
+	help
+	  Enable compiler's stack protectors.

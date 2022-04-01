@@ -5,7 +5,6 @@
 #include <stdnoreturn.h>
 
 #include <asm/cpu.h>
-#include <mm/vmemmap.h>
 #include <list.h>
 #include <memlist.h>
 #include <mm/memmap.h>
@@ -38,8 +37,6 @@
 #include <setup.h>
 #include <elf.h>
 #include <memlist.h>
-
-void * malloc(size_t s) { return kmalloc(s); }
 
 struct entry_efi_data boot_data;
 extern uint8_t _binary_cos_elf_start[];
@@ -144,19 +141,20 @@ noreturn void entry_efi_s1(efi_handle_t image_handle,
 	err = vmm_init();
 	if (err)
 		panic("failed to initialzie vmm, errno = %d", err);
+	vmm_enable_paging();
 
 	/* Load kernel ELF */
+	boot_data.kernel_elf = _binary_cos_elf_start;
+	boot_data.kernel_elf_size = _binary_cos_elf_end - _binary_cos_elf_start;
 	void (* kentry)(void);
-	err = elf_load(&kentry, _binary_cos_elf_start,
-	               _binary_cos_elf_end - _binary_cos_elf_end);
+	err = elf64_load(0, &kentry, boot_data.kernel_elf,
+	                 boot_data.kernel_elf_size);
 	if (err)
 		panic("failed to load kernel ELF executable, errno = %d", err);
 
-	/* Save virtual memory info */
-	boot_data.vmemmap = &kvmemmap;
-
 	/* Save physical memory info */
 	boot_data.pmemmap = &memmap;
+
 #if 0
 	kpmemmap = memmap_new();
 	struct memmap_elt * pcur;
@@ -179,7 +177,6 @@ noreturn void entry_efi_s1(efi_handle_t image_handle,
 	}
 	boot_data.pmemmap = &kpmemmap;
 	memmap_print(boot_data.pmemmap, "new pmemmap");
-#endif
 
 	/* Save bootloader memory */
 	bootloader_mem = memlist_new_default();
@@ -204,8 +201,7 @@ noreturn void entry_efi_s1(efi_handle_t image_handle,
 			      vcur->map, vcur->l.size, err);
 	}
 	boot_data.bootmem = &bootloader_mem;
+#endif
 
-	//int testi = *(int *) kentry;
-	//asm volatile (intel("jmp rax\n") : : "a" (kentry));
 	trampoline(kentry);
 }

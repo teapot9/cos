@@ -66,7 +66,7 @@ struct memmap_elt * memmap_search(
 {
 	struct memmap_elt * cur;
 	list_foreach(cur, map->l.l.first) {
-		if (cur->l.size - align_diff(cur->l.addr, align) >= size
+		if (cur->l.size >= size + align_diff(cur->l.addr, align)
 		    && cur->type == type
 		    && (type != MEMORY_TYPE_USED || cur->owner == owner))
 			return cur;

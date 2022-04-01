@@ -19,11 +19,14 @@
 
 #define CPU_ALIGN 16
 
+static bool cpu0_init = false;
+
 static int dev_reg(const struct device * dev)
 {
 	//write_msr(MSR_FS_BASE, (uint64_t) NULL);
 	//write_msr(MSR_GS_BASE, (uint64_t) dev);
 	write_msr(MSR_KGS_BASE, (uint64_t) dev);
+	cpu0_init = true;
 	pr_info("%s: initialized CPU\n", dev->name);
 	return 0;
 }
@@ -72,6 +75,9 @@ int cpu_reg(const struct device ** dev)
 		return err;
 	}
 
+	cpu->interrupt_state = 0;
+	cpu->is_in_interrupt = false;
+
 	err = device_create(dev, core_module(), NULL, "cpu", "cpu",
 	                    dev_reg, dev_unreg, cpu, "cpu%zu", nproc++);
 	if (err) {
@@ -110,7 +116,9 @@ void cpu_set_state(struct cpu * cpu, struct interrupt_frame * state)
 /* public: cpu.h */
 struct cpu * cpu_current(void)
 {
-	return ((struct device *) read_msr(MSR_KGS_BASE))->driver_data;
+	return cpu0_init
+		? ((struct device *) read_msr(MSR_KGS_BASE))->driver_data
+		: NULL;
 }
 
 /* public: cpu.h */

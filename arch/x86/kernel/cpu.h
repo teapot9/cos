@@ -18,6 +18,8 @@ struct __attribute__((aligned(16))) cpu {
 	struct interrupt_frame * state;
 	struct gdt __attribute__((aligned(16))) gdt;
 	struct tss __attribute__((aligned(16))) tss;
+	int interrupt_state;
+	bool is_in_interrupt;
 };
 
 #endif // ARCH_X86_KERNEL_CPU_H

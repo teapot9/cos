@@ -3,7 +3,7 @@
 
 #include <asm/io.h>
 
-static int interrupt_state = 0;
+static int boot_interrupt_state = 0;
 
 static inline void _disable_interrupts(void)
 {
@@ -29,21 +29,54 @@ void enable_nmi(void)
 	inb(0x71);
 }
 
+#ifdef BOOTLOADER
+# define cpu_current() NULL
+#endif
 /* public: cpu.h */
 void disable_interrupts(void)
 {
-	interrupt_state++;
+	struct cpu * cpu = cpu_current();
+	int * interrupt_state = cpu == NULL
+		? &boot_interrupt_state : &cpu->interrupt_state;
+
+	(*interrupt_state)++;
+	if (cpu != NULL && cpu->is_in_interrupt)
+		return;
 	_disable_interrupts();
 }
 
 /* public: cpu.h */
 void restore_interrupts(void)
 {
-	interrupt_state--;
-	if (interrupt_state < 0)
-		interrupt_state = 0;
-	if (!interrupt_state)
+	struct cpu * cpu = cpu_current();
+	int * interrupt_state = cpu == NULL
+		? &boot_interrupt_state : &cpu->interrupt_state;
+
+	(*interrupt_state)--;
+	if (*interrupt_state < 0)
+		*interrupt_state = 0;
+	if (cpu != NULL && cpu->is_in_interrupt)
+		return;
+	if (!*interrupt_state)
 		_enable_interrupts();
+}
+
+/* public: cpu.h */
+void interrupt_start(void)
+{
+	struct cpu * cpu = cpu_current();
+	if (cpu == NULL)
+		return;
+	cpu->is_in_interrupt = true;
+}
+
+/* public: cpu.h */
+void interrupt_end(void)
+{
+	struct cpu * cpu = cpu_current();
+	if (cpu == NULL)
+		return;
+	cpu->is_in_interrupt = false;
 }
 
 /* public: cpu.h */

@@ -11,6 +11,7 @@
 #include <gdt.h>
 #include <errno.h>
 #include <mm/helper.h>
+#include <mm/early.h>
 #include <sched.h>
 
 #define kstack_aligned(x) ((uint8_t *) aligned(x, KSTACK_ALIGN) + KSTACK_SIZE)
@@ -96,13 +97,15 @@ static int thread_init(
 	thread->running = NULL;
 	thread->semaphores = NULL;
 
-	void * stack;
+	void * stack_start;
 	if (is_kernel_process(parent)) {
-		struct page_perms perms = {.exec = false, .user = thread->parent->pid != 0, .write = true};
-		thread->stack = valloc(thread->parent->pid, KSTACK_SIZE, KSTACK_ALIGN, KSTACK_ALIGN, perms);
+		size_t alloc_size = KSTACK_SIZE;
+		thread->stack = valloc(
+			thread->parent->pid, &alloc_size, KSTACK_ALIGN,
+			KSTACK_ALIGN, true, thread->parent->pid != 0, false);
 		if (thread->stack == NULL)
 			return -ENOMEM;
-		stack = thread->stack;
+		stack_start = (uint8_t *) thread->stack + KSTACK_SIZE;
 	} else {
 		// Should create user stack in user CR3
 		return -ENOTSUP;
@@ -120,7 +123,7 @@ static int thread_init(
 	thread->task_state.cs = is_kernel_process(parent) ?
 		gdt_segment(GDT_KERN_CS) : gdt_segment(GDT_USER_CS);
 	thread->task_state.flags = read_rflags();
-	thread->task_state.sp = (uword_t) stack;
+	thread->task_state.sp = (uword_t) stack_start;
 	thread->task_state.ss = data_seg;
 
 	return 0;
@@ -141,16 +144,13 @@ static int process_init(
 	proc->threads = NULL;
 
 	uword_t cr3 = 0;
-	/*
 	if (is_kernel_process(proc)) {
-		cr3 = kcr3;
+		cr3 = kernel_cr3;
 	} else {
 		// Should form kernel CR3
 		return -ENOTSUP;
 	}
-	*/
 	proc->cr3 = cr3;
-	proc->root_table_vaddr = NULL;
 	proc->last_tid = SIZE_MAX;
 
 	return 0;
@@ -212,6 +212,22 @@ int kthread_new(void (*start)(void))
 	mutex_unlock(&t->lock);
 
 	return tid;
+}
+
+/* public: setup.h */
+int process_pid0(void)
+{
+	int err;
+
+	struct process * proc = process_get(0);
+	if (proc == NULL)
+		return -EAGAIN;
+
+	err = process_init(0, NULL);
+	if (err)
+		return err;
+
+	return proc->pid;
 }
 
 /* public: task.h */
@@ -346,10 +362,4 @@ struct semaphore_list ** task_semaphores(struct thread * t)
 union cr3 * process_cr3(struct process * proc)
 {
 	return (union cr3 *) &proc->cr3;
-}
-
-/* public: task.h */
-struct table_vaddr ** process_vrtable(struct process * proc)
-{
-	return &proc->root_table_vaddr;
 }

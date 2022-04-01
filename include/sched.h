@@ -2,6 +2,8 @@
 #define SCHED_H
 
 #include <stddef.h>
+#include <stdbool.h>
+
 #include <task.h>
 
 struct thread;

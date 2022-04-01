@@ -5,6 +5,7 @@ import gdb
 import re
 import os.path
 import time
+import signal
 
 TIMEOUT = 10
 EFI = 'arch/x86/boot/cos.so'
@@ -135,17 +136,25 @@ class CommandEfi(gdb.Command):
         try:
             with open(CMD_FILE, 'r') as cmd_file:
                 for cmd in cmd_file:
-                    if not cmd.startswith('#'):
+                    if not cmd.startswith('#') and cmd.strip():
+                        print(f"uefi.py: {repr(cmd)}")
                         if cmd.startswith('@'):
                             silent = True
                             cmd = cmd.removeprefix('@')
                         else:
                             silent = False
+                        if cmd.startswith('*'):
+                            cmd = cmd.removeprefix('*')
+                            break_ = gdb.breakpoints()[-1]
+                            oldcmd = break_.commands or ''
+                            break_.commands = oldcmd + cmd
+                            continue
                         gdb.execute(cmd, to_string=silent)
         except OSError:
             gdb.execute('break entry_efi_s1')
             gdb.execute('break entry_efi_s2')
             gdb.execute('continue')
+        print([b.number for b in gdb.breakpoints()])
 
 class CommandQQ(gdb.Command):
     def __init__(self):

@@ -24,7 +24,7 @@ static struct clock * get_clock(void)
 
 static void new_def_clock(void)
 {
-	if (def_clock->available)
+	if (def_clock != NULL && def_clock->available)
 		return;
 
 	struct device_iter iter = device_iter_init("virtual", "clock");
