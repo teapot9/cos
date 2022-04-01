@@ -9,21 +9,21 @@ mode="${1:-all}"
 [ $# -ne 0 ] && shift
 
 KERNEL="${KERNEL:-cos}"
-BUILD="${BUILD:-.}"
+BUILD="${BUILD:-build}"
 DEBUG_LOG="${DEBUG_LOG:-debug.log}"
 QEMU_LOG="${QEMU_LOG:-qemu.log}"
 BOOT=arch/x86/boot
 
 if [ "${mode}" = efi ]; then
 	exec 3>&1 1>&2
-	mkdir -pv "${BUILD}"/test/EFI/BOOT
-	cp -v "${BOOT}/${KERNEL}.efi" "${BUILD}"/test/EFI/BOOT/BOOTX64.EFI
-	chmod +x "${BUILD}"/test/EFI/BOOT/BOOTX64.EFI
+	mkdir -pv "${BUILD}"/EFI/BOOT
+	cp -v "${BOOT}/${KERNEL}.efi" "${BUILD}"/EFI/BOOT/BOOTX64.EFI
+	chmod +x "${BUILD}"/EFI/BOOT/BOOTX64.EFI
 	# tmp efi shell:
-	#cp -v /usr/share/edk2-ovmf/Shell.efi "${BUILD}"/test/EFI/BOOT/BOOTX64.EFI
-	#cp -v "${KERNEL}.efi" "${BUILD}"/test/EFI/BOOT/KERNEL.EFI
-	cp -v /usr/share/edk2-ovmf/OVMF_CODE.fd "${BUILD}"/test/OVMF_CODE.fd
-	cp -v /usr/share/edk2-ovmf/OVMF_VARS.fd "${BUILD}"/test/OVMF_VARS.fd
+	#cp -v /usr/share/edk2-ovmf/Shell.efi "${BUILD}"/EFI/BOOT/BOOTX64.EFI
+	#cp -v "${KERNEL}.efi" "${BUILD}"/EFI/BOOT/KERNEL.EFI
+	cp -v /usr/share/edk2-ovmf/OVMF_CODE.fd "${BUILD}"/OVMF_CODE.fd
+	cp -v /usr/share/edk2-ovmf/OVMF_VARS.fd "${BUILD}"/OVMF_VARS.fd
 	rm -f "${DEBUG_LOG}" "${QEMU_LOG}"
 	qemu-system-x86_64 \
 		-nodefaults \
@@ -35,9 +35,9 @@ if [ "${mode}" = efi ]; then
 		-machine q35 \
 		-m 128 \
 		-smp 2 \
-		-drive if=pflash,format=raw,unit=0,file="${BUILD}"/test/OVMF_CODE.fd,readonly=on \
-		-drive if=pflash,format=raw,unit=1,file="${BUILD}"/test/OVMF_VARS.fd,readonly=off \
-		-drive file=fat:rw:"${BUILD}"/test \
+		-drive if=pflash,format=raw,unit=0,file="${BUILD}"/OVMF_CODE.fd,readonly=on \
+		-drive if=pflash,format=raw,unit=1,file="${BUILD}"/OVMF_VARS.fd,readonly=off \
+		-drive file=fat:rw:"${BUILD}" \
 		-debugcon file:"${DEBUG_LOG}" \
 		-global isa-debugcon.iobase=0x402 \
 		-serial file:debug.log \

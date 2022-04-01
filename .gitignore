@@ -4,6 +4,6 @@
 /include/config
 /include/generated
 /tags
-/Build
+/build
 /cos.*
 /*.log
