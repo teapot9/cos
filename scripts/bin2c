@@ -1,0 +1,51 @@
+#!/bin/sh
+set -eu
+
+if [ "${1:-}" = -h ] || [ " ${1:-}" = --help ]; then
+	echo "$(basename -- "${0:-}") input.bin output.c"
+	echo "$(basename -- "${0:-}") input.bin output.h"
+	exit
+fi
+
+input="${1}"
+output="${2}"
+variable="$(
+	printf "%s" "$(basename -- "${input}")" \
+		| sed \
+			-e 's:[^a-zA-Z0-9_]:_:g' \
+			-e 's:^[0-9_]:_:'
+)"
+header_guard="$(
+	printf "%s" "$(basename -- "${output}")" \
+		| sed -e 's:[^a-zA-Z0-9_]:_:g' \
+			-e 's:^[0-9_]:_:' \
+			-e 's:\(.*\):\U\1:'
+)"
+extension="$(printf "%s" "${output}" | tail -c2)"
+
+build_c() {
+	echo "/* C file built from $(basename -- "${input}") */"
+	echo
+	echo '#include <stdint.h>'
+	echo '#include <stddef.h>'
+	echo
+	echo "const uint8_t ${variable}[] = {"
+	xxd -i <"${input}" | sed -e 's:^[ \t]*:\t:'
+	echo '};'
+	echo "const size_t ${variable}_len = sizeof(${variable});"
+}
+
+build_h() {
+	echo "/* C file built from $(basename -- "${input}") */"
+	echo
+	echo "#ifndef ${header_guard}"
+	echo "#define ${header_guard}"
+	echo
+	echo "extern const uint8_t ${variable}[];"
+	echo "extern const size_t ${variable}_len;"
+	echo
+	echo "#endif // ${header_guard}"
+}
+
+if [ "${extension}" = .c ]; then build_c >"${output}"; fi
+if [ "${extension}" = .h ]; then build_h >"${output}"; fi
