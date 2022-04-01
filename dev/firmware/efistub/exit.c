@@ -215,6 +215,7 @@ static int register_memmap(
 }
 #endif
 
+/* Return 0: no vmap, 1: code, 2: data */
 static int get_memtype(enum memory_type * dst, uint32_t type)
 {
 	switch (type) {
@@ -224,11 +225,13 @@ static int get_memtype(enum memory_type * dst, uint32_t type)
 		*dst = MEMORY_TYPE_RESERVED;
 		return 0;
 	case EFI_RUNTIME_SERVICES_CODE:
-	case EFI_RUNTIME_SERVICES_DATA:
 		*dst = MEMORY_TYPE_EFI_SERVICES;
 		return 1;
+	case EFI_RUNTIME_SERVICES_DATA:
+		*dst = MEMORY_TYPE_EFI_SERVICES;
+		return 2;
 	case EFI_CONVENTIONAL_MEMORY:
-		*dst = MEMORY_TYPE_AVAILABLE;
+		*dst = MEMORY_TYPE_FREE;
 		return 0;
 	case EFI_ACPIRECLAIM_MEMORY:
 		*dst = MEMORY_TYPE_ACPI_RECLAIMABLE;
@@ -240,11 +243,13 @@ static int get_memtype(enum memory_type * dst, uint32_t type)
 		*dst = MEMORY_TYPE_PERSISTENT;
 		return 0;
 	case EFI_LOADER_CODE:
-	case EFI_LOADER_DATA:
 	case EFI_BOOT_SERVICES_CODE:
-	case EFI_BOOT_SERVICES_DATA:
-		*dst = MEMORY_TYPE_AVAILABLE;
+		*dst = MEMORY_TYPE_USED;
 		return 1; // in-use, free when loading kernel elf
+	case EFI_LOADER_DATA:
+	case EFI_BOOT_SERVICES_DATA:
+		*dst = MEMORY_TYPE_USED;
+		return 2; // in-use, free when loading kernel elf
 	case EFI_UNUSABLE_MEMORY:
 	case EFI_PAL_CODE:
 	default:
@@ -271,7 +276,7 @@ static int register_efi_memmap_desc(
 	if (typeinfo == -ENOENT)
 		return 0;
 	int err = memmap_update(map, memstart(desc),
-	                        memsize(desc), type);
+	                        memsize(desc), type, 0);
 	if (err)
 		return err;
 #ifdef CONFIG_MM_DEBUG
@@ -293,12 +298,19 @@ static void register_efi_memmap(
 		print_efi_mem_desc(desc);
 
 		int merr = register_efi_memmap_desc(map, desc);
-		if (merr == 1) {
-			merr = pmap(memstart(desc), memsize(desc));
+#if 0
+		if (merr == 1 || merr == 2) {
+			struct page_perms perms = {
+				.user = false,
+				.exec = merr == 1,
+				.write = merr == 2,
+			};
+			merr = pmap(0, memstart(desc), memsize(desc));
 			if (!merr)
-				merr = vmap(memstart(desc), memstart(desc),
-				            memsize(desc));
+				merr = vmap(0, memstart(desc), memstart(desc),
+				            memsize(desc), perms);
 		}
+#endif
 		if (merr < 0) {
 			pr_crit("cannot register physical memory at "
 			        "%p (%zu bytes), errno = %d\n",

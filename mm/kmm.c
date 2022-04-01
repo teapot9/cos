@@ -87,12 +87,14 @@ static struct free_memory_info * find_free_mem_block(size_t size)
 		cur = cur->next;
 	}
 
-	struct memblock alloc = vmalloc(size);
-	if (alloc.addr == NULL || alloc.size < size)
+#define DEFAULT_KMM_BLOCK_SIZE 4096
+	struct page_perms perms = {.exec = false, .user = false, .write = true};
+	void * alloc = valloc(0, DEFAULT_KMM_BLOCK_SIZE, 0, 0, perms);
+	if (alloc == NULL)
 		return NULL;
 
-	struct memory_block * new = alloc.addr;
-	init_block(new, alloc.size);
+	struct memory_block * new = alloc;
+	init_block(new, size);
 	*pprec = new;
 	return find_free_mem_list(size, new);
 }

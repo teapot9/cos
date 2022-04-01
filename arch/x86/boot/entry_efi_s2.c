@@ -29,16 +29,17 @@
 #include <setup.h>
 #include <cmdline.h>
 #include <panic.h>
+#include <mm/memmap.h>
+#include <mm/vmemmap.h>
+#include "../kernel/idt.h"
 
 noreturn void entry_efi_s2(const struct entry_efi_data * info)
 {
 	int err;
 
 #ifdef CONFIG_DEBUG
-	bool tmp = false;
-	while (!tmp){
-		asm volatile (intel("mov rax, 9999\n") : : : "rax");
-	}
+	//bool tmp = false;
+	//while (!tmp);
 #endif
 
 #ifdef CONFIG_SERIAL_EARLY_DEBUG
@@ -46,12 +47,41 @@ noreturn void entry_efi_s2(const struct entry_efi_data * info)
 	serial_init();
 #endif
 
+	/* Create GDT & IDT */
+	cpu_reg(NULL);
+
+	/* Create process 0 */
+	err = process_new(NULL, NULL);
+
 	/* EFI stub */
 	err = efistub_init(info->efistub);
 	if (err)
 		pr_crit("failed to initialize EFI stub, errno = %d\n", err);
 	else
 		pr_info("Early init: EFI stub\n", 0);
+
+	/* pmm */
+	memmap_print(info->pmemmap, "pmemmap");
+	pmm_init(info->pmemmap);
+	pr_info("Early init: PMM\n", 0);
+
+	/* vmm */
+	vmemmap_print(info->vmemmap, "vmemmap");
+	vmm_init(info->vmemmap);
+	pr_info("Early init: VMM\n", 0);
+	int a = 0;
+	int b = 2333/a;
+
+	/* Clear bootloader memory */
+	struct memlist_elt * cur;
+	list_foreach (cur, info->bootmem->l.first) {
+		err = memmap_update(&memmap, cur->addr, cur->size,
+		                    MEMORY_TYPE_FREE, 0);
+		if (err)
+			pr_warn("cannot free bootloader memory at "
+			        "%p (%zu bytes), errno = %d\n",
+			        cur->addr, cur->size, err);
+	}
 
 	/* EFI GOP */
 	err = gop_init(info->gop);
@@ -65,14 +95,6 @@ noreturn void entry_efi_s2(const struct entry_efi_data * info)
 	if (err)
 		panic("failed to get cmdline, errno = %d", err);
 	pr_info("Early init: cmdline: %s\n", kernel_cmdline);
-
-	/* pmm */
-	pmm_init(NULL);
-	pr_info("Early init: PMM\n", 0);
-
-	/* vmm */
-	vmm_init();
-	pr_info("Early init: VMM\n", 0);
 
 	/* Thread 0 */
 	int main_pid = process_new(NULL, kernel_main);

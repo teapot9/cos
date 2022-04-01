@@ -1,8 +1,11 @@
 #ifndef MM_H
 #define MM_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include <task.h>
 
 struct memblock {
 	void * addr;
@@ -15,20 +18,26 @@ void kfree(const void * ptr);
 void * krealloc(void * oldptr, size_t newsize);
 
 // vmm
-void * virt_to_phys(void * vaddr);
-int vmap(void * paddr, void * vaddr, size_t size);
-struct memblock vmalloc(size_t size);
-void * mmap(void * paddr, size_t size);
-void vunmap(void * vaddr, size_t size);
-void vfree(void * vaddr, size_t size);
-uint64_t kcr3(void);
+struct page_perms {
+	bool write;
+	bool user;
+	bool exec;
+};
+
+int vmap(pid_t pid, void * paddr, void * vaddr, size_t size,
+         struct page_perms perms);
+int vunmap(pid_t pid, void * vaddr, size_t size);
+void * mmap(pid_t pid, void * paddr, size_t size, size_t valign,
+	    struct page_perms perms);
+void * valloc(pid_t pid, size_t size, size_t palign, size_t valign,
+	      struct page_perms perms);
+int vfree(pid_t pid, void * vaddr, size_t size);
+int vinit(pid_t pid, void * vaddr, size_t size, struct page_perms perms);
 
 // pmm
-int pmap(void * paddr, size_t size);
-void * pmalloc(size_t size, size_t align);
-void pfree(void * paddr, size_t size);
+int pmap(pid_t pid, void * paddr, size_t size);
+void * palloc(pid_t pid, size_t size, size_t align);
+void punmap(pid_t pid, void * paddr, size_t size);
 extern struct memmap memmap;
-extern struct memlist used_blocks;
-extern struct memlist free_blocks;
 
 #endif // MM_H

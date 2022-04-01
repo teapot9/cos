@@ -40,6 +40,7 @@ image: $(BUILD)/$(COS_KERNEL).elf
 $(BUILD)/$(COS_KERNEL).elf: $(BUILD)/modules.o
 	$(SED) -e 's/@@IMAGE_BASE@@/0xffffffff80000000/g' $(SRC)/arch/$(ARCH)/sections.lds.in >$(sections)
 	$(LD) -dT $(sections) $(LDFLAGS) -pie -static -entry=entry_efi_wrapper_s2 -o $@ $^
+#	$(LD) -dT $(sections) $(LDFLAGS) -pie -static -entry=entry_efi_s2 -o $@ $^
 
 include $(SRC_ROOT)/Makefile.rules
 

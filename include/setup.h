@@ -18,4 +18,8 @@ int pmm_init(struct memmap * newmap);
 int serial_init(void);
 #endif
 
+#ifdef BOOTLOADER
+extern struct vmemmap kvmemmap;
+#endif
+
 #endif // SETUP_H

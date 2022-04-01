@@ -13,9 +13,6 @@ struct efistub_data {
 	const efi_system_table_t * system_table;
 	const efi_loaded_image_protocol_t * image_proto;
 };
-struct efistub_bdata {
-	struct efistub_data data;
-};
 
 static inline bool efi_guid_t_eq(efi_guid_t a, efi_guid_t b)
 {

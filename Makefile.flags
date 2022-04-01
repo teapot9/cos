@@ -19,6 +19,11 @@ SRC := $(abspath $(SRC_ROOT)/$(RELAPATH))
 BUILD := $(abspath $(BUILD_ROOT)/$(RELAPATH))
 #$(info SRC = $(SRC))
 #$(info BUILD = $(BUILD))
+ifeq ($(findstring s,$(firstword -$(MAKEFLAGS))),s)
+	SILENT=1
+else
+	SILENT=0
+endif
 
 COMMON_FLAGS += -msse3
 COMMON_FLAGS += -mno-red-zone -mabi=sysv

@@ -18,6 +18,8 @@
 struct process processes[MAX_PROC_CNT];
 uint8_t used[MAX_PROC_CNT] = {0};
 
+static uint64_t kcr3 = 0;
+
 static bool is_used(pid_t pid)
 {
 	if (pid > MAX_PROC_CNT)
@@ -96,10 +98,11 @@ static int thread_init(
 
 	void * stack;
 	if (is_kernel_process(parent)) {
-		thread->stack = vmalloc(KSTACK_SIZE + KSTACK_ALIGN);
-		if (thread->stack.addr == NULL)
+		struct page_perms perms = {.exec = false, .user = thread->parent->pid != 0, .write = true};
+		thread->stack = valloc(thread->parent->pid, KSTACK_SIZE, KSTACK_ALIGN, KSTACK_ALIGN, perms);
+		if (thread->stack == NULL)
 			return -ENOMEM;
-		stack = kstack_aligned(thread->stack.addr);
+		stack = thread->stack;
 	} else {
 		// Should create user stack in user CR3
 		return -ENOTSUP;
@@ -137,14 +140,17 @@ static int process_init(
 	proc->parent = parent;
 	proc->threads = NULL;
 
-	uword_t cr3;
+	uword_t cr3 = 0;
+	/*
 	if (is_kernel_process(proc)) {
-		cr3 = kcr3();
+		cr3 = kcr3;
 	} else {
 		// Should form kernel CR3
 		return -ENOTSUP;
 	}
+	*/
 	proc->cr3 = cr3;
+	proc->root_table_vaddr = NULL;
 	proc->last_tid = SIZE_MAX;
 
 	return 0;
@@ -214,6 +220,9 @@ int process_new(struct process * parent, void (* start)(void))
 	int err;
 
 	pid_t pid = new_pid();
+	if (start == NULL && pid != 0)
+		return -EINVAL;
+
 	struct process * proc = process_get(pid);
 	if (proc == NULL)
 		return -EAGAIN;
@@ -222,11 +231,13 @@ int process_new(struct process * parent, void (* start)(void))
 	if (err)
 		return err;
 
-	err = thread_new(proc, start);
-	if (err < 0)
-		return err;
-	if (err > 0)
-		return -EINVAL;
+	if (start != NULL) {
+		err = thread_new(proc, start);
+		if (err < 0)
+			return err;
+		if (err > 0)
+			return -EINVAL;
+	}
 
 	return proc->pid;
 }
@@ -329,4 +340,16 @@ enum tstate task_get_state(struct thread * t)
 struct semaphore_list ** task_semaphores(struct thread * t)
 {
 	return &t->semaphores;
+}
+
+/* public: task.h */
+union cr3 * process_cr3(struct process * proc)
+{
+	return (union cr3 *) &proc->cr3;
+}
+
+/* public: task.h */
+struct table_vaddr ** process_vrtable(struct process * proc)
+{
+	return &proc->root_table_vaddr;
 }

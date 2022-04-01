@@ -123,11 +123,14 @@ class CommandEfi(gdb.Command):
 
         gdb.execute(PLIST_FUN)
 
+        '''
         trampoline = gdb.Breakpoint('trampoline')
         trampoline.commands = (
             f'add-symbol-file {KERNEL}\n'
             'continue\n'
         )
+        '''
+        gdb.execute(f'add-symbol-file {KERNEL}')
 
         try:
             with open(CMD_FILE, 'r') as cmd_file:

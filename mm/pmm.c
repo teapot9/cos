@@ -12,98 +12,78 @@
 #include <mm/memmap.h>
 
 /* public: mm.h */
-int pmap(void * paddr, size_t size)
+struct memmap memmap;
+
+/* public: mm.h */
+int pmap(pid_t pid, void * paddr, size_t size)
 {
-	int err;
-	if (!pmm_is_init())
-		return early_pmap(paddr, size);
+	if (unlikely(!pmm_is_init))
+		return -EAGAIN;
+		//return early_pmap(paddr, size);
 
-	if (memlist_get(&used_blocks, paddr, size, false) != NULL) {
-		pr_err("cannot allocate %zu bytes of physical memory at %p: "
-		       "memory is in use\n", size, paddr);
-		return -ENOMEM;
+	if (size % 4096)
+		pr_warn("physical mapping of size %zu "
+		        "bytes is not multiple of 4096\n", size);
+
+	struct memmap_elt * found = memmap_get(&memmap, paddr, size, true);
+	if (found == NULL)
+		return -ENOENT;
+	if (pid != 0) {
+		if (found->type != MEMORY_TYPE_FREE)
+			return -EACCES;
+	} else {
+		if (found->type == MEMORY_TYPE_USED)
+			return -EBUSY;
+		if (found->type != MEMORY_TYPE_FREE)
+			return 0;
 	}
-
-	err = memlist_del(&free_blocks, paddr, size, true);
-	if (err == -ENOENT) {
-		pr_debug("reserved memory alloc: %zuB at %p\n", size, paddr);
-		goto exit_ok;
-	} else if (err) {
-		pr_crit("cannot remove %zuB of free memory at %p, errno = %d\n",
-			size, paddr, err);
-		return err;
-	}
-
-	err = memlist_add(&used_blocks, paddr, size, true);
-	if (err) {
-		pr_err("cannot allocate %zu bytes of physical memory at %p: "
-		       "memory is in use, errno = %d\n", size, paddr, err);
-		err = memlist_add(&free_blocks, paddr, size, true);
-		if (err)
-			pr_crit("lost %zu bytes of memory at %p: "
-				"cannot mark as free, errno = %d",
-				size, paddr, err);
-		return err;
-	}
-
-exit_ok:
+	int err = memmap_update(&memmap, paddr, size, MEMORY_TYPE_USED, pid);
 #ifdef CONFIG_MM_DEBUG
-	pr_debug("pmap(%p, %zu) -> %d\n", paddr, size, 0);
+	pr_debug("pmap(%zu, %p, %zu) -> %d\n", pid, paddr, size, err);
 #endif
-	return 0;
+	return err;
 }
 
 /* public: mm.h */
-void * pmalloc(size_t size, size_t align)
+void * palloc(pid_t pid, size_t size, size_t align)
 {
-	int err;
-	if (!pmm_is_init())
-		return early_pmalloc(size, align);
-
-	struct memlist_elt * found = memlist_search(&free_blocks, size, align);
-	if (found == NULL) {
-		pr_err("cannot allocate %zu bytes of physical memory: "
-		       "out of memory\n", size);
-	}
-
-	void * paddr = aligned(found->addr, align);
-
-	err = pmap(paddr, size);
-	if (err)
+	if (unlikely(!pmm_is_init))
 		return NULL;
+
+	struct memmap_elt * found =
+		memmap_search(&memmap, size, align, MEMORY_TYPE_FREE, 0);
+	if (found == NULL) {
+		pr_crit("cannot find %zu bytes of pmem\n", size);
+		return NULL;
+	}
+	void * paddr = aligned(found->l.addr, align);
+	int err = pmap(pid, paddr, size);
+	if (err) {
+		pr_err("cannot allocate %zu bytes of pmem, errno = %d\n",
+		       size, err);
+		paddr = NULL;
+	}
 #ifdef CONFIG_MM_DEBUG
-	pr_debug("pmalloc(%zu, %zu) -> %p\n", size, align, paddr);
+	pr_debug("palloc(%zu, %zu, %zu) -> %p\n", pid, size, align, paddr);
 #endif
 	return paddr;
 }
 
 /* public: mm.h */
-void pfree(void * paddr, size_t size)
+void punmap(pid_t pid, void * paddr, size_t size)
 {
-	int err;
-	if (!pmm_is_init()) {
-		early_pfree(paddr, size);
+	if (unlikely(!pmm_is_init)) {
+		//early_punmap(paddr, size);
 		return;
 	}
 
-	err = memlist_del(&used_blocks, paddr, size, true);
-	if (err) {
-		pr_err("cannot free %zu bytes of physical memory at %p: "
-		       "memory is not used, errno = %d\n", size, paddr, err);
-		memlist_del(&used_blocks, paddr, size, false);
-		pr_crit("lost up to %zu bytes of physical memory at %p\n",
-			size, paddr);
+	struct memmap_elt * found = memmap_get(&memmap, paddr, size, true);
+	if (found == NULL
+	    || found->type != MEMORY_TYPE_USED
+	    || found->owner != pid)
 		return;
-	}
-
-	err = memlist_add(&free_blocks, paddr, size, true);
-	if (err) {
-		pr_err("cannot free %zu bytes of physical memory at %p: "
-		       "memory is already free, errno = %d\n",
-		       size, paddr, err);
-		return;
-	}
+	memmap_update(&memmap, paddr, size, MEMORY_TYPE_FREE, 0);
 #ifdef CONFIG_MM_DEBUG
-	pr_debug("pfree(%p, %zu)\n", paddr, size);
+	pr_debug("punmap(%zu, %p, %zu)\n", pid, paddr, size);
 #endif
 }

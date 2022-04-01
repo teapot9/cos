@@ -24,8 +24,10 @@ void memmap_print(struct memmap * map, const char * prefix)
 
 static bool compat(struct memlist_elt * a, struct memlist_elt * b)
 {
-	return ((struct memmap_elt *) a)->type
-		== ((struct memmap_elt *) b)->type;
+	struct memmap_elt * x = (struct memmap_elt *) a;
+	struct memmap_elt * y = (struct memmap_elt *) b;
+	return x->type == y->type
+		&& (x->type != MEMORY_TYPE_USED || x->owner == y->owner);
 }
 
 struct memmap memmap_new(void)
@@ -42,17 +44,34 @@ const char * memmap_type_str(enum memory_type type)
 		return "reserved";
 	case MEMORY_TYPE_EFI_SERVICES:
 		return "EFI services";
-	case MEMORY_TYPE_AVAILABLE:
-		return "available";
 	case MEMORY_TYPE_ACPI_RECLAIMABLE:
 		return "ACPI reclaimable";
 	case MEMORY_TYPE_ACPI_NVS:
 		return "ACPI NVS";
 	case MEMORY_TYPE_PERSISTENT:
 		return "persistent";
+	case MEMORY_TYPE_USED:
+		return "used";
+	case MEMORY_TYPE_FREE:
+		return "free";
 	default:
 		return "invalid";
 	}
+}
+
+struct memmap_elt * memmap_search(
+	struct memmap * map, size_t size, size_t align,
+	enum memory_type type, pid_t owner
+)
+{
+	struct memmap_elt * cur;
+	list_foreach(cur, map->l.l.first) {
+		if (cur->l.size - align_diff(cur->l.addr, align) >= size
+		    && cur->type == type
+		    && (type != MEMORY_TYPE_USED || cur->owner == owner))
+			return cur;
+	}
+	return NULL;
 }
 
 int memmap_type(
@@ -70,7 +89,8 @@ int memmap_type(
 }
 
 int memmap_update(
-	struct memmap * map, void * start, size_t size, enum memory_type type
+	struct memmap * map, void * start, size_t size,
+	enum memory_type type, pid_t owner
 )
 {
 	int err = memmap_undef(map, start, size);
@@ -81,6 +101,7 @@ int memmap_update(
 	new->l.addr = start;
 	new->l.size = size;
 	new->type = type;
+	new->owner = type == MEMORY_TYPE_USED ? owner : 0;
 	return memlist_add_elt(&map->l, &new->l, true);
 }
 

@@ -19,8 +19,9 @@ const struct module efistub_mod = {
 const struct device * efiboot_dev = NULL;
 
 static bool is_init = false;
-static struct efistub_bdata bdata;
-static struct efistub_data * stub = NULL;
+static struct efistub_data stub = {
+	.image_handle = NULL, .system_table = NULL, .image_proto = NULL,
+};
 
 static efi_loaded_image_protocol_t * get_image(
 	efi_handle_t handle, const efi_system_table_t * system_table
@@ -56,26 +57,25 @@ static void early_setup(
 {
 	if (efistub_is_init())
 		return;
-	stub = &bdata.data;
-	stub->image_handle = image_handle;
-	stub->system_table = system_table;
+	stub.image_handle = image_handle;
+	stub.system_table = system_table;
 #ifdef BOOTLOADER
-	stub->image_proto = get_image(image_handle, system_table);
+	stub.image_proto = get_image(image_handle, system_table);
 #else
-	stub->image_proto = image_proto;
+	stub.image_proto = image_proto;
 #endif
 }
 
 /* public: platform_setup.h */
 #ifdef BOOTLOADER
 int efistub_init(
-	struct efistub_bdata ** data,
+	struct efistub_data ** data,
 	efi_handle_t image_handle,
 	const efi_system_table_t * system_table
 )
 #else
 int efistub_init(
-	struct efistub_bdata * data
+	struct efistub_data * data
 )
 #endif
 {
@@ -87,24 +87,21 @@ int efistub_init(
 
 #ifdef BOOTLOADER
 	early_setup(image_handle, system_table);
+	*data = &stub;
 #else
-	early_setup(data->data.image_handle, data->data.system_table,
-	            data->data.image_proto);
+	early_setup(data->image_handle, data->system_table,
+	            data->image_proto);
 #endif
 
-	if (stub == NULL) {
-		pr_err("No EFI stub information available\n", 0);
-		return -EINVAL;
-	}
-	if (stub->image_handle == NULL) {
+	if (stub.image_handle == NULL) {
 		pr_err("No EFI image handle provided\n", 0);
 		return -EINVAL;
 	}
-	if (stub->system_table == NULL) {
+	if (stub.system_table == NULL) {
 		pr_err("No EFI system table provided\n", 0);
 		return -EINVAL;
 	}
-	if (stub->image_proto == NULL)
+	if (stub.image_proto == NULL)
 		pr_err("No EFI loaded image protocol available\n", 0);
 
 	ret = device_create(&efiboot_dev, &efistub_mod, NULL, "platform", "api",
@@ -128,17 +125,17 @@ bool efistub_is_init(void)
 /* public: firmware/efistub.h */
 efi_handle_t efistub_image_handle(void)
 {
-	return efistub_is_init() ? stub->image_handle : NULL;
+	return efistub_is_init() ? stub.image_handle : NULL;
 }
 
 /* public: firmware/efistub.h */
 const efi_system_table_t * efistub_system_table(void)
 {
-	return efistub_is_init() ? stub->system_table : NULL;
+	return efistub_is_init() ? stub.system_table : NULL;
 }
 
 /* public: firmware/efistub.h */
 const efi_loaded_image_protocol_t * efistub_image_proto(void)
 {
-	return efistub_is_init() ? stub->image_proto : NULL;
+	return efistub_is_init() ? stub.image_proto : NULL;
 }

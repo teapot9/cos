@@ -6,8 +6,14 @@ obj-files := $(addprefix $(BUILD)/, $(filter-out %/, $(obj-y)))
 bootloader-dirs := $(addprefix $(BUILD)/, $(filter %/, $(bootloader-y)))
 bootloader-files := $(addprefix $(BUILD)/, $(filter-out %/, $(bootloader-y)))
 bootloader-files := $(bootloader-files:.o=.bootloader.o)
+
 all: $(BUILD)/modules.o $(BUILD)/bootloader.o
+ifneq ($(SILENT),1)
 	$(info $(RELAPATH): built $^)
+else
+	$(info)
+endif
+
 
 # Dependencies
 bdeps := $(obj-files) $(bootloader-files)
@@ -27,8 +33,11 @@ $(BUILD)/%.d:
 alldirs := $(addprefix $(BUILD)/, $(wildcard */))
 .PHONY: $(alldirs)
 $(alldirs):
-	$(info $(relapath): descending into $@)
+ifneq ($(SILENT),1)
+	$(info $(RELAPATH): descending into $@)
+endif
 	$(Q)$(MAKE) -C $(dir $@) SRC_ROOT=$(SRC_ROOT) BUILD_ROOT=$(BUILD_ROOT) $(MAKECMDGOALS)
+
 
 # Rule for modules.o
 allmods := $(addsuffix modules.o, $(addprefix $(BUILD)/, $(wildcard */)))

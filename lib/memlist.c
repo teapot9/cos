@@ -136,6 +136,8 @@ struct memlist_elt * memlist_get(
 	elt.size = size;
 	struct memlist_elt * found = first_overlap_or_next(l, &elt);
 	if (found != NULL) {
+		if (mlist_is_next(found, &elt))
+			found = (struct memlist_elt *) found->l.next;
 		if (full && !mlist_is_inside(found, &elt))
 			found = NULL;
 		else if (!full && !mlist_is_overlap(found, &elt))
@@ -252,8 +254,15 @@ int memlist_del_elt(struct memlist * l, struct memlist_elt * elt, bool strict)
 	if (found == NULL)
 		return strict ? -ENOENT : 0;
 
-	if (strict && !mlist_is_inside(found, elt))
-		return -ENOENT;
+	if (!mlist_is_inside(found, elt)) {
+		if (strict)
+			return -ENOENT;
+		if (mlist_is_next(found, elt)) {
+			found = (struct memlist_elt *) found->l.next;
+			if (found == NULL)
+				return strict ? -ENOENT : 0;
+		}
+	}
 
 	int err;
 	do {

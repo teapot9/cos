@@ -24,7 +24,8 @@ static int gop_reg(const struct device * dev)
 
 	void * base = (void *) gop->mode.frame_buffer_base;
 	size_t size = gop->mode.frame_buffer_size;
-	base = mmap(base, size);
+	struct page_perms perms = {.exec = false, .user = false, .write = true};
+	base = mmap(0, base, size, 0, perms);
 	if (base == NULL) {
 		pr_err("Failed to map EFI framebuffer memory\n", 0);
 		return -ENOMEM;

@@ -25,6 +25,7 @@ struct process {
 	size_t pid;
 	struct tlist * threads;
 	uword_t cr3;
+	struct table_vaddr * root_table_vaddr;
 	size_t last_tid;
 };
 
@@ -35,7 +36,7 @@ struct thread {
 	_Atomic enum tstate state;
 	uint8_t kstack[KSTACK_SIZE + KSTACK_ALIGN];
 	struct interrupt_frame task_state;
-	struct memblock stack;
+	void * stack;
 	struct cpu * running;
 	struct semaphore_list * semaphores;
 };

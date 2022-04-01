@@ -9,6 +9,12 @@
 #include <mm.h>
 #include <print.h>
 #include <string.h>
+#include <mm/vmemmap.h>
+
+#ifdef BOOTLOADER
+/* public: setup.h */
+struct vmemmap kvmemmap;
+#endif // BOOTLOADER
 
 #define array_foreach_s(iterator, start, ent_size, nb_ent) \
 	for ((iterator) = (void *) (start); \
@@ -56,6 +62,9 @@ static bool check_magic(struct e_ident * ident)
 static int elf_load64(void (** entry)(void), void * start, size_t size)
 {
 	Elf64_Ehdr * hdr = start;
+#ifdef BOOTLOADER
+	kvmemmap = vmemmap_new();
+#endif // BOOTLOADER
 
 	if (hdr->e_ehsize < sizeof(*hdr))
 		return -EINVAL;
@@ -92,18 +101,47 @@ static int elf_load64(void (** entry)(void), void * start, size_t size)
 			if (phdr->p_memsz > memsz)
 				memsz += 4096;
 #endif
-			size_t memsz = phdr->p_memsz;
-			void * paddr = pmalloc(memsz, phdr->p_align);
+			/* Set permissions */
+			struct page_perms perms = {
+				.exec = phdr->p_flags & PF_X,
+				.user = (0 != 0),
+				.write = phdr->p_flags & PF_W,
+			};
+			struct page_perms temp_perms = {
+				.exec = false, .user = false, .write = true
+			};
+
+			/* Allocate */
+			void * paddr = palloc(0, phdr->p_memsz, phdr->p_align);
 			if (paddr == NULL)
 				return -ENOMEM;
-			int err = vmap(paddr, phdr->p_vaddr, memsz);
-			if (err)
+			int err = vmap(0, paddr, phdr->p_vaddr,
+			               phdr->p_memsz, temp_perms);
+			if (err) {
+				punmap(0, paddr, phdr->p_memsz);
 				return err;
+			}
+
+#ifdef BOOTLOADER
+			/* Save kernel vmemmap */
+			err = vmemmap_map(&kvmemmap, phdr->p_vaddr,
+			                  phdr->p_memsz, paddr, perms, false);
+			if (err) {
+				vfree(0, phdr->p_vaddr, phdr->p_memsz);
+				return err;
+			}
+#endif // BOOTLOADER
+
+			/* Copy data */
 			memcpy(phdr->p_vaddr,
 			       (uint8_t *) start + phdr->p_offset,
 			       phdr->p_filesz);
 			memset((uint8_t *) phdr->p_vaddr + phdr->p_filesz, 0,
 			       phdr->p_memsz - phdr->p_filesz);
+
+			/* Set permissions */
+			// TODO: bug: this only set perms on one page, not whole range mapped with vmap ?
+			vinit(0, phdr->p_vaddr, phdr->p_memsz, perms);
 			break;
 		case PT_DYNAMIC:
 		case PT_NOTE:
