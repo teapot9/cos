@@ -2,6 +2,7 @@
 #define MM_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 struct memmap_desc {
 	enum memory_type {
@@ -43,6 +44,7 @@ struct memblock vmalloc(size_t size);
 void * mmap(void * paddr, size_t size);
 void vunmap(void * vaddr, size_t size);
 void vfree(void * vaddr, size_t size);
+uint64_t kcr3(void);
 
 // pmm
 int pmap(void * paddr, size_t size);

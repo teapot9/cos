@@ -58,7 +58,7 @@ char * efistub_cmdline(void)
 		size += strlen(efi_cmdline);
 	if (size)
 		size += sizeof(char); // space
-	size += strlen(efi_cmdline);
+	size += strlen(extra_cmdline);
 
 	char * cmdline = kmalloc(size);
 	if (cmdline == NULL) {

@@ -192,10 +192,10 @@ int vmm_init(void)
 		cur = cur->next;
 	}
 
-	uint64_t raw_cr3 = read_cr3();
-	union cr3 * cr3 = (void *) &raw_cr3;
-	cr3->normal.pml4 = (unsigned long) pml4 >> 12;
-	write_cr3(raw_cr3);
+	//uint64_t raw_cr3 = read_cr3();
+	//union cr3 * cr3 = (void *) &raw_cr3;
+	//cr3->normal.pml4 = (unsigned long) pml4 >> 12;
+	write_cr3(kcr3());
 	enable_paging();
 
 	return 0;

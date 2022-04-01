@@ -1,9 +1,10 @@
 include $(SRC_ROOT)/Makefile.flags
 
-obj-$(CONFIG_BOOT_EFISTUB) += entry_efi.o
+obj-$(CONFIG_BOOT_EFISTUB) += entry_efi.o entry_efi_wrapper.o
 clean-y += $(COS_KERNEL).efi $(COS_KERNEL).efi.debug
 
 EFIARCH := efi-app-$(ARCH)
+CFLAGS += -fomit-frame-pointer
 
 include $(SRC_ROOT)/Makefile.rules
 

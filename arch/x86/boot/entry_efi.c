@@ -1,6 +1,11 @@
+#include <errno.h>
 #include <stddef.h>
 #include <stdnoreturn.h>
 
+#include <sched.h>
+#include <task.h>
+#include "../../../kernel/task.h"
+#include <cpu.h>
 #include <asm/asm.h>
 #include <console.h>
 #include <firmware/efistub.h>
@@ -23,9 +28,15 @@
 #include <cmdline.h>
 #include <panic.h>
 
-noreturn EFIABI void entry_efi(efi_handle_t image_handle,
-               efi_system_table_t * system_table);
+noreturn void entry_efi(efi_handle_t image_handle,
+                        efi_system_table_t * system_table);
 
+extern noreturn void entry_efi_wrapper(
+	efi_handle_t image_handle, efi_system_table_t * system_table
+);
+extern noreturn void set_kstack(void * kstack, void (* fcn)(void));
+
+#ifdef CONFIG_DEBUG
 static void debug_base_addr(efi_handle_t image_handle,
                             efi_system_table_t * system_table)
 {
@@ -44,14 +55,18 @@ static void debug_base_addr(efi_handle_t image_handle,
 		system_table->con_out, buff
 	);
 }
+#endif
 
-EFIABI void entry_efi(efi_handle_t image_handle,
-                      efi_system_table_t * system_table)
+noreturn void entry_efi(efi_handle_t image_handle,
+                        efi_system_table_t * system_table)
 {
-	int ret;
+	int ret = 0;
 
+#ifdef CONFIG_DEBUG
 	debug_base_addr(image_handle, system_table);
-	kbreak();
+	//bool tmp = false;
+	//while (!tmp);
+#endif
 
 	efistub_init(image_handle, system_table);
 	pr_info("Early init: EFI stub\n", 0);
@@ -77,14 +92,23 @@ EFIABI void entry_efi(efi_handle_t image_handle,
 	serial_init();
 #endif
 
-	idt_init();
-	pr_info("Early init: IDT\n", 0);
-
 	pmm_init();
 	pr_info("Early init: PMM\n", 0);
 
 	vmm_init();
 	pr_info("Early init: VMM\n", 0);
 
-	kernel_main();
+	int main_pid = process_new(NULL, kernel_main);
+	if (main_pid > 0)
+		main_pid = -EINVAL;
+	if (main_pid)
+		panic("Failed to create kernel process, errno = %d",
+		      main_pid);
+
+	ret = cpu_reg(NULL);
+	if (ret)
+		panic("Failed CPU0 initialization, errno = %d", ret);
+	pr_info("Early init: CPU0\n", 0);
+
+	cpu_start(0, 0);
 }

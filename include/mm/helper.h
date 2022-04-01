@@ -31,9 +31,21 @@ static inline bool is_inside(void * a1, size_t s1, void * a2, size_t s2)
 
 static inline void * aligned(void * a, size_t align)
 {
+	if (align == 0)
+		return a;
 	uint8_t * ia = a;
 	size_t mod = (size_t) ia % align;
 	uint8_t * aligned = ia - mod + (mod ? align : 0);
+	return aligned;
+}
+
+static inline void * aligned_down(void * a, size_t align)
+{
+	if (align == 0)
+		return a;
+	uint8_t * ia = a;
+	size_t mod = (size_t) ia % align;
+	uint8_t * aligned = ia - mod;
 	return aligned;
 }
 

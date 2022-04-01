@@ -19,13 +19,16 @@ BUILD := $(abspath $(BUILD_ROOT)/$(RELAPATH))
 #BUILD := $(shell realpath --relative-to=. $(BUILD_ROOT)/$(RELAPATH))
 $(info SRC = $(SRC))
 $(info BUILD = $(BUILD))
+#ARCHDSRC := $(shell realpath --relative-to=. $(SRC_ROOT)/arch/$(ARCH)/$(RELAPATH))
+#STDSRC := $(shell realpath --relative-to=. $(SRC_ROOT)/$(RELAPATH:arch/$(ARCH:x86_64=x86)/%=%))
 
-CFLAGS += -ffreestanding -fpic -fPIC -fpie -fno-stack-protector
+CFLAGS += -ffreestanding -fpic -fPIC -fpie -fstack-protector-all #-fno-stack-protector
 CFLAGS += -mno-red-zone -mabi=sysv
 CFLAGS += -Wall -Wextra -Wpedantic -std=c18
 CFLAGS += -Wtype-limits -Wstrict-prototypes -Wtype-limits
 CFLAGS += -Wframe-larger-than=$(CONFIG_KERNEL_FRAME_SIZE)
 CFLAGS += -I$(SRC_ROOT)/arch/$(ARCH)/include -I$(SRC_ROOT)/include
+CPPFLAGS += -DARCHSRC=$(ARCHDSRC) -DSTDSRC=$(STDSRC)
 LDFLAGS += -znodefaultlib -nostdlib -znocombreloc -Bsymbolic
 LDFLAGS += -unresolved-symbols=report-all
 LDFLAGS += --warn-common --warn-alternate-em
@@ -70,7 +73,7 @@ ifeq ($(CONFIG_ASM_DEFAULT_ATT), y)
 endif
 
 ifeq ($(CONFIG_BOOT_EFISTUB), y)
-	LDFLAGS += -entry=entry_efi
+	LDFLAGS += -entry=entry_efi_wrapper
 endif
 
 BIN2C = $(SRC_ROOT)/scripts/bin2c

@@ -7,10 +7,14 @@ all: $(BUILD)/modules.o
 	$(info $(RELAPATH): built $^)
 
 # Dependencies
-bdeps := $(patsubst %.o, %.d, $(obj-files))
-bdeps := $(patsubst %.i, %.d, $(deps))
-bdeps := $(patsubst %.s, %.d, $(deps))
+bdeps := $(obj-files)
+bdeps := $(bdeps:.o=.d)
+bdeps := $(bdeps:.i=.d)
+bdeps := $(bdeps:.s=.d)
 -include $(bdeps)
+
+$(BUILD)/%.d:
+	$(NOOP)
 
 # Rule for errors
 .DEFAULT:
@@ -42,6 +46,7 @@ clean-dirs := $(addprefix $(BUILD)/, $(filter %/, $(obj-y) $(obj-) $(clean-y)))
 clean-files := $(addprefix $(BUILD)/, $(filter-out %/, $(obj-y) $(obj-) $(clean-y)))
 .PHONY: clean
 clean: $(clean-dirs)
+	$(info bdeps = $(bdeps))
 	rm -f $(clean-files) $(bdeps) $(BUILD)/modules.o
 
 # Generic build rules

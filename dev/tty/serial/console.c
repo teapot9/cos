@@ -9,7 +9,16 @@
 #include <console.h>
 #include <print.h>
 
+#define VT100_RESET "\033c"
+#define VT100_CLEAR "\033[2J\033[1;1H"
+
 static const char * lastpos = NULL;
+
+static inline void reset(const struct device * dev)
+{
+	struct serial * serial = dev->driver_data;
+	serial_write(serial->base, VT100_RESET);
+}
 
 static int enable(const struct device * dev)
 {
@@ -17,6 +26,7 @@ static int enable(const struct device * dev)
 	int err = serial_init_port(serial->base);
 	if (err)
 		return err;
+	reset(dev);
 	lastpos = NULL;
 	return 0;
 }
@@ -40,8 +50,10 @@ static void update(const struct device * dev)
 	}
 }
 
-static void clear(UNUSED const struct device * dev)
+static void clear(const struct device * dev)
 {
+	struct serial * serial = dev->driver_data;
+	serial_write(serial->base, VT100_CLEAR);
 }
 
 int serial_console_reg(const struct device * dev)

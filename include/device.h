@@ -61,4 +61,6 @@ struct device_iter device_iter_init(const char * class, const char * type);
 
 struct device * device_iter_next(struct device_iter * iter);
 
+const struct module * core_module(void);
+
 #endif // DEVICE_H

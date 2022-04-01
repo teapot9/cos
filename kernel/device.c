@@ -8,6 +8,11 @@
 #include <string.h>
 #include <mm.h>
 #include <print.h>
+#include <module.h>
+
+static const struct module core_mod = {
+	.name = "core",
+};
 
 static struct dev_list * devices = NULL;
 
@@ -15,10 +20,11 @@ static bool is_class(const char * class)
 {
 #define _is_class(str) (!strcmp(str, class))
 	if (
-		_is_class("firmware")
+		_is_class("platform")
 		|| _is_class("graphics")
 		|| _is_class("virtual")
 		|| _is_class("tty")
+		|| _is_class("cpu")
 	)
 		return true;
 	return false;
@@ -57,12 +63,20 @@ static int add_dev(struct device * dev)
 	return 0;
 }
 
+static void disable_dev(const struct device * dev)
+
+{
+	struct dev_list ** pcur = find_prec_dev(dev);
+	if (*pcur == NULL)
+		return;
+	(*pcur)->dev->available = false;
+}
+
 static int del_dev(const struct device * dev)
 {
 	struct dev_list ** pcur = find_prec_dev(dev);
 	if (*pcur == NULL)
 		return -ENOENT;
-	(*pcur)->dev->available = false;
 	*pcur = (*pcur)->next;
 	kfree(dev);
 	return 0;
@@ -151,8 +165,11 @@ int device_create_varg(
 		del_dev(dev);
 		return err;
 	}
+
 	if (dst != NULL)
 		*dst = dev;
+
+	pr_info("new device [%s:%s]: %s\n", dev->class, dev->type, dev->name);
 	return 0;
 }
 
@@ -161,14 +178,21 @@ void device_delete(const struct device * dev)
 {
 	int err;
 
-	if ((err = del_dev(dev)))
-		pr_err("Failed to delete device %s, errno = %d\n",
-		       dev->name, err);
+	disable_dev(dev);
+	device_foreach_child(dev, disable_dev);
+
+	pr_info("removing device [%s:%s]: %s\n",
+	        dev->class, dev->type, dev->name);
 
 	device_foreach_child(dev, device_delete);
 
 	if (dev->unreg != NULL)
 		dev->unreg(dev);
+
+	if ((err = del_dev(dev)))
+		pr_err("Failed to delete device %s, errno = %d\n",
+		       dev->name, err);
+
 }
 
 /* public: device.h */
@@ -178,7 +202,7 @@ const struct device * device_get(const char * name)
 	while (cur != NULL && strcmp(cur->dev->name, name))
 		cur = cur->next;
 
-	if (strcmp(cur->dev->name, name))
+	if (cur == NULL || cur->dev == NULL || strcmp(cur->dev->name, name))
 		return NULL;
 	return cur->dev;
 }
@@ -215,4 +239,10 @@ struct device * device_iter_next(struct device_iter * iter)
 		return NULL;
 	iter->cur = cur->next;
 	return cur->dev;
+}
+
+/* puiblic: device.h */
+const struct module * core_module(void)
+{
+	return &core_mod;
 }

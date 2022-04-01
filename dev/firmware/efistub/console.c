@@ -21,7 +21,7 @@
 
 static const struct device * eficon_dev = NULL;
 
-static bool efistub_console_is_init(void)
+static inline bool eficon_available(void)
 {
 	return eficon_dev != NULL && eficon_dev->available;
 }
@@ -32,8 +32,6 @@ static int eficon_write(const char * string)
 	size_t size;
 	efi_status_t status;
 
-	if (!efistub_console_is_init())
-		return -EINVAL;
 	if (string == NULL)
 		return -EINVAL;
 
@@ -42,6 +40,8 @@ static int eficon_write(const char * string)
 		if (!size)
 			return -EINVAL;
 
+		if (!eficon_available())
+			return -ENOENT;
 		status = efistub_system_table()->con_out->output_string(
 			efistub_system_table()->con_out, buffer
 		);
@@ -55,7 +55,7 @@ static int eficon_write(const char * string)
 
 static int eficon_reset(void)
 {
-	if (!efistub_console_is_init())
+	if (!eficon_available())
 		return 0;
 
 	efi_status_t ret = efistub_system_table()->con_out->reset(
@@ -72,8 +72,8 @@ static int eficon_clear(void)
 {
 	efi_status_t status;
 
-	if (!efistub_console_is_init())
-		return -EINVAL;
+	if (!eficon_available())
+		return -ENOENT;
 	status = efistub_system_table()->con_out->clear_screen(
 		efistub_system_table()->con_out
 	);
@@ -86,7 +86,7 @@ static const char * lastpos = NULL;
 
 static int efistub_console_enable(const struct device * dev)
 {
-	if (!efistub_console_is_init())
+	if (!eficon_available())
 		return -ENOTSUP;
 	if (dev != eficon_dev)
 		return -EINVAL;
@@ -96,7 +96,7 @@ static int efistub_console_enable(const struct device * dev)
 
 static void efistub_console_disable(const struct device * dev)
 {
-	if (!efistub_console_is_init())
+	if (!eficon_available())
 		return;
 	if (dev != eficon_dev)
 		return;
@@ -105,7 +105,7 @@ static void efistub_console_disable(const struct device * dev)
 
 static void efistub_console_update(const struct device * dev)
 {
-	if (!efistub_console_is_init())
+	if (!eficon_available())
 		return;
 	if (dev != eficon_dev)
 		return;
@@ -121,7 +121,7 @@ static void efistub_console_update(const struct device * dev)
 
 static void efistub_console_clear(const struct device * dev)
 {
-	if (!efistub_console_is_init())
+	if (!eficon_available())
 		return;
 	if (dev != eficon_dev)
 		return;

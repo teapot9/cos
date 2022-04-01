@@ -1,0 +1,4 @@
+config UBSAN
+	bool "ubsan"
+	help
+	  Undefined behavior sanitizer.

@@ -1,9 +1,10 @@
-#ifndef ASM_CPU_H
-#define ASM_CPU_H
+#ifndef ASM_IO_H
+#define ASM_IO_H
 
 #include <stdint.h>
 
 #include <asm/asm.h>
+#include <asm/cpu.h>
 
 static inline void outb(uint16_t port, uint8_t data)
 {
@@ -22,4 +23,4 @@ static inline void io_wait(void)
 	outb(0x80, 0);
 }
 
-#endif // ASM_CPU_H
+#endif // ASM_IO_H

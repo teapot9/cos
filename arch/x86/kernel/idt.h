@@ -8,27 +8,12 @@
 #include <asm/asm.h>
 #include <cpp.h>
 
-#ifdef CONFIG_X86_64
-typedef unsigned long long int uword_t;
-# define UWORD_PRINT "ll"
-#elif CONFIG_X86_32
-typedef unsigned int uword_t;
-# define UWORD_PRINT ""
-#else
-# error Unknown architecture type
-#endif
-
 enum idt_gate_type {
 	IDT_TASK_GATE = 0x5,
 	IDT_16INT_GATE = 0x6,
 	INT_16TRAP_GATE = 0x7,
 	INT_INT_GATE = 0xE,
 	INT_TRAP_GATE = 0xF,
-};
-
-struct PACKED idt_reg {
-	uint16_t limit;
-	uint64_t base;
 };
 
 struct PACKED idt_desc {
@@ -44,14 +29,24 @@ struct PACKED idt_desc {
 };
 static_assert(sizeof(struct idt_desc) == 16, "idt_desc must be 16 bytes");
 
-struct interrupt_frame {
-	uword_t ip;
-	uword_t cs;
-	uword_t flags;
-	uword_t sp;
-	uword_t ss;
+struct PACKED idtr {
+	uint16_t limit;
+	struct idt_desc * idt;
 };
+static_assert(sizeof(struct idtr) == 10, "idtr must be 10 bytes");
 
-void set_idt(size_t index, void * callback);
+static inline void lidt(struct idtr * idt)
+{
+	asm volatile(intel("lidt [rax]\n") : : "a" (idt));
+}
+
+static inline struct idtr sidt(void)
+{
+	struct idtr idtr;
+	asm volatile(intel("sidt [rax]\n") : "=a" (idtr));
+	return idtr;
+}
+
+int idt_create_load(void);
 
 #endif // KERNEL_IDT_H

@@ -1,0 +1,4 @@
+#ifndef KERNEL_SCHED_SCHED_H
+#define KERNEL_SCHED_SCHED_H
+
+#endif // KERNEL_SCHED_SCHED_H

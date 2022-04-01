@@ -54,7 +54,7 @@ static void early_setup(efi_handle_t image_handle,
 
 /* public: platform_setup.h */
 int efistub_init(efi_handle_t image_handle,
-                  const efi_system_table_t * system_table)
+                 const efi_system_table_t * system_table)
 {
 	int ret;
 	if (efistub_is_init())
@@ -73,7 +73,7 @@ int efistub_init(efi_handle_t image_handle,
 	if (_image_proto == NULL)
 		pr_err("No EFI loaded image protocol available\n", 0);
 
-	ret = device_create(&efiboot_dev, &efistub_mod, NULL, "firmware", "api",
+	ret = device_create(&efiboot_dev, &efistub_mod, NULL, "platform", "api",
 	                    NULL, NULL, NULL, "efiboot");
 	if (ret)
 		return ret;
@@ -81,6 +81,7 @@ int efistub_init(efi_handle_t image_handle,
 	is_init = true;
 
 	efistub_parse_configuration_table();
+	pr_err("kernel loaded at %p\n", efistub_image_proto()->image_base);
 
 	return 0;
 }

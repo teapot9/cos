@@ -6,10 +6,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include <cpu.h>
 #include <console.h>
 #include <string.h>
 
-#define STR_BUFSIZE 128
+#define STR_BUFSIZE 256
 #define KMSG_BUFSIZE 1024
 
 static char printk_kmsg[KMSG_BUFSIZE];
@@ -56,6 +57,7 @@ size_t vprintk(const char * fmt, va_list ap)
 	const char * fmt_msg = NULL;
 	char buffer[STR_BUFSIZE];
 	size_t ret = 0;
+	//disable_interrupts();
 
 	if (fmt[0] == '<' && fmt[2] == '>') {
 		printk_kmsg[printk_kmsg_end] = fmt[0];
@@ -70,7 +72,7 @@ size_t vprintk(const char * fmt, va_list ap)
 		fmt_msg = fmt;
 	}
 
-	ret = vsprintf(buffer, fmt_msg, ap);
+	ret = vsnprintf(buffer, STR_BUFSIZE, fmt_msg, ap);
 	if (!ret)
 		return ret;
 
@@ -86,6 +88,7 @@ size_t vprintk(const char * fmt, va_list ap)
 	}
 
 	console_update();
+	//restore_interrupts();
 	return ret;
 }
 

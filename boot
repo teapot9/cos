@@ -1,6 +1,6 @@
 #!/bin/bash
 # alias boot='./boot efi & ./boot egdb ; kill -0 $! 1>/dev/null 2>&1 && kill $!'
-# boot() { ./boot efi & ./boot egdb "$@" ; kill -0 $! 1>/dev/null 2>&1 && kill $! ; }
+# boot() { ./boot efi ${QEMU_ARGS} & ./boot egdb "$@" ; kill -0 $! 1>/dev/null 2>&1 && kill $! ; killall qemu-system-x86_64; }
 set -x
 
 mode="${1:-all}"
@@ -9,6 +9,7 @@ mode="${1:-all}"
 KERNEL="${KERNEL:-cos}"
 BUILD="${BUILD:-.}"
 DEBUG_LOG="${DEBUG_LOG:-debug.log}"
+QEMU_LOG="${QEMU_LOG:-qemu.log}"
 BOOT=arch/x86/boot
 
 if [ "${mode}" = efi ]; then
@@ -21,19 +22,24 @@ if [ "${mode}" = efi ]; then
 	#cp -v "${KERNEL}.efi" "${BUILD}"/test/EFI/BOOT/KERNEL.EFI
 	cp -v /usr/share/edk2-ovmf/OVMF_CODE.fd "${BUILD}"/test/OVMF_CODE.fd
 	cp -v /usr/share/edk2-ovmf/OVMF_VARS.fd "${BUILD}"/test/OVMF_VARS.fd
-	rm "${DEBUG_LOG}"
+	rm -f "${DEBUG_LOG}" "${QEMU_LOG}"
 	qemu-system-x86_64 \
+		-nodefaults \
+		-d int,cpu_reset,guest_errors \
+		-D "${QEMU_LOG}" \
+		-no-reboot \
+		-no-shutdown \
 		-cpu qemu64 \
 		-machine q35 \
 		-m 128 \
 		-smp 2 \
-		-net none \
 		-drive if=pflash,format=raw,unit=0,file="${BUILD}"/test/OVMF_CODE.fd,readonly=on \
 		-drive if=pflash,format=raw,unit=1,file="${BUILD}"/test/OVMF_VARS.fd,readonly=off \
 		-drive file=fat:rw:"${BUILD}"/test \
 		-debugcon file:"${DEBUG_LOG}" \
 		-global isa-debugcon.iobase=0x402 \
 		-serial file:debug.log \
+		-vga std \
 		-s \
 		"$@"
 	trap "kill $!" TERM

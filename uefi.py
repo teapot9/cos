@@ -19,6 +19,7 @@ define plist
   end
 end
 '''
+CMD_FILE = 'auto.gdb'
 
 class CommandEfi(gdb.Command):
     def __init__(self):
@@ -35,7 +36,8 @@ class CommandEfi(gdb.Command):
 
         loading = r'Loading [^ ]+ at (0x[0-9A-F]{8,}) .*'
         bootx64 = r'FSOpen: Open .*BOOTX64\.EFI.*'
-        klog = r'Kernel loaded at 0x([0-9A-Fa-f]{4,16})\n$'
+        klog = r'efistub: kernel loaded at 0x([0-9A-Fa-f]{4,16})\n$'
+        klog2 = r'Kernel loaded at 0x([0-9A-Fa-f]{4,16})\n$'
         base = None
         start = time.time()
         while not os.path.isfile('debug.log') \
@@ -46,17 +48,21 @@ class CommandEfi(gdb.Command):
                 matched = False
                 for l in f:
                     if not matched:
-                        if re.match(klog, l) or re.match(bootx64, l):
+                        if re.match(klog2, l) or re.match(klog, l) or re.match(bootx64, l):
                             matched = True
                         else:
                             continue
                     m = re.match(loading, l)
                     k = re.match(klog, l)
+                    k2 = re.match(klog2, l)
                     if m:
                         base = int(m.group(1), base=16)
                         break
                     if k:
                         base = int(k.group(1), base=16)
+                        break
+                    if k2:
+                        base = int(k2.group(1), base=16)
                         break
             if base is None:
                 time.sleep(0.001)
@@ -116,8 +122,19 @@ class CommandEfi(gdb.Command):
 
         gdb.execute(PLIST_FUN)
 
-        gdb.execute('break entry_efi')
-        gdb.execute('break halt')
+        try:
+            with open(CMD_FILE, 'r') as cmd_file:
+                for cmd in cmd_file:
+                    if not cmd.startswith('#'):
+                        if cmd.startswith('@'):
+                            silent = True
+                            cmd = cmd.removeprefix('@')
+                        else:
+                            silent = False
+                        gdb.execute(cmd, to_string=silent)
+        except OSError:
+            gdb.execute('break entry_efi')
+            gdb.execute('continue')
 
 class CommandQQ(gdb.Command):
     def __init__(self):
@@ -128,5 +145,19 @@ class CommandQQ(gdb.Command):
         gdb.execute('kill')
         gdb.execute('quit')
 
+class CommandRbreakIf(gdb.Command):
+    def __init__(self):
+        super().__init__('rbreakif', gdb.COMMAND_USER)
+
+    def invoke(self, arg, from_tty):
+        rarg = r'^([^ ]*)( if )?(.*)?$'
+        name = re.match(rarg, arg).group(1)
+        cond = re.match(rarg, arg).group(3)
+        breaks = gdb.rbreak(name)
+        if cond:
+            for b in breaks:
+                b.condition = cond
+
 CommandEfi()
 CommandQQ()
+CommandRbreakIf()

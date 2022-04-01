@@ -26,7 +26,6 @@ include $(SRC_ROOT)/Makefile.flags
 
 obj-y = arch/ dev/ kernel/ lib/ mm/
 clean-y += $(COS_KERNEL).so
-$(info cleany = $(clean-y))
 
 .PHONY: all
 all: image

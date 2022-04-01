@@ -1,5 +1,7 @@
 include $(SRC_ROOT)/Makefile.flags
 
-obj-y = halt.o idt.o int.o halt.o gdt.o
+CFLAGS += -mfsgsbase
+
+obj-y = halt.o idt.o gdt.o isr.o cpu.o isr_wrapper.o
 
 include $(SRC_ROOT)/Makefile.rules

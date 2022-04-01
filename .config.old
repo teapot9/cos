@@ -21,7 +21,7 @@ CONFIG_CC_OPTIMIZE_O0=y
 # CONFIG_CC_OPTIMIZE_O3 is not set
 # CONFIG_CC_OPTIMIZE_OS is not set
 CONFIG_DEBUG=y
-CONFIG_KERNEL_FRAME_SIZE=1024
+CONFIG_KERNEL_FRAME_SIZE=10240
 # end of Architecture options
 
 #
@@ -57,5 +57,5 @@ CONFIG_FONT_PSF=y
 #
 # Memory management
 #
-CONFIG_MM_DEBUG=y
+# CONFIG_MM_DEBUG is not set
 # end of Memory management

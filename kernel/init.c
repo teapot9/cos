@@ -2,9 +2,13 @@
 
 #include <stddef.h>
 
+#include <debug.h>
 #include <print.h>
 #include <module.h>
 #include <power.h>
+#include <panic.h>
+#include <cpu.h>
+#include <sched.h>
 
 extern initcall_entry_t __initcall_early[];
 extern initcall_entry_t __initcall_core[];
@@ -60,7 +64,12 @@ static void kernel_initcall_level(size_t level)
 
 static void setup(void)
 {
+	enable_nmi();
+	restore_interrupts();
 	kernel_initcalls_early();
+	// while (1)
+		// pr_debug("printing string to debug fb\n", 0);
+	sched_enable();
 	kernel_initcalls();
 }
 
@@ -80,6 +89,9 @@ void kernel_initcalls(void)
 /* public: init.h */
 noreturn void kernel_main(void)
 {
+	pr_info("Kernel main thread started\n", 0);
 	setup();
+	kbreak();
 	halt();
+	panic("Kernel should never exit main function\n");
 }

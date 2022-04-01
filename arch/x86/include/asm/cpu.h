@@ -80,17 +80,36 @@ struct __attribute__((packed)) cr4 {
 	bool osfxsr : 1;
 	bool osxmmexcpt : 1;
 	bool umip : 1;
-	unsigned int reserved1 : 4;
+	unsigned _reserved1 : 1;
+	bool vmxe : 1;
+	bool smxe : 1;
+	bool _reserved2 : 1;
 	bool fsgsbase : 1;
 	bool pcide : 1;
 	bool osxsave : 1;
-	unsigned int reserved2 : 1;
+	unsigned _reserved3 : 1;
 	bool smep : 1;
 	bool smap : 1;
 	bool pke : 1;
 	bool cet : 1;
-	unsigned long int _reserved4 : 40;
+	bool pks : 1;
+	unsigned long _reserved4 : 39;
 };
 static_assert(sizeof(struct cr4) == 8, "CR4 must be 64 bits");
+
+static inline uint64_t read_rflags(void)
+{
+	uint64_t v;
+	asm volatile (intel(
+		"pushfq\n"
+		"pop rax\n"
+	) : "=a" (v));
+	return v;
+}
+
+static inline void swapgs(void)
+{
+	asm volatile (intel("swapgs\n"));
+}
 
 #endif // ASM_CPU_H

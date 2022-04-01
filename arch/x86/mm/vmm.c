@@ -354,7 +354,7 @@ struct memblock vmalloc(size_t size)
 		void * paddr = pmalloc(PAGE_SIZE_PT, PAGE_SIZE_PT);
 		if (paddr == NULL)
 			goto paddr_failed;
-		map_page_pt(pml4, paddr, vaddr);
+		map_page_pt(pml4, paddr, ivaddr);
 		ivaddr += PAGE_SIZE_PT;
 		allocated += PAGE_SIZE_PT;
 	}
@@ -455,4 +455,18 @@ void * virt_to_phys(void * vaddr)
 	if (pml4 == NULL)
 		return NULL;
 	return get_paddr(pml4, vaddr);
+}
+
+/* public: mm.h */
+uint64_t kcr3(void)
+{
+	union pml4e * pml4 = kpml4();
+	union cr3 cr3 = {
+		.normal._ignored1 = 0,
+		.normal.pwt = false,
+		.normal.pcd = false,
+		.normal._ignored2 = 0,
+		.normal.pml4 = (uint64_t) pml4 >> 12,
+	};
+	return *(uint64_t *) &cr3;
 }

@@ -1,5 +1,6 @@
 menu "Libraries"
 
 source "lib/fonts/Kconfig"
+source "lib/compiler/Kconfig"
 
 endmenu
