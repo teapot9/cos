@@ -60,12 +60,14 @@ exc_page_fault(struct interrupt_frame * frame, uword_t error_code)
 {
 	struct page_fault_code * err = (void *) &error_code;
 	uint64_t cr2 = read_cr2();
+#if 0
 	pr_emerg("Exception: page fault:"
 		 "p=%d w=%d u=%d r=%d i=%d pk=%d ss=%d sgx=%d\n",
 		 err->present, err->write, err->user, err->reserved_write,
 		 err->instruction_fetch, err->protection_key,
 		 err->shadow_stack, err->software_guard_extensions);
 	panic("Page fault caused by %p\n", cr2);
+#endif
 }
 
 

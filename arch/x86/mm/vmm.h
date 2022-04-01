@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include <mm.h>
+
 #define NB_PML4_ENTRY 512
 #define NB_PDPT_ENTRY 512
 #define NB_PD_ENTRY 512
@@ -210,16 +212,30 @@ struct mmap {
 	size_t size;
 };
 
-void vmm_init(struct memmap map);
+struct early_vmap {
+	void * paddr;
+	void * vaddr;
+	size_t size;
+	struct early_vmap * next;
+};
 
-void vfree(void * addr, size_t len);
-
-struct mmap vmalloc(size_t size);
-
-struct mmap mmap(union pml4e * pml4, void * addr, size_t size);
+int vmm_init(void);
 
 void * get_paddr(union pml4e * pml4, void * ptr);
 
 struct page get_page(union pml4e * pml4, void * addr);
+
+union pml4e * kpml4(void);
+
+int early_vmap(void * paddr, void * vaddr, size_t size);
+
+void early_vunmap(void * vaddr, size_t size);
+
+void * early_mmap(void * paddr, size_t size);
+
+static inline bool vmm_is_init(void)
+{
+	return kpml4() != NULL;
+}
 
 #endif // MM_VMM_H

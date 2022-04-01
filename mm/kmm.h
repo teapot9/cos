@@ -19,6 +19,4 @@ struct used_memory_header {
 	size_t size;
 };
 
-int kmm_early_init(void);
-
 #endif // MM_KMM_H

@@ -4,47 +4,32 @@
 #include <errno.h>
 
 #include <asm/cpu.h>
-#include "pmm.h"
+#include "../../../mm/pmm.h"
 #include <print.h>
 
 void * get_paddr(union pml4e * pml4, void * ptr)
 {
 	union lin_addr * addr = (union lin_addr *) &ptr;
 	struct page pg = get_page(pml4, ptr);
-	unsigned long int ret = 0;
+	unsigned long int ret = (unsigned long) NULL;
 
 	switch (pg.type) {
 	case PAGE_TYPE_PML4:
 		break;
 	case PAGE_TYPE_PDPT:
-		ret = pg.page.pdpt->page.page << 30 | addr->pdpt.offset;
+		if (pg.page.pdpt->absent.present)
+			ret = pg.page.pdpt->page.page << 30 | addr->pdpt.offset;
 		break;
 	case PAGE_TYPE_PD:
-		ret = pg.page.pd->page.page << 21 | addr->pd.offset;
+		if (pg.page.pd->absent.present)
+			ret = pg.page.pd->page.page << 21 | addr->pd.offset;
 		break;
 	case PAGE_TYPE_PT:
-		ret = pg.page.pt->page.page << 12 | addr->pt.offset;
+		if (pg.page.pt->absent.present)
+			ret = pg.page.pt->page.page << 12 | addr->pt.offset;
 		break;
 	}
 	return (void *) ret;
-}
-
-#define X86_64_MSR_EFER 0xC0000080
-
-static inline void disable_paging(void)
-{
-	write_cr0(read_cr0() & ~(1 << 31)); // Clear CR0.PG
-	write_cr4(read_cr0() & ~(1 << 5)); // Clear CR4.PAE
-	write_msr(X86_64_MSR_EFER,
-		  read_msr(X86_64_MSR_EFER) & ~(1 << 8)); // Clear EFER.LME
-}
-
-static inline void enable_paging(void)
-{
-	write_msr(X86_64_MSR_EFER,
-		  read_msr(X86_64_MSR_EFER) | (1 << 8)); // Set EFER.LME
-	write_cr4(read_cr0() | (1 << 5)); // Set CR4.PAE
-	write_cr0(read_cr0() | (1 << 31)); // Set CR0.PG
 }
 
 struct page get_page(union pml4e * pml4, void * addr)
@@ -292,39 +277,6 @@ static int map_pages_pt(union pml4e * pml4, void * paddr, void * vaddr,
 	return 0;
 }
 
-struct mmap mmap(union pml4e * pml4, void * addr, size_t size)
-{
-	size_t nb_pages = size / 4096 + (size % 4096 != 0);
-	struct mmap map = (struct mmap) {.ptr = NULL, .size = 0};
-
-	if (addr == NULL)
-		addr = find_free_page_pt(pml4, nb_pages);
-	if (addr == NULL)
-		return map; // Out of virtual memory
-
-	uint8_t * vptr = addr;
-	for (size_t i = 0; i < nb_pages; i++) {
-		void * pptr = pmalloc(PAGE_SIZE_PT, PAGE_SIZE_PT);
-		if (pptr == NULL)
-			goto pptr_failed;
-		map_page_pt(pml4, pptr, vptr);
-		vptr += PAGE_SIZE_PT;
-	}
-
-	map.ptr = addr;
-	map.size = nb_pages * 4096;
-	return map;
-
-pptr_failed:
-	pr_err("Out of physical memory, cannot allocate %zu bytes", size);
-	vptr = addr;
-	for (size_t i = 0; i < nb_pages; i++) {
-		vfree(vptr, PAGE_SIZE_PT);
-		vptr += PAGE_SIZE_PT;
-	}
-	return map;
-}
-
 static void unmap_page_pt(union pml4e * pml4, void * addr)
 {
 	struct page pg = get_page(pml4, addr);
@@ -361,205 +313,123 @@ static void unmap_pages_pt(union pml4e * pml4, void * addr, size_t n)
 		unmap_page_pt(pml4, (uint8_t *) addr + i * PAGE_SIZE_PT);
 }
 
-void vfree(void * addr, size_t len)
+/* public: mm.h */
+int vmap(void * paddr, void * vaddr, size_t size)
 {
-	size_t n = len / PAGE_SIZE_PT;
-	uint64_t raw_cr3 = read_cr3();
-	union cr3 * cr3 = (void *) &raw_cr3;
-	unmap_pages_pt((union pml4e *) cr3->normal.pml4, addr, n);
+	union pml4e * pml4 = kpml4();
+	if (pml4 == NULL)
+		return early_vmap(paddr, vaddr, size);
+	int err = map_pages_pt(pml4, paddr, vaddr, size);
+	pr_debug("vmap(%p, %p, %zu) -> %d\n", paddr, vaddr, size, err);
+	return err;
 }
 
-struct mmap vmalloc(size_t size)
+/* public: mm.h */
+struct vmalloc vmalloc(size_t size)
 {
-	uint64_t raw_cr3 = read_cr3();
-	union cr3 * cr3 = (void *) &raw_cr3;
-	return mmap((union pml4e *) cr3->normal.pml4, NULL, size);
-}
-
-static void print_vmmap_pt(union pte * pt, uint8_t * base)
-{
-	for (size_t i = 0; i < 512; i++, base += 4096) {
-		if (!pt[i].absent.present)
-			continue;
-		pr_debug(
-			"pt[%d]: p=1 rw=%d us=%d pwt=%d pcd=%d a=%d d=%d "
-			"pat=%d g=%d page=%p pk=%d xd=%d (%p)\n",
-			i,
-			pt[i].page.write_access,
-			pt[i].page.user_access,
-			pt[i].page.pwt,
-			pt[i].page.pcd,
-			pt[i].page.accessed,
-			pt[i].page.dirty,
-			pt[i].page.pat,
-			pt[i].page.global,
-			pt[i].page.page,
-			pt[i].page.protection_key,
-			pt[i].page.xd,
-			base
-		);
-	}
-}
-
-static void print_vmmap_pd(union pde * pd, uint8_t * base)
-{
-	for (size_t i = 0; i < 512; i++, base += 2*1024*1024) {
-		if (!pd[i].absent.present)
-			continue;
-		pr_debug(
-			"pd[%d]: p=1 rw=%d us=%d pwt=%d pcd=%d a=%d ",
-			i,
-			pd[i].page.write_access,
-			pd[i].page.user_access,
-			pd[i].page.pwt,
-			pd[i].page.pcd,
-			pd[i].page.accessed
-		);
-		if (pd[i].page.page_size) {
-			pr_debug(
-				"d=%d ps=1 g=%d pat=%d page=%p pk=%d xd=%d "
-				"(%p)\n",
-				pd[i].page.dirty,
-				pd[i].page.global,
-				pd[i].page.pat,
-				pd[i].page.page,
-				pd[i].page.protection_key,
-				pd[i].page.xd,
-				base
-			);
-			continue;
-		}
-		pr_debug(
-			"ps=0 pt=%p xd=%d\n",
-			pd[i].pt.pt,
-			pd[i].pt.xd
-		);
-		union pte * pt = (void *) (pd[i].pt.pt << 12);
-		print_vmmap_pt(pt, base);
-	}
-}
-
-static void print_vmmap_pdpt(union pdpte * pdpt, uint8_t * base)
-{
-	for (size_t i = 0; i < 512; i++, base += 1024*1024*1024) {
-		if (!pdpt[i].absent.present)
-			continue;
-		pr_debug(
-			"pdpt[%d]: p=1 rw=%d us=%d pwt=%d pcd=%d a=%d ",
-			i,
-			pdpt[i].page.write_access,
-			pdpt[i].page.user_access,
-			pdpt[i].page.pwt,
-			pdpt[i].page.pcd,
-			pdpt[i].page.accessed
-		);
-		if (pdpt[i].page.page_size) {
-			pr_debug(
-				"d=%d ps=1 g=%d pat=%d page=%p pk=%d xd=%d"
-				" (%p)\n",
-				pdpt[i].page.dirty,
-				pdpt[i].page.global,
-				pdpt[i].page.pat,
-				pdpt[i].page.page,
-				pdpt[i].page.protection_key,
-				pdpt[i].page.xd,
-				base
-			);
-			continue;
-		}
-		pr_debug(
-			"ps=0 pd=%p xd=%d\n",
-			pdpt[i].pd.pd,
-			pdpt[i].pd.xd
-		);
-		union pde * pd = (void *) (pdpt[i].pd.pd << 12);
-		print_vmmap_pd(pd, base);
-	}
-}
-
-static void print_vmmap_pml4(union pml4e * pml4, uint8_t * base)
-{
-	for (size_t i = 0; i < 512; i++, base += 512*1024*1024*1024) {
-		if (!pml4[i].absent.present)
-			continue;
-		pr_debug(
-			"pml4[%d]: p=1 rw=%d us=%d pwt=%d pcd=%d a=%d "
-			"pdpt=%p xd=%d\n",
-			i,
-			pml4[i].pdpt.write_access,
-			pml4[i].pdpt.user_access,
-			pml4[i].pdpt.pwt,
-			pml4[i].pdpt.pcd,
-			pml4[i].pdpt.accessed,
-			pml4[i].pdpt.pdpt,
-			pml4[i].pdpt.xd
-		);
-		union pdpte * pdpt = (void *) (pml4[i].pdpt.pdpt << 12);
-		print_vmmap_pdpt(pdpt, base);
-	}
-}
-
-static union pml4e * pml4 = NULL;
-
-#include <debug.h>
-
-void vmm_init(struct memmap map)
-{
-	uint64_t raw_cr4 = read_cr4();
-	struct cr4 * cr4 = (void *) &raw_cr4;
-	if (cr4->pcide) {
-		pr_notice("Disabling CR4.PCIDE\n", 0);
-		cr4->pcide = false;
-		write_cr4(raw_cr4);
-	}
-
-	pml4 = pmalloc(NB_PML4_ENTRY * sizeof(*pml4), 4096);
+	struct vmalloc null_vmalloc = {.addr = NULL, .size = 0};
+	union pml4e * pml4 = kpml4();
 	if (pml4 == NULL) {
-		pr_emerg("Failed to allocate PML4\n", 0);
+		pr_err("Cannot allocate virtual memory: not initialized\n", 0);
+		return null_vmalloc;
+	}
+
+	size_t nb_pages = size / 4096 + (size % 4096 != 0);
+
+	void * vaddr = find_free_page_pt(pml4, nb_pages);
+	if (vaddr == NULL) {
+		pr_err("Cannot find %zu bytes of free virtual memory\n", size);
+		return null_vmalloc;
+	}
+
+	uint8_t * ivaddr = vaddr;
+	size_t allocated = 0;
+	for (size_t i = 0; i < nb_pages; i++) {
+		void * paddr = pmalloc(PAGE_SIZE_PT, PAGE_SIZE_PT);
+		if (paddr == NULL)
+			goto paddr_failed;
+		map_page_pt(pml4, paddr, vaddr);
+		ivaddr += PAGE_SIZE_PT;
+		allocated += PAGE_SIZE_PT;
+	}
+
+	pr_debug("vmalloc(%zu) -> {%p, %zu}\n", size, vaddr, allocated);
+	return (struct vmalloc) {.addr = vaddr, .size = allocated};
+
+paddr_failed:
+	pr_err("Out of phisical memory, cannot allocate %zu bytes\n", size);
+	ivaddr = vaddr;
+	for (size_t i = 0; i < nb_pages; i++) {
+		vfree(ivaddr, PAGE_SIZE_PT);
+		ivaddr += PAGE_SIZE_PT;
+	}
+	return null_vmalloc;
+}
+
+/* public: mm.h */
+void vunmap(void * vaddr, size_t size)
+{
+	union pml4e * pml4 = kpml4();
+	if (pml4 == NULL) {
+		early_vunmap(vaddr, size);
 		return;
 	}
 
-	for (size_t i = 0; i < NB_PML4_ENTRY; i++) {
-		struct pml4_absent base_pml4e = {.present = false};
-		pml4[i].absent = base_pml4e;
-	}
-	map_page_pt(pml4, pml4, pml4);
-
-	for (size_t i = 0; i < map.desc_count; i++) {
-		if (map.desc[i].phy_start <= 0xc0000000 && map.desc[i].phy_start + map.desc[i].size >= 0xc0000000)
-			kbreak();
-		switch (map.desc[i].type) {
-		case MEMORY_TYPE_KERNEL_CODE:
-		case MEMORY_TYPE_KERNEL_DATA:
-		case MEMORY_TYPE_EFI_SERVICES:
-		case MEMORY_TYPE_ACPI_RECLAIMABLE:
-		case MEMORY_TYPE_ACPI_NVS:
-		case MEMORY_TYPE_HARDWARE:
-		case MEMORY_TYPE_RESERVED: // debug
-			map_pages_pt(pml4, map.desc[i].phy_start,
-				     (uint8_t *) map.desc[i].phy_start
-				     + (size_t) map.desc[i].virt_start,
-				     map.desc[i].size);
-		default:;
-		}
-		//vmm_map(
-		//	map.desc[i].phy_start,
-		//	(uint8_t *) map.desc[i].phy_start
-		//	+ (size_t) map.desc[i].virt_start,
-		//	map.desc[i].size
-		//);
-	}
-
-	uint64_t raw_cr3 = read_cr3();
-	union cr3 * cr3 = (void *) &raw_cr3;
-	//print_vmmap_pml4((void *) (cr3->normal.pml4 << 12), 0);
-	//print_vmmap_pml4(pml4, 0);
-	cr3->normal.pml4 = (unsigned long int) pml4 >> 12;
-	asm volatile(intel("mov cr3, rax\n") : : "a" (raw_cr3));
-	//write_cr3(raw_cr3);
-
-	//union pml4e * pml4 = pzalloc(512 * sizeof(*pml4), 4096);
-	//disable_paging();
-	//enable_paging();
+	size_t nb_pages = size / 4096 + (size % 4096 != 0);
+	unmap_pages_pt(pml4, vaddr, nb_pages);
+	pr_debug("vunmap(%p, %zu)\n", vaddr, size);
 }
 
+/* public: mm.h */
+void vfree(void * vaddr, size_t size)
+{
+	union pml4e * pml4 = kpml4();
+	if (pml4 == NULL) {
+		pr_alert("Cannot free virtual memory: not initialized\n", 0);
+		pr_alert("This should never have happened\n", 0);
+		return;
+	}
+
+	size_t nb_pages = size / 4096 + (size % 4096 != 0);
+
+	vunmap(vaddr, size);
+
+	uint8_t * ivaddr = vaddr;
+	for (size_t i = 0; i < nb_pages; i++) {
+		pfree(get_paddr(pml4, ivaddr), PAGE_SIZE_PT);
+		ivaddr += PAGE_SIZE_PT;
+	}
+	pr_debug("vfree(%p, %zu)\n", vaddr, size);
+}
+
+/* public: mm.h */
+void * mmap(void * paddr, size_t size)
+{
+	union pml4e * pml4 = kpml4();
+	if (pml4 == NULL)
+		return early_mmap(paddr, size);
+
+	size_t nb_pages = size / 4096 + (size % 4096 != 0);
+	int err;
+
+	err = pmap(paddr, size);
+	if (err)
+		return NULL;
+
+	void * vaddr = find_free_page_pt(pml4, nb_pages);
+	if (vaddr == NULL) {
+		pr_err("Cannot find %zu bytes of free virtual memory\n", size);
+		pfree(paddr, size);
+		return NULL;
+	}
+
+	err = map_pages_pt(pml4, paddr, vaddr, size);
+	if (err) {
+		pr_err("Cannot map %p to %p (%zu bytes)\n", vaddr, paddr, size);
+		pfree(paddr, size);
+		return NULL;
+	}
+
+	pr_debug("mmap(%p, %zu) -> %p\n", paddr, size, vaddr);
+	return vaddr;
+}

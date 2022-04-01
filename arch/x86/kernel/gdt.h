@@ -1,0 +1,4 @@
+#ifndef ARCH_X86_KERNEL_GDT_H
+#define ARCH_X86_KERNEL_GDT_H
+
+#endif // ARCH_X86_KERNEL_GDT_H

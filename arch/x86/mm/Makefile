@@ -1,5 +1,5 @@
 include $(SRC_ROOT)/Makefile.flags
 
-obj-y = block.o kmm.o pmm.o pmm_early.o debug.o
+obj-y = vmm.o vmm_early.o
 
 include $(SRC_ROOT)/Makefile.rules

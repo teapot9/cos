@@ -32,7 +32,7 @@ const efi_loaded_image_protocol_t * efistub_image_proto(void);
 /**
  * @brief Get memory map and exit boot services
  */
-int efistub_memmap_and_exit(struct memmap * map);
+int efistub_memmap_and_exit(void);
 
 /**
  * @brief Get kernel cmdline

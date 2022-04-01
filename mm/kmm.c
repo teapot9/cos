@@ -3,9 +3,11 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <print.h>
-#include "vmm.h"
+#include <mm.h>
+#include <cpp.h>
 
 #ifndef EARLY_MEMORY_BUFFER_SIZE
 #define EARLY_MEMORY_BUFFER_SIZE (128 * 1024 * 10)
@@ -14,22 +16,26 @@
 static uint8_t early_memory_buffer[EARLY_MEMORY_BUFFER_SIZE];
 static struct memory_block * first_block = NULL;
 
-static void init_block(struct memory_block * block)
+static void init_block(struct memory_block * block, size_t size)
 {
 	block->next = NULL;
 	block->first_free = (void *)
 		((uint8_t *) block + sizeof(*block));
-	block->size = sizeof(early_memory_buffer);
+	block->size = size;
 	block->first_free->next = NULL;
 	block->first_free->size =
 		block->size - sizeof(*block);
 }
 
-int kmm_early_init(void)
+static inline bool kmm_is_init(void)
+{
+	return first_block != NULL;
+}
+
+static void kmm_early_init(void)
 {
 	first_block = (void *) early_memory_buffer;
-	init_block(first_block);
-	return 0;
+	init_block(first_block, sizeof(early_memory_buffer));
 }
 
 static struct free_memory_info * find_free_mem_list(
@@ -79,36 +85,14 @@ static struct free_memory_info * find_free_mem_block(size_t size)
 		cur = cur->next;
 	}
 
-	struct mmap alloc = vmalloc(size);
-	if (alloc.ptr == NULL)
+	struct vmalloc alloc = vmalloc(size);
+	if (alloc.addr == NULL || alloc.size < size)
 		return NULL;
 
-	struct memory_block * new = alloc.ptr;
-	init_block(new);
+	struct memory_block * new = alloc.addr;
+	init_block(new, alloc.size);
 	*pprec = new;
 	return find_free_mem_list(size, new);
-}
-
-/* public: mm.h */
-void * kmalloc(size_t size)
-{
-	struct free_memory_info * free_mem;
-
-	size += sizeof(struct used_memory_header);
-	if (size < sizeof(struct free_memory_info))
-		size = sizeof(struct free_memory_info);
-
-	if ((free_mem = find_free_mem_block(size)) == NULL) {
-		pr_alert("Out of memory: Could not allocate %zd bytes\n", size);
-		return NULL;
-	}
-
-	struct used_memory_header * used_mem = (void *) free_mem;
-
-	free_mem = NULL;
-	used_mem->start = (uint8_t *) used_mem + sizeof(*used_mem);
-	used_mem->size = size;
-	return used_mem->start;
 }
 
 static void merge_entry_list(struct free_memory_info * ptr, int count)
@@ -160,8 +144,34 @@ static void create_entry_block(
 }
 
 /* public: mm.h */
+void * kmalloc(size_t size)
+{
+	if (unlikely(!kmm_is_init()))
+		kmm_early_init();
+	struct free_memory_info * free_mem;
+
+	size += sizeof(struct used_memory_header);
+	if (size < sizeof(struct free_memory_info))
+		size = sizeof(struct free_memory_info);
+
+	if ((free_mem = find_free_mem_block(size)) == NULL) {
+		pr_alert("Out of memory: Could not allocate %zd bytes\n", size);
+		return NULL;
+	}
+
+	struct used_memory_header * used_mem = (void *) free_mem;
+
+	free_mem = NULL;
+	used_mem->start = (uint8_t *) used_mem + sizeof(*used_mem);
+	used_mem->size = size;
+	return used_mem->start;
+}
+
+/* public: mm.h */
 void kfree(const void * ptr)
 {
+	if (unlikely(!kmm_is_init()))
+		kmm_early_init();
 	if (ptr == NULL)
 		return;
 
@@ -173,6 +183,8 @@ void kfree(const void * ptr)
 /* public: mm.h */
 void * krealloc(void * oldptr, size_t newsize)
 {
+	if (unlikely(!kmm_is_init()))
+		kmm_early_init();
 	if (oldptr == NULL)
 		return kmalloc(newsize);
 

@@ -111,6 +111,12 @@ static int gop_reg(const struct device * dev)
 
 	void * base = (void *) mode_current_base.frame_buffer_base;
 	size_t size = mode_current_base.frame_buffer_size;
+	base = mmap(base, size);
+	if (base == NULL) {
+		pr_err("Failed to map EFI framebuffer memory\n", 0);
+		return -ENOMEM;
+	}
+
 	size_t bpp = 4;
 	size_t bps = bpp * mode_current_info.pixels_per_scanline;
 	switch (mode_current_info.pixel_format) {

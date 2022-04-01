@@ -150,7 +150,9 @@ int fb_move_up(const struct fb * fb, unsigned int scanlines)
 {
 	size_t offset = fb->bytes_per_scanline * scanlines;
 	memcpy(fb->fb_base, (uint8_t *) fb->fb_base + offset,
-	       fb->fb_size - offset - 1);
-	memset((uint8_t *) fb->fb_base + fb->fb_size - offset + 1, 0, offset);
+	       //fb->fb_size - offset - 1);
+	       fb->fb_size - offset);
+	//memset((uint8_t *) fb->fb_base + fb->fb_size - offset + 1, 0, offset);
+	memset((uint8_t *) fb->fb_base + fb->fb_size - offset, 0, offset);
 	return 0;
 }

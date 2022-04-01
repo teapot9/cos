@@ -24,6 +24,7 @@ CFLAGS += -ffreestanding -fpic -fPIC -fpie -fno-stack-protector
 CFLAGS += -mno-red-zone -mabi=sysv
 CFLAGS += -Wall -Wextra -Wpedantic -std=c18
 CFLAGS += -Wtype-limits -Wstrict-prototypes -Wtype-limits
+CFLAGS += -Wframe-larger-than=$(CONFIG_KERNEL_FRAME_SIZE)
 CFLAGS += -I$(SRC_ROOT)/include -I$(SRC_ROOT)/arch/$(ARCH)/include
 CFLAGS += -g
 LDFLAGS += -znodefaultlib -nostdlib -znocombreloc -Bsymbolic
@@ -42,17 +43,27 @@ ifeq ($(CONFIG_X86_32), y)
 	CFLAGS += -m32
 endif
 
-ifeq ($(CONFIG_OPTIMIZE_O0), y)
+ifeq ($(CONFIG_CC_OPTIMIZE_O0), y)
 	CFLAGS += -O0
 endif
-ifeq ($(CONFIG_OPTIMIZE_O1), y)
+ifeq ($(CONFIG_CC_OPTIMIZE_O1), y)
 	CFLAGS += -O1
 endif
-ifeq ($(CONFIG_OPTIMIZE_O2), y)
+ifeq ($(CONFIG_CC_OPTIMIZE_O2), y)
 	CFLAGS += -O2
 endif
-ifeq ($(CONFIG_OPTIMIZE_O3), y)
+ifeq ($(CONFIG_CC_OPTIMIZE_O3), y)
 	CFLAGS += -O3
+endif
+ifeq ($(CONFIG_CC_OPTIMIZE_OS), y)
+	CFLAGS += -Os
+endif
+
+ifeq ($(CONFIG_ASM_DEFAULT_INTEL), y)
+	CFLAGS += -masm=intel
+endif
+ifeq ($(CONFIG_ASM_DEFAULT_ATT), y)
+	CFLAGS += -masm=att
 endif
 
 ifeq ($(CONFIG_BOOT_EFISTUB), y)

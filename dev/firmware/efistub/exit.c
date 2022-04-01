@@ -72,6 +72,7 @@ print_efi_mem_desc(efi_memory_descriptor_t * desc)
 		 desc->number_of_pages);
 }
 
+#if 0
 static enum memory_type get_mem_type(uint32_t efi_type)
 {
 	switch (efi_type) {
@@ -103,13 +104,51 @@ static enum memory_type get_mem_type(uint32_t efi_type)
 		return MEMORY_TYPE_PERSISTENT;
 	}
 }
+#endif
 
-static int efistub_convert_memmap(
-	struct memmap * map,
+static int register_memmap_desc(uint32_t efi_type, void * paddr,
+                                void * vaddr, size_t size)
+{
+	int err;
+	switch (efi_type) {
+	case EFI_LOADER_CODE:
+	case EFI_LOADER_DATA:
+	case EFI_BOOT_SERVICES_CODE: // debug
+	case EFI_BOOT_SERVICES_DATA: // debug
+	case EFI_RUNTIME_SERVICES_CODE:
+	case EFI_RUNTIME_SERVICES_DATA:
+		err = register_used_pmem(paddr, size);
+		if (err)
+			return err;
+		err = vmap(paddr, vaddr, size);
+		if (err)
+			return err;
+		break;
+	case EFI_CONVENTIONAL_MEMORY:
+	case EFI_PERSISTENT_MEMORY:
+		err = register_free_pmem(paddr, size);
+		if (err)
+			return err;
+		break;
+	case EFI_RESERVED_MEMORY_TYPE:
+	case EFI_UNUSABLE_MEMORY:
+	case EFI_ACPIRECLAIM_MEMORY:
+	case EFI_ACPIMEMORY_NVS:
+	case EFI_MEMORY_MAPPED_IO:
+	case EFI_MEMORY_MAPPED_IOPORT_SPACE:
+	case EFI_PAL_CODE:
+	default:
+		;
+	}
+	return 0;
+}
+
+static int register_memmap(
 	efi_memory_descriptor_t * efi_memmap,
 	efi_uintn desc_size, efi_uintn map_size
 )
 {
+	/*
 	map->desc_count = map_size / desc_size;
 	map->desc = kmalloc((map->desc_count) * sizeof(*map->desc));
 	if (map->desc == NULL) {
@@ -117,12 +156,26 @@ static int efistub_convert_memmap(
 		return -ENOMEM;
 	}
 	size_t d = 0;
+	*/
+	int err;
 
-	for (size_t i = 0; i < map->desc_count; i++) {
+	for (size_t i = 0; i < map_size / desc_size; i++) {
 		efi_memory_descriptor_t * desc = (void *)
 			((uint8_t *) efi_memmap + i * desc_size);
 		print_efi_mem_desc(desc);
 
+		err = register_memmap_desc(
+			desc->type,
+			(void *) desc->physical_start,
+			(void *) (desc->virtual_start + desc->physical_start),
+			desc->number_of_pages * 4096
+		);
+		if (err) {
+			pr_err("Failed to register memory map descriptor, "
+			       "errno = %d\n", err);
+			continue;
+		}
+#if 0
 		if (d && get_mem_type(desc->type) == map->desc[d - 1].type) {
 			// Merge descriptor
 			d--;
@@ -135,19 +188,22 @@ static int efistub_convert_memmap(
 			map->desc[d].size = desc->number_of_pages * 4096;
 		}
 		d++;
+#endif
 	}
 
+#if 0
 	struct memmap_desc * tmp = krealloc(map->desc, d * sizeof(*map->desc));
 	if (tmp == NULL)
 		pr_err("Cannot reduce memmap buffer size\n", 0);
 	else
 		map->desc = tmp;
 	map->desc_count = d;
+#endif
 	return 0;
 }
 
 /* firmware/efistub.h */
-int efistub_memmap_and_exit(struct memmap * map)
+int efistub_memmap_and_exit(void)
 {
 	efi_memory_descriptor_t * efi_memmap = NULL;
 	efi_uintn map_size = 0;
@@ -205,7 +261,7 @@ int efistub_memmap_and_exit(struct memmap * map)
 	device_delete(efiboot_dev);
 
 	/* Convert memory map */
-	ret = efistub_convert_memmap(map, efi_memmap, desc_size, map_size);
+	ret = register_memmap(efi_memmap, desc_size, map_size);
 	kfree(efi_memmap);
 	return ret;
 }

@@ -2,160 +2,93 @@
 #include "pmm.h"
 
 #include <stdint.h>
+#include <errno.h>
 
 #include <print.h>
+#include "helper.h"
+#include "block.h"
 
-static void print_memmap_desc(struct memmap_desc * desc)
+struct memblock * first_free_block = NULL;
+struct memblock * first_used_block = NULL;
+
+/* public: mm.h */
+int pmap(void * paddr, size_t size)
 {
-	const char * type;
-	switch (desc->type) {
-	case MEMORY_TYPE_RESERVED:
-		type = "MEMORY_TYPE_RESERVED";
-		break;
-	case MEMORY_TYPE_KERNEL_CODE:
-		type = "MEMORY_TYPE_KERNEL_CODE";
-		break;
-	case MEMORY_TYPE_KERNEL_DATA:
-		type = "MEMORY_TYPE_KERNEL_DATA";
-		break;
-	case MEMORY_TYPE_EFI_SERVICES:
-		type = "MEMORY_TYPE_EFI_SERVICES";
-		break;
-	case MEMORY_TYPE_AVAILABLE:
-		type = "MEMORY_TYPE_AVAILABLE";
-		break;
-	case MEMORY_TYPE_BAD:
-		type = "MEMORY_TYPE_BAD";
-		break;
-	case MEMORY_TYPE_ACPI_RECLAIMABLE:
-		type = "MEMORY_TYPE_ACPI_RECLAIMABLE";
-		break;
-	case MEMORY_TYPE_ACPI_NVS:
-		type = "MEMORY_TYPE_ACPI_NVS";
-		break;
-	case MEMORY_TYPE_HARDWARE:
-		type = "MEMORY_TYPE_HARDWARE";
-		break;
-	case MEMORY_TYPE_PERSISTENT:
-		type = "MEMORY_TYPE_PERSISTENT";
-		break;
-	default:
-		pr_err("Unknown descriptor type: %d\n", desc->type);
-		return;
+	int err;
+	if (!pmm_is_init())
+		return early_pmap(paddr, size);
+
+	err = memblock_rem(&first_free_block, paddr, size, true);
+	if (err) {
+		pr_err("Cannot allocate %zu bytes of physical memory at %p: "
+		       "memory is not free, errno = %d\n", size, paddr, err);
+		return err;
 	}
-	pr_debug("descriptor: [%p,%p] -> %p (%zu): %s\n",
-	         desc->phy_start,
-	         (uint8_t *) desc->phy_start + desc->size,
-	         desc->virt_start,
-		 desc->size,
-	         type);
-}
 
-void print_memmap(struct memmap map)
-{
-	for (size_t i = 0; i < map.desc_count; i++)
-		print_memmap_desc(&map.desc[i]);
-}
-
-static struct pmem_block * first_free = NULL;
-
-static struct pmem_block * find_prev_free_block(void * ptr)
-{
-	struct pmem_block * prev = NULL;
-	struct pmem_block * cur = first_free;
-
-	while (cur != NULL && (uint8_t *) cur < (uint8_t *) ptr) {
-		prev = cur;
-		cur = cur->next;
+	err = memblock_add(&first_used_block, paddr, size, true);
+	if (err) {
+		pr_err("Cannot allocate %zu bytes of physical memory at %p: "
+		       "memory is in use, errno = %d\n", size, paddr, err);
+		err = memblock_add(&first_free_block, paddr, size, true);
+		if (err)
+			pr_crit("Lost %zu bytes of memory at %p: "
+				"cannot mark as free, errno = %d",
+				size, paddr, err);
+		return err;
 	}
-	return prev;
+
+	pr_debug("pmap(%p, %zu) -> %d\n", paddr, size, 0);
+	return 0;
 }
 
-static void free_block(void * start, size_t size)
-{
-	struct pmem_block * prev = find_prev_free_block(start);
-	struct pmem_block * cur = start;
-	cur->size = size;
-	if (prev != NULL) {
-		cur->next = prev->next;
-		prev->next = cur;
-	} else {
-		cur->next = NULL;
-		first_free = cur;
-	}
-}
-
-void pmm_init(struct memmap map)
-{
-	for (size_t i = 0; i < map.desc_count; i++) {
-		switch (map.desc[i].type) {
-		case MEMORY_TYPE_AVAILABLE:;
-			void * start = map.desc[i].phy_start;
-			size_t size = map.desc[i].size;
-			if (start == NULL) {
-				start = (uint8_t *) start + 4096;
-				size += 4096;
-			}
-			free_block(start, size);
-			break;
-		default:;
-		}
-	}
-}
-
+/* public: mm.h */
 void * pmalloc(size_t size, size_t align)
 {
-	struct pmem_block * cur = first_free;
-	while (cur != NULL) {
-		uint8_t * ptr = (uint8_t *) cur;
-		size_t mod = (size_t) ptr % align;
-		uint8_t * aligned = ptr - mod + (mod ? align : 0);
-		size_t align_diff = aligned - ptr;
-		if (cur->size - (align_diff) < size)
-			continue;
-		if (cur->size > size + align_diff) {
-			// Create free block following the one we alloc
-			struct pmem_block * new =
-				(void *) (ptr + align_diff + size);
-			new->size = cur->size - size - align_diff;
-			new->next = cur->next;
-			cur->next = new;
-		}
-		if (aligned - ptr) {
-			// We still have free memory before the block we alloc
-			cur->size = aligned - ptr;
-		} else {
-			// No free memory due to alignment: remove cur block
-			struct pmem_block * prev =
-				find_prev_free_block((void *) cur);
-			if (prev != NULL)
-				prev->next = cur->next;
-			else
-				first_free = cur->next;
-		}
-		pr_debug("Allocated %zu B at %p\n", size, aligned);
-		return aligned;
+	int err;
+	if (!pmm_is_init())
+		return early_pmalloc(size, align);
+
+	struct memblock ** prev =
+		memblock_search_size(&first_free_block, size, align);
+	if (prev == NULL || *prev == NULL) {
+		pr_err("Cannot allocate %zu bytes of physical memory: "
+		       "out of memory\n", size);
 	}
-	pr_alert("Failed to find %zu B of physical memory (aligned %zu)\n",
-	         size, align);
-	return NULL;
+
+	void * paddr = aligned((*prev)->addr, align);
+
+	err = pmap(paddr, size);
+	if (err)
+		return NULL;
+	pr_debug("pmalloc(%zu, %zu) -> %p\n", size, align, paddr);
+	return paddr;
 }
 
-void * pzalloc(size_t size, size_t align)
+/* public: mm.h */
+void pfree(void * paddr, size_t size)
 {
-	void * alloc = pmalloc(size, align);
-	if (alloc == NULL)
-		return alloc;
+	int err;
+	if (!pmm_is_init()) {
+		early_pfree(paddr, size);
+		return;
+	}
 
-	uint8_t * mem = alloc;
-	for (size_t i = 0; i < size; i++)
-		mem[i] = 0;
+	err = memblock_rem(&first_used_block, paddr, size, true);
+	if (err) {
+		pr_err("Cannot free %zu bytes of physical memory at %p: "
+		       "memory is not used, errno = %d\n", size, paddr, err);
+		memblock_rem(&first_used_block, paddr, size, false);
+		pr_crit("Lost up to %zu bytes of physical memory at %p\n",
+			size, paddr);
+		return;
+	}
 
-	return alloc;
-}
-
-void pfree(void * ptr, size_t size)
-{
-	free_block(ptr, size);
-	pr_debug("Freed %zu B at %p\n", size, ptr);
+	err = memblock_add(&first_free_block, paddr, size, true);
+	if (err) {
+		pr_err("Cannot free %zu bytes of physical memory at %p: "
+		       "memory is already free, errno = %d\n",
+		       size, paddr, err);
+		return;
+	}
+	pr_debug("pfree(%p, %zu)\n", paddr, size);
 }

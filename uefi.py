@@ -10,6 +10,16 @@ TIMEOUT = 10
 EFI = 'cos.so'
 DEBUG = 'cos.so'
 
+PLIST_FUN = '''\
+define plist
+  set var $n = $arg0
+  while $n
+    print *$n
+    set var $n = $n->next
+  end
+end
+'''
+
 class CommandEfi(gdb.Command):
     def __init__(self):
         super().__init__('efi', gdb.COMMAND_OBSCURE)
@@ -103,6 +113,8 @@ class CommandEfi(gdb.Command):
         if pagination:
             gdb.execute('set pagination on')
         gdb.execute('target remote :1234')
+
+        gdb.execute(PLIST_FUN)
 
         gdb.execute('break entry_efi')
         gdb.execute('break halt')

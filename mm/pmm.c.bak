@@ -1,0 +1,242 @@
+#include <mm.h>
+#include "pmm.h"
+
+#include <stdint.h>
+#include <errno.h>
+
+#include <print.h>
+#include "helper.h"
+
+static struct pmem_block * first_free = NULL;
+
+static struct pmem_block ** find_free_block(void * ptr)
+{
+	struct pmem_block ** prev = &first_free;
+	struct pmem_block * cur = first_free;
+
+	while (cur != NULL && !is_overlap(cur->paddr, cur->size, ptr, 0)) {
+		prev = &(*prev)->next;
+		cur = cur->next;
+	}
+	return prev;
+}
+
+static bool is_free_block(void * ptr, size_t size)
+{
+	struct pmem_block ** prev = find_free_block(ptr);
+	struct pmem_block * cur = *prev;
+	if (cur == NULL)
+		return false;
+	if (cur->size >= size)
+		return true;
+	return is_free_block((uint8_t *) ptr + cur->size, size - cur->size);
+}
+
+#if 0
+static struct pmem_block * find_free_block_at(void * ptr)
+{
+	struct pmem_block * cur = first_free;
+	uint8_t * iptr = ptr;
+
+	while (cur != NULL) {
+		uint8_t * icur = cur->paddr;
+		if (icur > iptr)
+			return NULL;
+		if (iptr < icur + cur->size)
+			return cur;
+		cur = cur->next;
+	}
+	return NULL;
+}
+static void add_free_block(struct pmem_block ** prev, void * paddr, size_t size)
+{
+	struct pmem_block * new = kmalloc(sizeof(*new));
+}
+#endif
+
+static size_t mark_used(struct pmem_block ** prev, void * paddr, size_t size)
+{
+	struct pmem_block saved = **prev;
+
+	// Remove entire free block
+	struct pmem_block * cur = *prev;
+	*prev = cur->next;
+	kfree(cur);
+
+	uint8_t * block_start = saved.paddr;
+	uint8_t * block_end = block_start + saved.size;
+	uint8_t * target_start = paddr;
+	uint8_t * target_end = target_start + size;
+	size_t allocated = saved.size;
+
+	if (block_start < target_start) {
+		// There is free memory before allocated memory
+		size_t diff = target_start - block_start;
+		pfree(block_start, diff);
+		allocated -= diff;
+	}
+	if (block_end > target_end) {
+		// There is free memory after allocated memory
+		size_t diff = block_end - target_end;
+		pfree(target_end, diff);
+		allocated -= diff;
+	}
+
+	return allocated;
+}
+
+int pmap(void * paddr, size_t size)
+{
+	if (!is_free_block(paddr, size)) {
+		pr_err("Cannot allocate %zu bytes at %p\n", size, paddr);
+		return -ENOMEM;
+	}
+
+	uint8_t * cur_addr = paddr;
+	while (size) {
+		struct pmem_block ** prev = find_free_block(cur_addr);
+		struct pmem_block * cur = *prev;
+		if (cur) {
+			pr_err("Cannot allocate %zu bytes at %p\n",
+			       size, cur_addr);
+			goto error_nomem;
+		}
+
+		size_t allocated = mark_used(prev, cur_addr, size);
+		cur_addr += allocated;
+		size -= allocated;
+	}
+	return 0;
+
+error_nomem:
+	pfree(paddr, cur_addr - (uint8_t *) paddr);
+	return -ENOMEM;
+}
+
+void * pmalloc(size_t size, size_t align)
+{
+	struct pmem_block * cur = first_free;
+	while (cur != NULL) {
+		uint8_t * ipaddr = cur->paddr;
+		size_t mod = (size_t) ipaddr % align;
+		uint8_t * aligned = ipaddr - mod + (mod ? align : 0);
+
+		if (is_free_block(aligned, size) && !pmap(aligned, size))
+			return aligned;
+	}
+	pr_err("Cannot allocate %zu bytes of physical memory\n", size);
+	return NULL;
+}
+
+void pfree(void * ptr, size_t size)
+{
+}
+
+static void free_block(void * start, size_t size)
+{
+	struct pmem_block * prev = find_prev_free_block(start);
+	struct pmem_block * cur = start;
+	cur->size = size;
+	if (prev != NULL) {
+		prev->next = cur->next;
+		cur->next = prev->next;
+		prev->next = cur;
+	} else {
+		cur->next = NULL;
+		first_free = cur;
+	}
+}
+
+void pmm_init(struct memmap map)
+{
+	for (size_t i = 0; i < map.desc_count; i++) {
+		switch (map.desc[i].type) {
+		case MEMORY_TYPE_AVAILABLE:;
+			void * start = map.desc[i].phy_start;
+			size_t size = map.desc[i].size;
+			if (start == NULL) {
+				start = (uint8_t *) start + 4096;
+				size += 4096;
+			}
+			free_block(start, size);
+			break;
+		default:;
+		}
+	}
+}
+
+static void _pmap(struct pmem_block * free_block, void * addr, size_t size)
+{
+	uint8_t * iaddr = addr;
+	uint8_t * iblock = free_block->paddr;
+	size_t diff = iaddr - iblock;
+
+	if (free_block->size > size + diff) {
+		// Create free block following the one we alloc
+		struct pmem_block * new =
+			(void *) (iblock + diff + size);
+		new->size = free_block->size - size - diff;
+		new->next = free_block->next;
+		free_block->next = new;
+	}
+	if (iaddr - iblock) {
+		// We still have free memory before the block we alloc
+		free_block->size = iaddr - iblock;
+	} else {
+		// No free memory due to alignment: remove free_block block
+		struct pmem_block * prev =
+			find_prev_free_block((void *) free_block);
+		if (prev != NULL)
+			prev->next = free_block->next;
+		else
+			first_free = free_block->next;
+	}
+	pr_debug("Allocated %zu B at %p\n", size, addr);
+}
+
+/* public: mm.h */
+int pmap(void * paddr, size_t size)
+{
+	struct pmem_block * block = find_free_block_at(paddr);
+	if (block == NULL) {
+		pr_err("No free physical memory at %p\n", paddr);
+		return -ENOMEM;
+	}
+	if (block->size < size) {
+		pr_err("Free physical memory at %p is too small (%zu < %zu)\n",
+		       paddr, block->size, size);
+		return -ENOMEM;
+	}
+	_pmap(block, paddr, size);
+	return 0;
+}
+
+/* public: mm.h */
+void * pmalloc(size_t size, size_t align)
+{
+	struct pmem_block * cur = first_free;
+
+	while (cur != NULL) {
+		uint8_t * ptr = (uint8_t *) cur;
+		size_t mod = (size_t) ptr % align;
+		uint8_t * aligned = ptr - mod + (mod ? align : 0);
+		size_t align_diff = aligned - ptr;
+
+		if (cur->size - align_diff >= size) {
+			_pmap(cur, aligned, size);
+			return aligned;
+		}
+		cur = cur->next;
+	}
+	pr_alert("Failed to find %zu B of physical memory (aligned %zu)\n",
+	         size, align);
+
+	return NULL;
+}
+
+/* public: mm.h */
+void pfree(void * ptr, size_t size)
+{
+	free_block(ptr, size);
+	pr_debug("Freed %zu B at %p\n", size, ptr);
+}

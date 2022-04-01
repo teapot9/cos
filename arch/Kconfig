@@ -51,4 +51,11 @@ config CC_OPTIMIZE_OS
 
 endchoice
 
+config KERNEL_FRAME_SIZE
+	int "Kernel stack size"
+	default 1024
+	help
+	  Each CPU has its own kernel stack size used when running
+	  in kernel mode.
+
 endmenu

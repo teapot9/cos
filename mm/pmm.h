@@ -1,21 +1,21 @@
 #ifndef MM_PMM_H
 #define MM_PMM_H
 
+#include <mm.h>
 #include <stddef.h>
+#include <stdbool.h>
 
-struct pmem_block {
-	size_t size;
-	struct pmem_block * next;
-};
+extern struct memblock * first_free_block;
+extern struct memblock * first_used_block;
 
-void pmm_init(struct memmap map);
+bool pmm_is_init(void);
 
-void * pmalloc(size_t size, size_t align);
+int pmm_init(void);
 
-void * pzalloc(size_t size, size_t align);
+int early_pmap(void * paddr, size_t size);
 
-void pfree(void * ptr, size_t size);
+void * early_pmalloc(size_t size, size_t align);
 
-void print_memmap(struct memmap map);
+void early_pfree(void * paddr, size_t size);
 
 #endif // MM_PMM_H

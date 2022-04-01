@@ -21,6 +21,7 @@
 #include <int.h>
 
 #include "../../../mm/pmm.h"
+#include "../mm/vmm.h"
 
 noreturn EFIABI void entry_efi(efi_handle_t image_handle,
                efi_system_table_t * system_table);
@@ -53,16 +54,13 @@ EFIABI void entry_efi(efi_handle_t image_handle,
 	debug_base_addr(image_handle, system_table);
 	kbreak();
 
-	mm_init_early();
-	pr_info("Early init: memory manager\n", 0);
 	efistub_early_setup(image_handle, system_table);
 	pr_info("Early init: EFI stub\n", 0);
 
 	kernel_initcalls_early();
 	pr_info("Early init: modules\n", 0);
 
-	struct memmap map;
-	if ((ret = efistub_memmap_and_exit(&map))) {
+	if ((ret = efistub_memmap_and_exit())) {
 		pr_emerg("Cannot get memory map or exit boot services"
 			 ", errno = %d\n", ret);
 		halt();
@@ -70,7 +68,9 @@ EFIABI void entry_efi(efi_handle_t image_handle,
 	pr_info("Early init: exited boot services\n", 0);
 
 	idt_init();
-	mm_init(map);
+	pmm_init();
+	vmm_init();
+	struct vmalloc alloc = vmalloc(6000);
 
 	halt();
 
@@ -81,7 +81,6 @@ EFIABI void entry_efi(efi_handle_t image_handle,
 	kbreak();
 
 	/* mm */
-	mm_init_early();
 	pr_debug("Kernel loaded at %p\n", efistub_image_proto()->image_base);
 	pr_info("Initialized memory manager\n", 0);
 
@@ -113,7 +112,7 @@ EFIABI void entry_efi(efi_handle_t image_handle,
 
 	/* efistub: exit boot services */
 	//struct memmap map;
-	if ((ret = efistub_memmap_and_exit(&map))) {
+	if ((ret = efistub_memmap_and_exit())) {
 		pr_emerg("Cannot get memory map or exit boot services "
 			 "(error %d)\n", ret);
 		halt();
