@@ -1,6 +1,8 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-void kbreak(void);
+#include <cpp.h>
+
+void kbreak(void) ISR_AVAILABLE;
 
 #endif // DEBUG_H

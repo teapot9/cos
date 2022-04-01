@@ -219,8 +219,6 @@ struct early_vmap {
 	struct early_vmap * next;
 };
 
-int vmm_init(void);
-
 void * get_paddr(union pml4e * pml4, void * ptr);
 
 struct page get_page(union pml4e * pml4, void * addr);

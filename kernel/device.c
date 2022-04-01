@@ -14,9 +14,12 @@ static struct dev_list * devices = NULL;
 static bool is_class(const char * class)
 {
 #define _is_class(str) (!strcmp(str, class))
-	if (_is_class("firmware")
-	    || _is_class("graphics")
-	    || _is_class("virtual"))
+	if (
+		_is_class("firmware")
+		|| _is_class("graphics")
+		|| _is_class("virtual")
+		|| _is_class("tty")
+	)
 		return true;
 	return false;
 }

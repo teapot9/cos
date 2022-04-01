@@ -6,13 +6,14 @@
 #include <stddef.h>
 
 #include <asm/asm.h>
+#include <cpp.h>
 
 #ifdef CONFIG_X86_64
 typedef unsigned long long int uword_t;
-# define UWORD_PRINT "%ull"
+# define UWORD_PRINT "ll"
 #elif CONFIG_X86_32
 typedef unsigned int uword_t;
-# define UWORD_INT "%u"
+# define UWORD_PRINT ""
 #else
 # error Unknown architecture type
 #endif
@@ -25,13 +26,12 @@ enum idt_gate_type {
 	INT_TRAP_GATE = 0xF,
 };
 
-struct idt_reg {
+struct PACKED idt_reg {
 	uint16_t limit;
 	uint64_t base;
-} __attribute__((packed));
-static_assert(sizeof(struct idt_reg) == 10, "idt_reg must be 10 bytes");
+};
 
-struct idt_desc {
+struct PACKED idt_desc {
 	long unsigned offset_low : 16;
 	uint16_t segment;
 	unsigned ist : 3;
@@ -41,7 +41,7 @@ struct idt_desc {
 	unsigned present : 1;
 	long unsigned offset_high : 48;
 	uint32_t zero2;
-} __attribute__((packed));
+};
 static_assert(sizeof(struct idt_desc) == 16, "idt_desc must be 16 bytes");
 
 struct interrupt_frame {

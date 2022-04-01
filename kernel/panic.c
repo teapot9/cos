@@ -4,13 +4,15 @@
 #include <print.h>
 #include <power.h>
 
+#define BUFSIZ 512
+
 noreturn void panic(const char * fmt, ...)
 {
 	va_list ap;
-	char error[1024];
+	char error[BUFSIZ];
 
 	va_start(ap, fmt);
-	vsnprintf(error, 1024, fmt, ap);
+	vsnprintf(error, BUFSIZ, fmt, ap);
 	va_end(ap);
 
 	pr_emerg("Kernel panic: %s\n", error);

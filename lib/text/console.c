@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "text: " fmt
+
 #include <console.h>
 #include "console.h"
 

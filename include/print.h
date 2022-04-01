@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdarg.h>
 
+#include <cpp.h>
+
 #define KERN_EMERG "<\000>"
 #define KERN_ALERT "<\001>"
 #define KERN_CRIT "<\002>"
@@ -32,7 +34,7 @@
  * @param ... Arguments to use for formatting
  * @return Number of characters written, excluding NUL
  */
-size_t printk(const char * fmt, ...);
+size_t printk(const char * fmt, ...) ISR_AVAILABLE;
 
 /**
  * @brief Format and write a string to the console
@@ -40,7 +42,7 @@ size_t printk(const char * fmt, ...);
  * @param ap Arguments to use for formatting
  * @return Number of characters written, excluding NUL
  */
-size_t vprintk(const char * fmt, va_list ap);
+size_t vprintk(const char * fmt, va_list ap) ISR_AVAILABLE;
 
 /**
  * @brief Format a string to a allocated buffer

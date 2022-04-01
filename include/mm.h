@@ -26,7 +26,7 @@ struct memmap {
 	size_t desc_count;
 };
 
-struct vmalloc {
+struct memblock {
 	void * addr;
 	size_t size;
 };
@@ -37,8 +37,9 @@ void kfree(const void * ptr);
 void * krealloc(void * oldptr, size_t newsize);
 
 // vmm
+void * virt_to_phys(void * vaddr);
 int vmap(void * paddr, void * vaddr, size_t size);
-struct vmalloc vmalloc(size_t size);
+struct memblock vmalloc(size_t size);
 void * mmap(void * paddr, size_t size);
 void vunmap(void * vaddr, size_t size);
 void vfree(void * vaddr, size_t size);
@@ -47,7 +48,5 @@ void vfree(void * vaddr, size_t size);
 int pmap(void * paddr, size_t size);
 void * pmalloc(size_t size, size_t align);
 void pfree(void * paddr, size_t size);
-int register_free_pmem(void * paddr, size_t size);
-int register_used_pmem(void * paddr, size_t size);
 
 #endif // MM_H

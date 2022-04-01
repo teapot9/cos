@@ -1,16 +1,18 @@
-#include "block.h"
+#define pr_fmt(fmt) "mm: " fmt
+
+#include <mm/block.h>
 
 #include <errno.h>
 
 #include <mm.h>
-#include "helper.h"
+#include <mm/helper.h>
 
-static int insert(struct memblock ** prev, void * addr, size_t size)
+static int insert(struct memblock_list ** prev, void * addr, size_t size)
 {
 	if (prev == NULL)
 		return -EINVAL;
 
-	struct memblock * new = kmalloc(sizeof(*new));
+	struct memblock_list * new = kmalloc(sizeof(*new));
 	new->addr = addr;
 	new->size = size;
 	new->next = *prev;
@@ -19,9 +21,9 @@ static int insert(struct memblock ** prev, void * addr, size_t size)
 	return 0;
 }
 
-static int _quick_merge_next(struct memblock * cur)
+static int _quick_merge_next(struct memblock_list * cur)
 {
-	struct memblock * next = cur->next;
+	struct memblock_list * next = cur->next;
 
 	if (cur->addr > next->addr) {
 		cur->addr = next->addr;
@@ -34,7 +36,7 @@ static int _quick_merge_next(struct memblock * cur)
 	return 0;
 }
 
-static int _merge_new(struct memblock * cur, void * addr, size_t size)
+static int _merge_new(struct memblock_list * cur, void * addr, size_t size)
 {
 	if (cur == NULL || (!is_overlap(cur->addr, cur->size, addr, size)
 	                    && !is_next(cur->addr, cur->size, addr, size)))
@@ -69,7 +71,7 @@ static int _merge_new(struct memblock * cur, void * addr, size_t size)
 	return 0;
 }
 
-static int _merge_current(struct memblock * cur)
+static int _merge_current(struct memblock_list * cur)
 {
 	int err;
 	if (cur == NULL)
@@ -85,20 +87,20 @@ static int _merge_current(struct memblock * cur)
 	if (err)
 		return err;
 
-	struct memblock * next = cur->next;
+	struct memblock_list * next = cur->next;
 	cur->next = cur->next->next;
 	kfree(next);
 
 	return 0;
 }
 
-static int merge(struct memblock ** prev, void * addr, size_t size)
+static int merge(struct memblock_list ** prev, void * addr, size_t size)
 {
 	int err;
 	if (prev == NULL)
 		return -EINVAL;
 
-	struct memblock * cur = *prev;
+	struct memblock_list * cur = *prev;
 	if (cur == NULL)
 		return -EINVAL;
 
@@ -113,7 +115,7 @@ static int merge(struct memblock ** prev, void * addr, size_t size)
 	return 0;
 }
 
-static int _unmerge(struct memblock * cur, void * addr, size_t size)
+static int _unmerge(struct memblock_list * cur, void * addr, size_t size)
 {
 	if (cur == NULL)
 		return -EINVAL;
@@ -140,13 +142,13 @@ static int _unmerge(struct memblock * cur, void * addr, size_t size)
 	return 0;
 }
 
-static int unmerge(struct memblock ** prev, void * addr, size_t size)
+static int unmerge(struct memblock_list ** prev, void * addr, size_t size)
 {
 	if (prev == NULL)
 		return -EINVAL;
 	if (*prev== NULL)
 		return -ENOENT;
-	struct memblock * cur = *prev;
+	struct memblock_list * cur = *prev;
 
 	if (cur->addr == addr && cur->size == size) {
 		*prev = cur->next;
@@ -157,14 +159,14 @@ static int unmerge(struct memblock ** prev, void * addr, size_t size)
 	}
 }
 
-struct memblock ** memblock_search(struct memblock ** memblock,
-                                   void * addr, size_t size, bool full)
+struct memblock_list ** memblock_search(struct memblock_list ** memblock,
+                                        void * addr, size_t size, bool full)
 {
 	if (memblock == NULL)
 		return NULL;
 
-	struct memblock ** prev = memblock;
-	struct memblock * cur = *memblock;
+	struct memblock_list ** prev = memblock;
+	struct memblock_list * cur = *memblock;
 
 	while (cur != NULL && cur->addr <= addr) {
 		if (full && is_inside(cur->addr, cur->size, addr, size))
@@ -179,14 +181,27 @@ struct memblock ** memblock_search(struct memblock ** memblock,
 	return prev;
 }
 
-struct memblock ** memblock_search_size(struct memblock ** memblock,
+bool memblock_exists(struct memblock_list ** memblock,
+		     void * addr, size_t size, bool full)
+{
+	struct memblock_list ** found =
+		memblock_search(memblock, addr, size, full);
+	if (found == NULL || *found == NULL)
+		return false;
+	struct memblock_list * cur = *found;
+
+	return (full && is_inside(cur->addr, cur->size, addr, size))
+		|| (!full && is_overlap(cur->addr, cur->size, addr, size));
+}
+
+struct memblock_list ** memblock_search_size(struct memblock_list ** memblock,
                                         size_t size, size_t align)
 {
 	if (memblock == NULL)
 		return NULL;
 
-	struct memblock ** prev = memblock;
-	struct memblock * cur = *memblock;
+	struct memblock_list ** prev = memblock;
+	struct memblock_list * cur = *memblock;
 
 	while (cur != NULL) {
 		if (cur->size - align_diff(cur->addr, align) >= size)
@@ -197,14 +212,14 @@ struct memblock ** memblock_search_size(struct memblock ** memblock,
 	return prev;
 }
 
-int memblock_add(struct memblock ** memblock,
+int memblock_add(struct memblock_list ** memblock,
                  void * addr, size_t size, bool strict)
 {
 	if (memblock == NULL)
 		return -EINVAL;
 
-	struct memblock ** prev = memblock_search(memblock, addr, size, false);
-	struct memblock * cur = *prev;
+	struct memblock_list ** prev = memblock_search(memblock, addr, size, false);
+	struct memblock_list * cur = *prev;
 
 	if (cur != NULL) {
 		if (is_overlap(cur->addr, cur->size, addr, size)) {
@@ -218,14 +233,14 @@ int memblock_add(struct memblock ** memblock,
 	return insert(prev, addr, size);
 }
 
-int memblock_rem(struct memblock ** memblock,
+int memblock_rem(struct memblock_list ** memblock,
 		 void * addr, size_t size, bool strict)
 {
 	if (memblock == NULL)
 		return -EINVAL;
 
-	struct memblock ** prev = memblock_search(memblock, addr, size, false);
-	struct memblock * cur = *prev;
+	struct memblock_list ** prev = memblock_search(memblock, addr, size, false);
+	struct memblock_list * cur = *prev;
 
 	if (cur == NULL)
 		return -ENOENT;
@@ -237,4 +252,19 @@ int memblock_rem(struct memblock ** memblock,
 		return -ENOENT;
 
 	return unmerge(prev, addr, size);
+}
+
+void memblock_free(struct memblock_list ** memblock)
+{
+	if (memblock == NULL)
+		return;
+
+	struct memblock_list * cur = *memblock;
+	*memblock = NULL;
+
+	while (cur != NULL) {
+		struct memblock_list * tmp = cur;
+		cur = cur->next;
+		kfree(tmp);
+	}
 }

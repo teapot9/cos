@@ -1,10 +1,12 @@
+#define pr_fmt(fmt) "vmm: " fmt
+
 #include <mm.h>
 #include "vmm.h"
 
 #include <stdbool.h>
 #include <errno.h>
 
-#include "../../../mm/helper.h"
+#include <mm/helper.h>
 #include <asm/cpu.h>
 #include "../../../mm/pmm.h"
 #include <print.h>
@@ -46,13 +48,13 @@ int early_vmap(void * paddr, void * vaddr, size_t size)
 	struct early_vmap * cur = *early_find_overlap(vaddr, size);
 
 	if (cur != NULL) {
-		pr_err("Cannot map %p to %p, already mapped\n", vaddr, paddr);
+		pr_err("cannot map %p to %p, already mapped\n", vaddr, paddr);
 		return -EBUSY;
 	}
 
 	struct early_vmap * new = kmalloc(sizeof(*new));
 	if (new == NULL) {
-		pr_err("Cannot allocate memory for list item\n", 0);
+		pr_err("cannot allocate memory for list item\n", 0);
 		return -ENOMEM;
 	}
 
@@ -61,7 +63,9 @@ int early_vmap(void * paddr, void * vaddr, size_t size)
 	new->size = size;
 	new->next = early_vmap_first;
 	early_vmap_first = new;
+#ifdef CONFIG_MM_DEBUG
 	pr_debug("early_vmap(%p, %p, %zu) -> %d\n", paddr, vaddr, size, 0);
+#endif
 	return 0;
 }
 
@@ -72,7 +76,7 @@ void early_vunmap(void * vaddr, size_t size)
 
 	struct early_vmap ** prec = early_find_overlap(vaddr, size);
 	if (*prec == NULL) {
-		pr_err("Nothing to unmap at %p\n", vaddr);
+		pr_err("nothing to unmap at %p\n", vaddr);
 		return;
 	}
 
@@ -103,7 +107,9 @@ void early_vunmap(void * vaddr, size_t size)
 			target_end, diff_after
 		);
 	}
+#ifdef CONFIG_MM_DEBUG
 	pr_debug("early_vunmap(%p, %zu)\n", vaddr, size);
+#endif
 }
 
 void * early_mmap(void * paddr, size_t size)
@@ -113,16 +119,18 @@ void * early_mmap(void * paddr, size_t size)
 
 	void * vaddr = (pmap(paddr, size) || early_vmap(paddr, paddr, size))
 		? NULL : paddr;
+#ifdef CONFIG_MM_DEBUG
 	pr_debug("early_mmap(%p, %zu) -> %p\n", paddr, size, vaddr);
+#endif
 	return vaddr;
 }
 
 #define X86_64_MSR_EFER 0xC0000080
 
-static inline void disable_paging(void)
+UNUSED static inline void disable_paging(void)
 {
 	write_cr0(read_cr0() & ~(1 << 31)); // Clear CR0.PG
-	write_cr4(read_cr0() & ~(1 << 5)); // Clear CR4.PAE
+	write_cr4(read_cr4() & ~(1 << 5)); // Clear CR4.PAE
 	write_msr(X86_64_MSR_EFER,
 		  read_msr(X86_64_MSR_EFER) & ~(1 << 8)); // Clear EFER.LME
 }
@@ -131,10 +139,11 @@ static inline void enable_paging(void)
 {
 	write_msr(X86_64_MSR_EFER,
 		  read_msr(X86_64_MSR_EFER) | (1 << 8)); // Set EFER.LME
-	write_cr4(read_cr0() | (1 << 5)); // Set CR4.PAE
+	write_cr4(read_cr4() | (1 << 5)); // Set CR4.PAE
 	write_cr0(read_cr0() | (1 << 31)); // Set CR0.PG
 }
 
+/* public: platform_setup.h */
 int vmm_init(void)
 {
 	int err;
@@ -144,14 +153,14 @@ int vmm_init(void)
 	uint64_t raw_cr4 = read_cr4();
 	struct cr4 * cr4 = (void *) &raw_cr4;
 	if (cr4->pcide) {
-		pr_notice("Disabling CR4.PCIDE\n", 0);
+		pr_notice("disabling CR4.PCIDE\n", 0);
 		cr4->pcide = false;
 		write_cr4(raw_cr4);
 	}
 
 	pml4 = pmalloc(NB_PML4_ENTRY * sizeof(*pml4), 4096);
 	if (pml4 == NULL) {
-		pr_emerg("Failed to allocate PML4\n", 0);
+		pr_emerg("failed to allocate PML4\n", 0);
 		return -ENOMEM;
 	}
 
@@ -161,7 +170,7 @@ int vmm_init(void)
 	}
 	err = vmap(pml4, pml4, 4096);
 	if (err) {
-		pr_crit("Failed to create virtual memory mapping for PML4, "
+		pr_crit("failed to create virtual memory mapping for PML4, "
 			"errno = %d\n", err);
 		return err;
 	}
@@ -170,13 +179,13 @@ int vmm_init(void)
 	while (cur != NULL) {
 		// if (cur->paddr == NULL || cur->vaddr == NULL
 		if (cur->size == 0) {
-			pr_err("Invalid early vmap descriptor at %p\n", cur);
+			pr_err("fnvalid early vmap descriptor at %p\n", cur);
 			cur = cur->next;
 			continue;
 		}
 		err = vmap(cur->paddr, cur->vaddr, cur->size);
 		if (err) {
-			pr_crit("Failed to create virtual memory mapping for "
+			pr_crit("failed to create virtual memory mapping for "
 				"vmap descriptor at %p, errno = %d\n",
 				cur, err);
 		}
@@ -187,6 +196,7 @@ int vmm_init(void)
 	union cr3 * cr3 = (void *) &raw_cr3;
 	cr3->normal.pml4 = (unsigned long) pml4 >> 12;
 	write_cr3(raw_cr3);
+	enable_paging();
 
 	return 0;
 }
@@ -196,14 +206,14 @@ void _vmm_init(struct memmap map)
 	uint64_t raw_cr4 = read_cr4();
 	struct cr4 * cr4 = (void *) &raw_cr4;
 	if (cr4->pcide) {
-		pr_notice("Disabling CR4.PCIDE\n", 0);
+		pr_notice("disabling CR4.PCIDE\n", 0);
 		cr4->pcide = false;
 		write_cr4(raw_cr4);
 	}
 
 	pml4 = pmalloc(NB_PML4_ENTRY * sizeof(*pml4), 4096);
 	if (pml4 == NULL) {
-		pr_emerg("Failed to allocate PML4\n", 0);
+		pr_emerg("failed to allocate PML4\n", 0);
 		return;
 	}
 
@@ -215,8 +225,8 @@ void _vmm_init(struct memmap map)
 	//map_page_pt(pml4, pml4, pml4);
 
 	for (size_t i = 0; i < map.desc_count; i++) {
-		if (map.desc[i].phy_start <= 0xc0000000 && map.desc[i].phy_start + map.desc[i].size >= 0xc0000000)
-			kbreak();
+		// if (map.desc[i].phy_start <= 0xc0000000 && map.desc[i].phy_start + map.desc[i].size >= 0xc0000000)
+			// kbreak();
 		switch (map.desc[i].type) {
 		case MEMORY_TYPE_KERNEL_CODE:
 		case MEMORY_TYPE_KERNEL_DATA:
@@ -255,5 +265,5 @@ void _vmm_init(struct memmap map)
 
 	//union pml4e * pml4 = pzalloc(512 * sizeof(*pml4), 4096);
 	//disable_paging();
-	//enable_paging();
+	enable_paging();
 }

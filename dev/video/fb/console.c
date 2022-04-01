@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "fb: " fmt
+
 #include "console.h"
 
 #include <stddef.h>
@@ -130,7 +132,7 @@ static int fbcon_puts(struct fbcon * con, const struct fb * fb, const char * s)
 	return 0;
 }
 
-static int fbcon_enable(const struct device * dev)
+static int fbcon_enable(UNUSED const struct device * dev)
 {
 	return 0;
 }

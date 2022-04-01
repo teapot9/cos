@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "text: " fmt
+
 #include <unicode.h>
 
 /* public: unicode.h */

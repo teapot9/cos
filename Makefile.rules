@@ -6,6 +6,12 @@ obj-files := $(addprefix $(BUILD)/, $(filter-out %/, $(obj-y)))
 all: $(BUILD)/modules.o
 	$(info $(RELAPATH): built $^)
 
+# Dependencies
+bdeps := $(patsubst %.o, %.d, $(obj-files))
+bdeps := $(patsubst %.i, %.d, $(deps))
+bdeps := $(patsubst %.s, %.d, $(deps))
+-include $(bdeps)
+
 # Rule for errors
 .DEFAULT:
 	$(error No rules for $@ (deps = $^) (pwd = $(shell pwd)))
@@ -36,45 +42,45 @@ clean-dirs := $(addprefix $(BUILD)/, $(filter %/, $(obj-y) $(obj-) $(clean-y)))
 clean-files := $(addprefix $(BUILD)/, $(filter-out %/, $(obj-y) $(obj-) $(clean-y)))
 .PHONY: clean
 clean: $(clean-dirs)
-	rm -f $(clean-files) $(BUILD)/modules.o
+	rm -f $(clean-files) $(bdeps) $(BUILD)/modules.o
 
 # Generic build rules
 
 $(BUILD)/%.i: $(SRC)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -E -o $@ $^
+	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
 
 $(BUILD)/%.i: $(BUILD)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -E -o $@ $^
+	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
 
 $(BUILD)/%.s: $(SRC)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -S -o $@ $^
+	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -S -o $@ $<
 
 $(BUILD)/%.s: $(BUILD)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -S -o $@ $^
+	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -S -o $@ $<
 
 $(BUILD)/%.s: $(BUILD)/%.i
-	$(CC) $(CFLAGS) -S -o $@ $^
+	$(CC) $(CFLAGS) -S -o $@ $<
 
 $(BUILD)/%.s: $(SRC)/%.S
-	$(CC) $(CFLAGS) $(CPPFLAGS) -E -o $@ $^
+	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
 
 $(BUILD)/%.s: $(BUILD)/%.S
-	$(CC) $(CFLAGS) $(CPPFLAGS) -E -o $@ $^
+	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
 
 $(BUILD)/%.o: $(SRC)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^
+	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.o: $(BUILD)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^
+	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.o: $(BUILD)/%.i
-	$(CC) $(CFLAGS) -c -o $@ $^
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILD)/%.o: $(SRC)/%.S
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^
+	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.o: $(BUILD)/%.S
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^
+	$(CC) $(CFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.o: $(BUILD)/%.s
-	$(CC) $(CFLAGS) -c -o $@ $^
+	$(CC) $(CFLAGS) -c -o $@ $<

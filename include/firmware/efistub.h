@@ -9,12 +9,6 @@
 #include <string.h>
 
 /**
- * @brief Early setup, called with firmware parameters
- */
-void efistub_early_setup(efi_handle_t image_handle,
-                         const efi_system_table_t * system_table);
-
-/**
  * @brief Kernel EFI image handle
  */
 efi_handle_t efistub_image_handle(void);

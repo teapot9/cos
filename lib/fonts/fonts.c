@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "fonts: " fmt
+
 #include <fonts.h>
 #include "fonts.h"
 

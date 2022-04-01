@@ -1,0 +1,4 @@
+#ifndef PLATFORM_SETUP_H
+#define PLATFORM_SETUP_H
+
+#endif // PLATFORM_SETUP_H

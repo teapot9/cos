@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "text: " fmt
+
 #include <print.h>
 
 #include <stdarg.h>

@@ -51,6 +51,12 @@ config CC_OPTIMIZE_OS
 
 endchoice
 
+config DEBUG
+	bool "Kernel debugging"
+	default n
+	help
+	  Enable kernel debugging options
+
 config KERNEL_FRAME_SIZE
 	int "Kernel stack size"
 	default 1024

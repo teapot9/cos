@@ -17,5 +17,7 @@
 #define HOT __attribute__((hot))
 #define WEAK __attribute__((weak))
 #define SECTION(x) __attribute__((section(x)))
+#define ISR_AVAILABLE __attribute__((no_caller_saved_registers))
+#define ISR_DEFINE __attribute__((interrupt))
 
 #endif // CPP_H

@@ -43,7 +43,7 @@ typedef int initcall_entry_t;
 		".previous\n" \
 	)); \
 	static_assert(same_type(initcall_t, &fn), \
-	              "Module init function has wrong type");
+	              "Module init function has wrong type")
 
 /**
  * @brief Kernel module informations

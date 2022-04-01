@@ -1,5 +1,18 @@
 menu "Firmware drivers"
 
+menuconfig EFISTUB
+	bool "EFI boot services"
+	help
+	  Driver for EFI boot services
+
+if EFISTUB
 source "dev/firmware/efistub/Kconfig"
+endif
+
+menuconfig ACPI
+	bool "ACPI support"
+	default y
+	help
+	  Advanced Configuration and Power Interface support
 
 endmenu

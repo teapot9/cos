@@ -1,0 +1,27 @@
+config SERIAL
+	bool "Serial support (UART)"
+	default y
+	help
+	  UART serial ports support
+
+config SERIAL_CONSOLE
+	bool "Serial console"
+	default y
+	depends on SERIAL
+	help
+	  Use serial interface as system console
+
+config SERIAL_EARLY_DEBUG
+	bool "Early debug serial"
+	default n
+	depends on DEBUG
+	depends on SERIAL_CONSOLE
+	help
+	  Early boot debugging console on serial port
+
+config SERIAL_DEFAULT_RATE
+	int "Default baud rate"
+	default 9600
+	depends on SERIAL
+	help
+	  Set default serial baud rate

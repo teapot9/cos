@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "efistub: " fmt
+
 #include <firmware/efistub.h>
 #include "efistub.h"
 
@@ -9,10 +11,16 @@
 #include <firmware/efiapi/system_table.h>
 #include <firmware/efiapi/boot.h>
 #include <mm.h>
+#include <mm/early.h>
 
-static __attribute__((unused)) void
-print_efi_mem_desc(efi_memory_descriptor_t * desc)
+static __attribute__((unused)) void print_efi_mem_desc(
+#ifndef CONFIG_MM_DEBUG
+	UNUSED
+#endif
+	efi_memory_descriptor_t * desc
+)
 {
+#ifdef CONFIG_MM_DEBUG
 	const char * desc_type_str;
 	switch (desc->type) {
 	case EFI_RESERVED_MEMORY_TYPE:
@@ -70,6 +78,7 @@ print_efi_mem_desc(efi_memory_descriptor_t * desc)
 	pr_debug("Descriptor: %s, phy=%p, virt=%p, pages=%d\n",
 		 desc_type_str, desc->physical_start, desc->virtual_start,
 		 desc->number_of_pages);
+#endif
 }
 
 #if 0
@@ -125,14 +134,18 @@ static int register_memmap_desc(uint32_t efi_type, void * paddr,
 			return err;
 		break;
 	case EFI_CONVENTIONAL_MEMORY:
-	case EFI_PERSISTENT_MEMORY:
 		err = register_free_pmem(paddr, size);
 		if (err)
 			return err;
 		break;
-	case EFI_RESERVED_MEMORY_TYPE:
-	case EFI_UNUSABLE_MEMORY:
 	case EFI_ACPIRECLAIM_MEMORY:
+		err = pmm_acpi_register(paddr, size);
+		if (err)
+			return err;
+		break;
+	case EFI_RESERVED_MEMORY_TYPE:
+	case EFI_PERSISTENT_MEMORY:
+	case EFI_UNUSABLE_MEMORY:
 	case EFI_ACPIMEMORY_NVS:
 	case EFI_MEMORY_MAPPED_IO:
 	case EFI_MEMORY_MAPPED_IOPORT_SPACE:

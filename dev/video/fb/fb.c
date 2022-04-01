@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "fb: " fmt
+
 #include <video/fb.h>
 #include "fb.h"
 

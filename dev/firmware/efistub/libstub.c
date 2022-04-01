@@ -1,8 +1,14 @@
+#define pr_fmt(fmt) "efistub: " fmt
+
 #include <firmware/efistub.h>
 #include "efistub.h"
 
 #include <print.h>
 #include <unicode.h>
+
+#ifdef CONFIG_ACPI
+# include <firmware/acpi.h>
+#endif
 
 #define _str(x) #x
 #define str(x) _str(x)
@@ -86,3 +92,26 @@ char * efistub_cmdline(void)
 	return cmdline;
 }
 
+void efistub_parse_configuration_table(void)
+{
+	const efi_system_table_t * sys = efistub_system_table();
+	if (sys == NULL)
+		return;
+	efi_configuration_table_t * cfg = sys->configuration_table;
+	if (cfg == NULL)
+		return;
+
+	for (efi_uintn i = 0; i < sys->number_of_table_entries; i++) {
+		if (efi_guid_t_eq(cfg[i].vendor_guid,
+		                  (efi_guid_t) EFI_ACPI_20_TABLE_GUID)) {
+#ifdef CONFIG_ACPI
+			acpi_register_rsdp(cfg[i].vendor_table);
+#endif
+		} else if (efi_guid_t_eq(cfg[i].vendor_guid,
+		                         (efi_guid_t) ACPI_10_TABLE_GUID)) {
+#ifdef CONFIG_ACPI
+			acpi_register_rsdp(cfg[i].vendor_table);
+#endif
+		}
+	}
+}

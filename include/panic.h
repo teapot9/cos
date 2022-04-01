@@ -3,6 +3,8 @@
 
 #include <stdnoreturn.h>
 
-noreturn void panic(const char * fmt, ...);
+#include <cpp.h>
+
+noreturn void panic(const char * fmt, ...) ISR_AVAILABLE;
 
 #endif // PANIC_H

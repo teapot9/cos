@@ -25,8 +25,7 @@ CFLAGS += -mno-red-zone -mabi=sysv
 CFLAGS += -Wall -Wextra -Wpedantic -std=c18
 CFLAGS += -Wtype-limits -Wstrict-prototypes -Wtype-limits
 CFLAGS += -Wframe-larger-than=$(CONFIG_KERNEL_FRAME_SIZE)
-CFLAGS += -I$(SRC_ROOT)/include -I$(SRC_ROOT)/arch/$(ARCH)/include
-CFLAGS += -g
+CFLAGS += -I$(SRC_ROOT)/arch/$(ARCH)/include -I$(SRC_ROOT)/include
 LDFLAGS += -znodefaultlib -nostdlib -znocombreloc -Bsymbolic
 LDFLAGS += -unresolved-symbols=report-all
 LDFLAGS += --warn-common --warn-alternate-em
@@ -41,6 +40,10 @@ ifeq ($(CONFIG_X86_64), y)
 endif
 ifeq ($(CONFIG_X86_32), y)
 	CFLAGS += -m32
+endif
+
+ifeq ($(CONFIG_DEBUG), y)
+	CFLAGS += -g
 endif
 
 ifeq ($(CONFIG_CC_OPTIMIZE_O0), y)

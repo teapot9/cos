@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "pmm: " fmt
+
 #include <mm.h>
 #include "pmm.h"
 
@@ -5,11 +7,12 @@
 #include <errno.h>
 
 #include <print.h>
-#include "helper.h"
-#include "block.h"
+#include <mm/helper.h>
+#include <mm/block.h>
 
-struct memblock * first_free_block = NULL;
-struct memblock * first_used_block = NULL;
+struct memblock_list * first_free_block = NULL;
+struct memblock_list * first_used_block = NULL;
+struct memblock_list * first_reserved_block = NULL;
 
 /* public: mm.h */
 int pmap(void * paddr, size_t size)
@@ -18,26 +21,38 @@ int pmap(void * paddr, size_t size)
 	if (!pmm_is_init())
 		return early_pmap(paddr, size);
 
+	if (memblock_exists(&first_used_block, paddr, size, false)) {
+		pr_err("cannot allocate %zu bytes of physical memory at %p: "
+		       "memory is in use\n", size, paddr);
+		return -ENOMEM;
+	}
+
 	err = memblock_rem(&first_free_block, paddr, size, true);
-	if (err) {
-		pr_err("Cannot allocate %zu bytes of physical memory at %p: "
-		       "memory is not free, errno = %d\n", size, paddr, err);
+	if (err == -ENOENT) {
+		pr_debug("reserved memory alloc: %zuB at %p\n", size, paddr);
+		goto exit_ok;
+	} else if (err) {
+		pr_crit("cannot remove %zuB of free memory at %p, errno = %d\n",
+			size, paddr, err);
 		return err;
 	}
 
 	err = memblock_add(&first_used_block, paddr, size, true);
 	if (err) {
-		pr_err("Cannot allocate %zu bytes of physical memory at %p: "
+		pr_err("cannot allocate %zu bytes of physical memory at %p: "
 		       "memory is in use, errno = %d\n", size, paddr, err);
 		err = memblock_add(&first_free_block, paddr, size, true);
 		if (err)
-			pr_crit("Lost %zu bytes of memory at %p: "
+			pr_crit("lost %zu bytes of memory at %p: "
 				"cannot mark as free, errno = %d",
 				size, paddr, err);
 		return err;
 	}
 
+exit_ok:
+#ifdef CONFIG_MM_DEBUG
 	pr_debug("pmap(%p, %zu) -> %d\n", paddr, size, 0);
+#endif
 	return 0;
 }
 
@@ -48,10 +63,10 @@ void * pmalloc(size_t size, size_t align)
 	if (!pmm_is_init())
 		return early_pmalloc(size, align);
 
-	struct memblock ** prev =
+	struct memblock_list ** prev =
 		memblock_search_size(&first_free_block, size, align);
 	if (prev == NULL || *prev == NULL) {
-		pr_err("Cannot allocate %zu bytes of physical memory: "
+		pr_err("cannot allocate %zu bytes of physical memory: "
 		       "out of memory\n", size);
 	}
 
@@ -60,7 +75,9 @@ void * pmalloc(size_t size, size_t align)
 	err = pmap(paddr, size);
 	if (err)
 		return NULL;
+#ifdef CONFIG_MM_DEBUG
 	pr_debug("pmalloc(%zu, %zu) -> %p\n", size, align, paddr);
+#endif
 	return paddr;
 }
 
@@ -75,20 +92,22 @@ void pfree(void * paddr, size_t size)
 
 	err = memblock_rem(&first_used_block, paddr, size, true);
 	if (err) {
-		pr_err("Cannot free %zu bytes of physical memory at %p: "
+		pr_err("cannot free %zu bytes of physical memory at %p: "
 		       "memory is not used, errno = %d\n", size, paddr, err);
 		memblock_rem(&first_used_block, paddr, size, false);
-		pr_crit("Lost up to %zu bytes of physical memory at %p\n",
+		pr_crit("lost up to %zu bytes of physical memory at %p\n",
 			size, paddr);
 		return;
 	}
 
 	err = memblock_add(&first_free_block, paddr, size, true);
 	if (err) {
-		pr_err("Cannot free %zu bytes of physical memory at %p: "
+		pr_err("cannot free %zu bytes of physical memory at %p: "
 		       "memory is already free, errno = %d\n",
 		       size, paddr, err);
 		return;
 	}
+#ifdef CONFIG_MM_DEBUG
 	pr_debug("pfree(%p, %zu)\n", paddr, size);
+#endif
 }

@@ -1,5 +1,8 @@
+#define pr_fmt(fmt) "efistub: " fmt
+
 #include <firmware/efistub.h>
 #include "efistub.h"
+#include <platform_setup.h>
 
 #include <errno.h>
 #include <stddef.h>
@@ -87,6 +90,7 @@ static int efistub_console_enable(const struct device * dev)
 		return -ENOTSUP;
 	if (dev != eficon_dev)
 		return -EINVAL;
+	lastpos = NULL;
 	return eficon_reset();
 }
 
@@ -146,7 +150,8 @@ static void eficon_unreg(__attribute__((__unused__)) const struct device * dev)
 	eficon_dev = NULL;
 }
 
-static int efistub_console_init(void)
+/* public: platform_setup.h */
+int efistub_console_init(void)
 {
 	int err = 0;
 
@@ -157,4 +162,3 @@ static int efistub_console_init(void)
 
 	return 0;
 }
-module_init(efistub_console_init, early);

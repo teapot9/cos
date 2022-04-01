@@ -5,3 +5,5 @@ source "arch/Kconfig"
 source "dev/Kconfig"
 
 source "lib/Kconfig"
+
+source "mm/Kconfig"

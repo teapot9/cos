@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "fonts: " fmt
+
 #include "psf.h"
 
 #include <errno.h>

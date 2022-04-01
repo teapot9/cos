@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "kmm: " fmt
+
 #include <mm.h>
 #include "kmm.h"
 
@@ -85,7 +87,7 @@ static struct free_memory_info * find_free_mem_block(size_t size)
 		cur = cur->next;
 	}
 
-	struct vmalloc alloc = vmalloc(size);
+	struct memblock alloc = vmalloc(size);
 	if (alloc.addr == NULL || alloc.size < size)
 		return NULL;
 

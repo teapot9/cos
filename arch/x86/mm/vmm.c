@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "vmm: " fmt
+
 #include <mm.h>
 #include "vmm.h"
 
@@ -262,7 +264,9 @@ static int map_page_pt(union pml4e * pml4, void * paddr, void * vaddr)
 static int map_pages_pt(union pml4e * pml4, void * paddr, void * vaddr,
                         size_t size)
 {
+#ifdef CONFIG_MM_DEBUG
 	pr_debug("map_pages_pt(paddr=%p, vaddr=%p, size=%zu)\n", paddr, vaddr, size);
+#endif
 	int ret;
 	size_t nb_pages = size / PAGE_SIZE_PT;
 	if (size % PAGE_SIZE_PT)
@@ -320,14 +324,16 @@ int vmap(void * paddr, void * vaddr, size_t size)
 	if (pml4 == NULL)
 		return early_vmap(paddr, vaddr, size);
 	int err = map_pages_pt(pml4, paddr, vaddr, size);
+#ifdef CONFIG_MM_DEBUG
 	pr_debug("vmap(%p, %p, %zu) -> %d\n", paddr, vaddr, size, err);
+#endif
 	return err;
 }
 
 /* public: mm.h */
-struct vmalloc vmalloc(size_t size)
+struct memblock vmalloc(size_t size)
 {
-	struct vmalloc null_vmalloc = {.addr = NULL, .size = 0};
+	struct memblock null_vmalloc = {.addr = NULL, .size = 0};
 	union pml4e * pml4 = kpml4();
 	if (pml4 == NULL) {
 		pr_err("Cannot allocate virtual memory: not initialized\n", 0);
@@ -353,8 +359,10 @@ struct vmalloc vmalloc(size_t size)
 		allocated += PAGE_SIZE_PT;
 	}
 
+#ifdef CONFIG_MM_DEBUG
 	pr_debug("vmalloc(%zu) -> {%p, %zu}\n", size, vaddr, allocated);
-	return (struct vmalloc) {.addr = vaddr, .size = allocated};
+#endif
+	return (struct memblock) {.addr = vaddr, .size = allocated};
 
 paddr_failed:
 	pr_err("Out of phisical memory, cannot allocate %zu bytes\n", size);
@@ -377,7 +385,9 @@ void vunmap(void * vaddr, size_t size)
 
 	size_t nb_pages = size / 4096 + (size % 4096 != 0);
 	unmap_pages_pt(pml4, vaddr, nb_pages);
+#ifdef CONFIG_MM_DEBUG
 	pr_debug("vunmap(%p, %zu)\n", vaddr, size);
+#endif
 }
 
 /* public: mm.h */
@@ -399,7 +409,9 @@ void vfree(void * vaddr, size_t size)
 		pfree(get_paddr(pml4, ivaddr), PAGE_SIZE_PT);
 		ivaddr += PAGE_SIZE_PT;
 	}
+#ifdef CONFIG_MM_DEBUG
 	pr_debug("vfree(%p, %zu)\n", vaddr, size);
+#endif
 }
 
 /* public: mm.h */
@@ -430,6 +442,17 @@ void * mmap(void * paddr, size_t size)
 		return NULL;
 	}
 
+#ifdef CONFIG_MM_DEBUG
 	pr_debug("mmap(%p, %zu) -> %p\n", paddr, size, vaddr);
+#endif
 	return vaddr;
+}
+
+/* public: mm.h */
+void * virt_to_phys(void * vaddr)
+{
+	union pml4e * pml4 = kpml4();
+	if (pml4 == NULL)
+		return NULL;
+	return get_paddr(pml4, vaddr);
 }

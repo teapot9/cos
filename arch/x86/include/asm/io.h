@@ -1,7 +1,11 @@
 #ifndef ASM_CPU_H
 #define ASM_CPU_H
 
-static inline void outb(uint8_t data, uint16_t port)
+#include <stdint.h>
+
+#include <asm/asm.h>
+
+static inline void outb(uint16_t port, uint8_t data)
 {
 	asm volatile (intel("out dx, al\n") : : "a" (data), "d" (port));
 }

@@ -1,8 +1,3 @@
-config EFISTUB
-	bool "EFI boot services"
-	help
-	  Driver for EFI boot services
-
 config EFISTUB_CONSOLE
 	bool "EFI console"
 	default y

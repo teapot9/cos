@@ -1,5 +1,5 @@
-#include <int.h>
 #include "idt.h"
+#include <platform_setup.h>
 
 #include <stddef.h>
 
@@ -12,19 +12,12 @@
 static struct idt_desc idt[IDT_SIZE];
 static struct idt_reg idtr;
 
-static __attribute__((interrupt)) void int_handler(
-	struct interrupt_frame * frame
-)
-{
-	pr_notice("Got interrupt\n", 0);
-}
-
 static inline void lidt(void * idt)
 {
 	asm volatile(intel("lidt [rax]\n") : : "a" (idt));
 }
 
-static inline uint64_t sidt(void)
+UNUSED static inline uint64_t sidt(void)
 {
 	uint64_t ret;
 	asm volatile(intel("sidt [rax]\n") : "=a" (ret));
@@ -60,9 +53,10 @@ void set_idt(size_t index, void * callback)
 	idt[index] = desc;
 }
 
+/* public: platform_setup.h */
 int idt_init(void)
 {
-	uint64_t old_idt = sidt();
+	// uint64_t old_idt = sidt();
 
 	for (size_t i = 0; i < IDT_SIZE; i++)
 		set_idt(i, NULL);

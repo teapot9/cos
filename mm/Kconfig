@@ -1,0 +1,10 @@
+menu "Memory management"
+
+config MM_DEBUG
+	bool "Memory management debug"
+	default n
+	depends on DEBUG
+	help
+	  Print memory management debugging information to the console
+
+endmenu

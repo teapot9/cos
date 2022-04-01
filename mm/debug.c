@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "mm: " fmt
+
 #include "pmm.h"
 
 #include <stdint.h>

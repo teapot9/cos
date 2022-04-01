@@ -1,10 +1,13 @@
 #define pr_fmt(fmt) "efigop: " fmt
 
+#include <platform_setup.h>
+
 #include <errno.h>
 #include <stdbool.h>
 #include <stddef.h>
 
 #include <mm.h>
+#include <mm/early.h>
 #include <print.h>
 #include <firmware/efistub.h>
 #include <firmware/efiapi/console.h>
@@ -150,7 +153,8 @@ static void gop_unreg(__attribute__((__unused__)) const struct device * dev)
 {
 }
 
-static int gop_init(void)
+/* public: platform_setup.h */
+int gop_init(void)
 {
 	efi_status_t status;
 	int err;
@@ -190,4 +194,3 @@ static int gop_init(void)
 
 	return 0;
 }
-module_init(gop_init, early);

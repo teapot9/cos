@@ -5,12 +5,11 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-extern struct memblock * first_free_block;
-extern struct memblock * first_used_block;
+extern struct memblock_list * first_free_block;
+extern struct memblock_list * first_used_block;
+extern struct memblock_list * first_reserved_block;
 
 bool pmm_is_init(void);
-
-int pmm_init(void);
 
 int early_pmap(void * paddr, size_t size);
 

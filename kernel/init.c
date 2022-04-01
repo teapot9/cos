@@ -1,9 +1,10 @@
-#include <init.h>
+#include <setup.h>
 
 #include <stddef.h>
 
 #include <print.h>
 #include <module.h>
+#include <power.h>
 
 extern initcall_entry_t __initcall_early[];
 extern initcall_entry_t __initcall_core[];
@@ -37,6 +38,8 @@ static inline initcall_t initcall_from_entry(initcall_entry_t * entry)
 
 static void kernel_initcall_level(size_t level)
 {
+	int err;
+
 	if (level >= initcall_count) {
 		pr_err("Initcall level %d > maximum (%d)\n",
 		       level, initcall_count);
@@ -48,9 +51,17 @@ static void kernel_initcall_level(size_t level)
 	     fn < initcall_end(level); fn++) {
 		initcall_t call = initcall_from_entry(fn);
 		pr_debug("Initcall: %p\n", call);
-		call();
+		err = call();
+		if (err)
+			pr_warn("Initcall %p failed, errno = %d\n", call, err);
 	}
 	pr_info("Modules init: end level %d\n", level);
+}
+
+static void setup(void)
+{
+	kernel_initcalls_early();
+	kernel_initcalls();
 }
 
 /* public: init.h */
@@ -64,4 +75,11 @@ void kernel_initcalls(void)
 {
 	for (size_t i = 1; i < initcall_count; i++)
 		kernel_initcall_level(i);
+}
+
+/* public: init.h */
+noreturn void kernel_main(void)
+{
+	setup();
+	halt();
 }

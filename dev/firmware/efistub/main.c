@@ -1,5 +1,8 @@
+#define pr_fmt(fmt) "efistub: " fmt
+
 #include <firmware/efistub.h>
 #include "efistub.h"
+#include <platform_setup.h>
 
 #include <errno.h>
 #include <stdbool.h>
@@ -39,11 +42,25 @@ static efi_loaded_image_protocol_t * get_image(
 	return image;
 }
 
-static int efistub_init(void)
+static void early_setup(efi_handle_t image_handle,
+                        const efi_system_table_t * system_table)
+{
+	if (efistub_is_init())
+		return;
+	_image_handle = image_handle;
+	_system_table = system_table;
+	_image_proto = get_image(image_handle, system_table);
+}
+
+/* public: platform_setup.h */
+int efistub_init(efi_handle_t image_handle,
+                  const efi_system_table_t * system_table)
 {
 	int ret;
 	if (efistub_is_init())
 		return 0;
+
+	early_setup(image_handle, system_table);
 
 	if (_image_handle == NULL) {
 		pr_err("No EFI image handle provided\n", 0);
@@ -62,39 +79,30 @@ static int efistub_init(void)
 		return ret;
 
 	is_init = true;
+
+	efistub_parse_configuration_table();
+
 	return 0;
 }
-module_init(efistub_init, early);
 
 bool efistub_is_init(void)
 {
 	return is_init;
 }
 
-/* firmware/efistub.h */
-void efistub_early_setup(efi_handle_t image_handle,
-                         const efi_system_table_t * system_table)
-{
-	if (efistub_is_init())
-		return;
-	_image_handle = image_handle;
-	_system_table = system_table;
-	_image_proto = get_image(image_handle, system_table);
-}
-
-/* firmware/efistub.h */
+/* public: firmware/efistub.h */
 efi_handle_t efistub_image_handle(void)
 {
 	return efistub_is_init() ? _image_handle : NULL;
 }
 
-/* firmware/efistub.h */
+/* public: firmware/efistub.h */
 const efi_system_table_t * efistub_system_table(void)
 {
 	return efistub_is_init() ? _system_table : NULL;
 }
 
-/* firmware/efistub.h */
+/* public: firmware/efistub.h */
 const efi_loaded_image_protocol_t * efistub_image_proto(void)
 {
 	return efistub_is_init() ? _image_proto : NULL;

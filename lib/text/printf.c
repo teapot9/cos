@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "text: " fmt
+
 #include <print.h>
 
 #include <stdarg.h>
@@ -5,6 +7,7 @@
 
 #include <string.h>
 #include <mm.h>
+#include <strtox.h>
 
 #define STR_BUFSIZE 256
 
@@ -131,6 +134,15 @@ size_t vsnprintf(char * dst, size_t len, const char * fmt, va_list ap)
 			continue;
 		}
 		pos++;
+
+		int precision_len = 0;
+		unsigned long long precision = 0;
+		if (fmt[pos] == '.') {
+			pos++;
+			precision_len = kstrtoull(fmt + pos, 10, &precision);
+			if (precision_len > 0)
+				pos += precision_len;
+		}
 
 		if (!strncmp(fmt + pos, "d", strlen("d"))) {
 			int var = va_arg(ap, int);
@@ -309,9 +321,12 @@ size_t vsnprintf(char * dst, size_t len, const char * fmt, va_list ap)
 			written++;
 		} else if (!strncmp(fmt + pos, "s", strlen("s"))) {
 			const char * var = va_arg(ap, const char *);
+			size_t max = len - written;
+			if (precision_len > 0 && precision < max)
+				max = precision + 1;
 
 			pos += strlen("s");
-			written += strncpy(dst + written, var, len - written);
+			written += strncpy(dst + written, var, max);
 		} else if (!strncmp(fmt + pos, "p", strlen("p"))) {
 			uintmax_t var = (uintmax_t) va_arg(ap, void *);
 
