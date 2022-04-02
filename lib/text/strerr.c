@@ -1,7 +1,7 @@
 const char * strerr(int err)
 {
 	switch (err) {
-	case 0:
+	case 0: // SUCCESS
 		return "Success";
 	case 1: // EPERM
 		return "Operation not permitted";
@@ -23,7 +23,7 @@ const char * strerr(int err)
 		return "Bad file descriptor";
 	case 10: // ECHILD
 		return "No child processes";
-	case 11: // EAGAIN
+	case 11: // EAGAIN EWOULDBLOCK
 		return "Resource temporarily unavailable";
 	case 12: // ENOMEM
 		return "Cannot allocate memory";
@@ -71,7 +71,7 @@ const char * strerr(int err)
 		return "Numerical argument out of domain";
 	case 34: // ERANGE
 		return "Numerical result out of range";
-	case 35: // EDEADLK
+	case 35: // EDEADLK EDEADLOCK
 		return "Resource deadlock avoided";
 	case 36: // ENAMETOOLONG
 		return "File name too long";
@@ -187,7 +187,7 @@ const char * strerr(int err)
 		return "Protocol not supported";
 	case 94: // ESOCKTNOSUPPORT
 		return "Socket type not supported";
-	case 95: // ENOTSUP
+	case 95: // EOPNOTSUPP ENOTSUP
 		return "Operation not supported";
 	case 96: // EPFNOSUPPORT
 		return "Protocol family not supported";
