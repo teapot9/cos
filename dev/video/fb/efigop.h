@@ -12,8 +12,4 @@ struct gop {
 	size_t framebuffer_mapping_size;
 };
 
-struct efigop_bdata {
-	struct gop gop;
-};
-
 #endif // DEV_VIDEO_FB_EFIGOP_H

@@ -6,7 +6,7 @@
 struct entry_efi_data {
 	struct efistub_data * efistub;
 	const char * cmdline;
-	struct efigop_bdata * gop;
+	struct gop * gop;
 	struct memmap * pmemmap;
 	//struct memlist * bootmem;
 	void * kernel_elf;

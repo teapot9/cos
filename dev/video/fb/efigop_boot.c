@@ -75,7 +75,7 @@ static int set_mode(
 }
 
 /* public: platform_setup.h */
-int gop_init(struct efigop_bdata ** data)
+int gop_init(struct gop ** data)
 {
 	efi_status_t status;
 	efi_graphics_output_protocol_t * gop_prot = NULL;
@@ -86,11 +86,11 @@ int gop_init(struct efigop_bdata ** data)
 	*data = malloc(sizeof(**data));
 	if (*data == NULL)
 		return -ENOMEM;
-	struct gop * gop = &(*data)->gop;
+	struct gop * gop = *data;
 
 	/* Check support */
 	status = efistub_system_table()->boot_services->locate_protocol(
-		&gop_guid, NULL, (void **) &gop
+		&gop_guid, NULL, (void **) &gop_prot
 	);
 	if (status != EFI_SUCCESS || gop_prot == NULL) {
 		kfree(*data);

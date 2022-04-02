@@ -88,12 +88,8 @@ noreturn void entry_efi_s2(const struct entry_efi_data * info)
 	}
 #endif
 
-	/* EFI GOP */
-	err = gop_init(info->gop);
-	if (err)
-		pr_err("failed to initialize EFI GOP, errno = %d\n", err);
-	else
-		pr_info("Early init: EFI GOP\n", 0);
+	/* Save GOP data */
+	struct gop * gop = gop_save(info->gop);
 
 	/* cmdline */
 	kernel_cmdline = strdup(info->cmdline);
@@ -119,6 +115,13 @@ noreturn void entry_efi_s2(const struct entry_efi_data * info)
 	if (main_pid)
 		panic("Failed to create kernel process, errno = %d",
 		      main_pid);
+
+	/* EFI GOP */
+	err = gop_init(gop);
+	if (err)
+		pr_err("failed to initialize EFI GOP, errno = %d\n", err);
+	else
+		pr_info("Early init: EFI GOP\n", 0);
 
 	/* Start scheduling + trampoline */
 	sched_enable();

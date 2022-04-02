@@ -67,13 +67,9 @@ static void gop_unreg(const struct device * dev)
 }
 
 /* public: platform_setup.h */
-int gop_init(struct efigop_bdata * data)
+int gop_init(struct gop * gop)
 {
 	int err;
-
-	struct gop * gop = malloc(sizeof(*gop));
-	memcpy(gop, &data->gop, sizeof(*gop));
-	gop->mode.info = &gop->info;
 
 	/* Register device */
 	// TODO: parent = efi boot services? firmware?
@@ -82,4 +78,15 @@ int gop_init(struct efigop_bdata * data)
 	if (err)
 		return err;
 	return 0;
+}
+
+/* public: platform_setup.h */
+struct gop * gop_save(struct gop * boot_gop)
+{
+	struct gop * gop = malloc(sizeof(*gop));
+	if (gop == NULL)
+		return NULL;
+	*gop = *boot_gop;
+	gop->mode.info = &gop->info;
+	return gop;
 }

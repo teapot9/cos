@@ -17,11 +17,12 @@ int efistub_init(
 );
 #endif
 
-struct efigop_bdata;
+struct gop;
 #ifdef BOOTLOADER
-int gop_init(struct efigop_bdata ** data);
+int gop_init(struct gop ** data);
 #else // BOOTLOADER
-int gop_init(struct efigop_bdata * data);
+int gop_init(struct gop * gop);
+struct gop * gop_save(struct gop * boot_gop);
 #endif // !BOOTLOADER
 
 int efistub_console_init(void);
