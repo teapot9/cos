@@ -24,10 +24,14 @@ endif
 
 include $(SRC_ROOT)/Makefile.flags
 
+KCONFIG ?= .config
+
 sections = $(BUILD)/arch/$(ARCH)/sections.lds
 obj-y = arch/ dev/ kernel/ lib/ mm/
 bootloader-y = $(obj-y)
 clean-y += $(COS_KERNEL).elf $(sections)
+clean-y += $(wildcard include/config/*)
+clean-y += include/generated/autoconf.h
 
 
 .PHONY: all
@@ -42,15 +46,27 @@ $(BUILD)/$(COS_KERNEL).elf: $(BUILD)/modules.o
 	$(LD) -dT $(sections) $(LDFLAGS) -pie -static -entry=entry_efi_wrapper_s2 -o $@ $^
 #	$(LD) -dT $(sections) $(LDFLAGS) -pie -static -entry=entry_efi_s2 -o $@ $^
 
+$(BUILD)/include/generated/autoconf.h $(BUILD)/include/config/auto.conf $(BUILD)/include/config/auto.conf.cmd: syncconfig $(KCONFIG)
+
 include $(SRC_ROOT)/Makefile.rules
 
 MCONF ?= mconf
+CONF ?= conf
+
+include $(BUILD)/include/config/auto.conf.cmd
 
 .PHONY: menuconfig
 menuconfig:
 	$(MCONF) Kconfig
 
+.PHONY: syncconfig
+syncconfig: $(KCONFIG)
+	$(CONF) --syncconfig Kconfig
+
 .PHONY: rebuild
 rebuild:
 	$(Q)$(MAKE) clean
 	$(Q)$(MAKE) all
+
+.PHONY: FORCE
+FORCE:

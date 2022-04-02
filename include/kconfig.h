@@ -3,6 +3,8 @@
 
 #include "generated/autoconf.h"
 
-#define IS_ENABLED(x) defined(x)
+#define IS_BUILTIN(x) (x)
+#define IS_MODULE(x) (!(x) && (x##_MODULE))
+#define IS_ENABLED(x) ((x) || (x##_MODULE))
 
-#endif
+#endif // KCONFIG_H
