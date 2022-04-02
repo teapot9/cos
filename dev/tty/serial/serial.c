@@ -7,6 +7,7 @@
 #include <print.h>
 #include <asm/io.h>
 #include <string.h>
+#include <kconfig.h>
 
 #define get_divisor(baud) ((115200 / (baud)) ? (115200 / (baud)) : 1)
 

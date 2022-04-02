@@ -10,6 +10,7 @@
 #include <mm/helper.h>
 #include <memlist.h>
 #include <mm/memmap.h>
+#include <kconfig.h>
 
 /* public: mm.h */
 struct memmap memmap;
@@ -38,7 +39,7 @@ int pmap(pid_t pid, void * paddr, size_t size)
 			return 0;
 	}
 	int err = memmap_update(&memmap, paddr, size, MEMORY_TYPE_USED, pid);
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("pmap(%zu, %p, %zu) -> %d\n", pid, paddr, size, err);
 #endif
 	return err;
@@ -63,7 +64,7 @@ void * palloc(pid_t pid, size_t size, size_t align)
 		       size, err);
 		paddr = NULL;
 	}
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("palloc(%zu, %zu, %zu) -> %p\n", pid, size, align, paddr);
 #endif
 	return paddr;
@@ -83,7 +84,7 @@ void punmap(pid_t pid, void * paddr, size_t size)
 	    || found->owner != pid)
 		return;
 	memmap_update(&memmap, paddr, size, MEMORY_TYPE_FREE, 0);
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("punmap(%zu, %p, %zu)\n", pid, paddr, size);
 #endif
 }

@@ -9,6 +9,7 @@
 #include <mm.h>
 #include <task.h>
 #include <lock.h>
+#include <kconfig.h>
 
 #define MAX_PID 1024
 #define MAX_PROC_CNT MAX_PID + 1

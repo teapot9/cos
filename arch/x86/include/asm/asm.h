@@ -1,6 +1,8 @@
 #ifndef ASM_H
 #define ASM_H
 
+#include <kconfig.h>
+
 /**
  * @brief Assembly macro helpers
  * asm(): Inline assembly
@@ -11,9 +13,9 @@
  *
  * Usage: `asm(intel("mov bx, dx\n") : "=b" (out) : "d" (in));`
  */
-#if defined(CONFIG_ASM_DEFAULT_INTEL)
+#if IS_ENABLED(CONFIG_ASM_DEFAULT_INTEL)
 # define _DEFAULT_ASM ".intel_syntax noprefix\n"
-#elif defined(CONFIG_ASM_DEFAULT_ATT)
+#elif IS_ENABLED(CONFIG_ASM_DEFAULT_ATT)
 # define _DEFAULT_ASM ".att_syntax\n"
 #else
 # error No default assembler selected

@@ -6,6 +6,7 @@
 #include <list.h>
 #include <memlist.h>
 #include <task.h>
+#include <kconfig.h>
 
 struct memmap {
 	struct memlist l;
@@ -46,7 +47,7 @@ static inline struct memmap_elt * memmap_get(
 }
 
 const char * memmap_type_str(enum memory_type type);
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 void memmap_print(struct memmap * map, const char * prefix);
 #endif
 

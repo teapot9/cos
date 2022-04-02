@@ -8,6 +8,7 @@
 #include <device.h>
 #include <mm.h>
 #include <print.h>
+#include <kconfig.h>
 
 static size_t serial_count = 0;
 
@@ -29,7 +30,7 @@ static int reg(const struct device * device)
 	pr_info("port 0x%x: new serial device [%s]\n",
 	        serial->base, uart_id_str(serial->type));
 
-#ifdef CONFIG_SERIAL_EARLY_DEBUG
+#if IS_ENABLED(CONFIG_SERIAL_EARLY_DEBUG)
 	err = serial_console_reg(device);
 	if (err)
 		pr_err("port 0x%x: failed to create console, errno = %d\n",

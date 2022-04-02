@@ -12,8 +12,9 @@
 #include <mm.h>
 #include <mm/early.h>
 #include <mm/map.h>
+#include <kconfig.h>
 
-#ifdef CONFIG_64BIT
+#if IS_ENABLED(CONFIG_64BIT)
 # define UINT_PTR uint64_t
 #else
 # define UINT_PTR uint32_t

@@ -37,6 +37,7 @@
 #include <setup.h>
 #include <elf.h>
 #include <memlist.h>
+#include <kconfig.h>
 
 struct entry_efi_data boot_data;
 extern uint8_t _binary_cos_elf_start[];
@@ -47,7 +48,7 @@ extern noreturn void entry_efi_wrapper(
 	efi_handle_t image_handle, efi_system_table_t * system_table
 );
 
-#ifdef CONFIG_DEBUG
+#if IS_ENABLED(CONFIG_DEBUG)
 static void debug_base_addr(efi_handle_t image_handle,
                             efi_system_table_t * system_table)
 {
@@ -79,7 +80,7 @@ noreturn void entry_efi_s1(efi_handle_t image_handle,
 {
 	int err = 0;
 
-#ifdef CONFIG_DEBUG
+#if IS_ENABLED(CONFIG_DEBUG)
 	debug_base_addr(image_handle, system_table);
 	bool tmp = false;
 	while (!tmp);
@@ -117,11 +118,11 @@ noreturn void entry_efi_s1(efi_handle_t image_handle,
 		      ", errno = %d\n", err);
 	}
 	pr_info("Early init: exited boot services\n", 0);
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	memmap_print(&map, "pmemmap");
 #endif
 
-#ifdef CONFIG_SERIAL_EARLY_DEBUG
+#if IS_ENABLED(CONFIG_SERIAL_EARLY_DEBUG)
 	/* Serial debug */
 	serial_init();
 #endif

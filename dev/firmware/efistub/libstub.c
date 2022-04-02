@@ -7,14 +7,15 @@
 
 #include <print.h>
 #include <unicode.h>
+#include <kconfig.h>
 
-#ifdef CONFIG_ACPI
+#if IS_ENABLED(CONFIG_ACPI)
 # include <firmware/acpi.h>
 #endif
 
 #define _str(x) #x
 #define str(x) _str(x)
-const char * const extra_cmdline = str(CONFIG_CMDLINE);
+const char * const extra_cmdline = CONFIG_CMDLINE;
 
 /* Return EFI cmdline in a dynamically allocated buffer */
 static char * get_efi_cmdline(void)
@@ -72,7 +73,7 @@ int efistub_cmdline(const char ** cmdline_dst)
 		return -ENOMEM;
 	}
 
-#ifndef CONFIG_CMDLINE_OVERRIDE
+#if IS_ENABLED(CONFIG_CMDLINE_OVERRIDE)
 	if (*extra_cmdline) {
 		strncpy(cmdline + start, extra_cmdline, size - start);
 		start = strlen(cmdline);
@@ -84,7 +85,7 @@ int efistub_cmdline(const char ** cmdline_dst)
 		strncpy(cmdline + start, efi_cmdline, size - start);
 		start = strlen(cmdline);
 	}
-#ifdef CONFIG_CMDLINE_OVERRIDE
+#if IS_ENABLED(CONFIG_CMDLINE_OVERRIDE)
 	if (efi_cmdline != NULL && *efi_cmdline) {
 		cmdline[start] = ' ';
 		cmdline[++start] = 0;
@@ -111,14 +112,14 @@ void efistub_parse_configuration_table(void)
 		if (efi_guid_t_eq(cfg[i].vendor_guid,
 		                  (efi_guid_t) EFI_ACPI_20_TABLE_GUID)) {
 #if 0
-#ifdef CONFIG_ACPI
+#if IS_ENABLED(CONFIG_ACPI)
 			acpi_register_rsdp(cfg[i].vendor_table);
 #endif
 #endif
 		} else if (efi_guid_t_eq(cfg[i].vendor_guid,
 		                         (efi_guid_t) ACPI_10_TABLE_GUID)) {
 #if 0
-#ifdef CONFIG_ACPI
+#if IS_ENABLED(CONFIG_ACPI)
 			acpi_register_rsdp(cfg[i].vendor_table);
 #endif
 #endif

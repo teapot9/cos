@@ -5,6 +5,7 @@
 #include <print.h>
 #include <mm/paging.h>
 #include "paging.h"
+#include <kconfig.h>
 
 static inline size_t sanitize_size(size_t size)
 {
@@ -23,7 +24,7 @@ int vmap(pid_t pid, void * paddr, void * vaddr, size_t * size) {
 		       "[%zu bytes], errno = %d\n", vaddr, paddr, size, err);
 	}
 
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("vmap: mapped virtual %p -> physical %p [%zu bytes]\n",
 	         vaddr, paddr, size);
 #endif
@@ -42,7 +43,7 @@ int vreset(pid_t pid, void * vaddr, size_t size, bool write, bool user, bool exe
 		       user ? 'U' : ' ', exec ? 'X' : ' ', size, err);
 	}
 
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("vmap: reseted virtual %p [%c%c%c] [%zu bytes]\n",
 	         vaddr, write ? 'W' : ' ', user ? 'U' : ' ',
 	         exec ? 'X' : ' ', size);
@@ -61,7 +62,7 @@ int vunmap(pid_t pid, void * vaddr, size_t size) {
 		       "errno = %d\n", vaddr, size, err);
 	}
 
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("vmap: unmapped virtual %p [%zu bytes]\n",
 	         vaddr, size);
 #endif
@@ -92,7 +93,7 @@ void * mmap(pid_t pid, void * paddr, size_t * size, size_t valign,
 		return NULL;
 	}
 
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("mmap: mapped physical %p <- virtual %p [%zu bytes] "
 	         "[%c%c%c]\n", paddr, vaddr, size, write ? 'W' : ' ',
 	         user ? 'U' : ' ', exec ? 'X' : ' ');
@@ -123,7 +124,7 @@ void * valloc(pid_t pid, size_t * size, size_t palign, size_t valign,
 		return NULL;
 	}
 
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("valloc: allocated %zu bytes of memory: virtual %p -> "
 	         "physical %p [%c%c%c]\n", size, vaddr, paddr,
 		 write ? 'W' : ' ', user ? 'U' : ' ', exec ? 'X' : ' ');
@@ -150,7 +151,7 @@ int vfree(pid_t pid, void * vaddr, size_t size) {
 
 	punmap(pid, paddr, size);
 
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("vfree: unmapped virtual memory at %p, freed physical memory "
 		 "at %p [%zu bytes]\n", vaddr, paddr, size);
 #endif

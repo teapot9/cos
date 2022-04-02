@@ -2,8 +2,9 @@
 #define DEBUG_H
 
 #include <print.h>
+#include <kconfig.h>
 
-#ifdef CONFIG_DEBUG
+#if IS_ENABLED(CONFIG_DEBUG)
 # ifndef BOOTLOADER
 #  include <asm/asm.h>
 #  define kbreak() do { \

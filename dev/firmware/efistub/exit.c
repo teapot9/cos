@@ -14,8 +14,9 @@
 #include <mm.h>
 #include <mm/early.h>
 #include <mm/memmap.h>
+#include <kconfig.h>
 
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 static void print_efi_mem_desc(efi_memory_descriptor_t * desc)
 {
 	const char * desc_type_str;
@@ -279,7 +280,7 @@ static int register_efi_memmap_desc(
 	                        memsize(desc), type, 0);
 	if (err)
 		return err;
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("register memmap [%p; %p] (%zu bytes): %s\n",
 		 memstart(desc), (uint8_t *) memstart(desc) + memsize(desc),
 		 memsize(desc), memmap_type_str(type));
@@ -376,7 +377,7 @@ int efistub_memmap_and_exit(struct memmap * map)
 	}
 	device_delete(efiboot_dev);
 
-#ifdef CONFIG_SERIAL_EARLY_DEBUG
+#if IS_ENABLED(CONFIG_SERIAL_EARLY_DEBUG)
 	/* Start serial */
 	serial_init();
 #endif

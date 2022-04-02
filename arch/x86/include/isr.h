@@ -5,11 +5,12 @@
 
 #include "../kernel/isr_wrapper.h"
 #include <cpp.h>
+#include <kconfig.h>
 
-#ifdef CONFIG_X86_64
+#if IS_ENABLED(CONFIG_X86_64)
 typedef unsigned long long int uword_t;
 # define UWORD_PRINT "ll"
-#elif CONFIG_X86_32
+#elif IS_ENABLED(CONFIG_X86_32)
 typedef unsigned int uword_t;
 # define UWORD_PRINT ""
 #else

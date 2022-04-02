@@ -2,6 +2,7 @@
 #define FIRMWARE_EFIAPI_EFIAPI_H
 
 #include <stdint.h>
+#include <kconfig.h>
 
 #ifndef EFIABI
 #define EFIABI __attribute__ ((ms_abi))
@@ -9,10 +10,10 @@
 
 /* EFI base types */
 
-#if defined(CONFIG_X86_64)
+#if IS_ENABLED(CONFIG_X86_64)
 typedef uint64_t efi_uintn;
 typedef int64_t efi_intn;
-#elif defined(CONFIG_X86_32)
+#elif IS_ENABLED(CONFIG_X86_32)
 typedef uint32_t efi_uintn;
 typedef int32_t efi_intn;
 #else
@@ -23,9 +24,9 @@ typedef uint8_t efi_bool;
 
 /* EFI status */
 
-#if defined(CONFIG_X86_64)
+#if IS_ENABLED(CONFIG_X86_64)
 # define EFI_UINTN_HIGH_BIT (1UL << 63)
-#elif defined(CONFIG_X86_32)
+#elif IS_ENABLED(CONFIG_X86_32)
 # define EFI_UINTN_HIGH_BIT (1U << 31)
 #else
 # error Architecture must be 32 or 64 bits

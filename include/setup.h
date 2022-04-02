@@ -3,6 +3,8 @@
 
 #include <stdnoreturn.h>
 
+#include <kconfig.h>
+
 struct memlist;
 struct memmap;
 
@@ -14,7 +16,7 @@ void kernel_initcalls(void);
 
 int pmm_init(struct memmap * newmap);
 
-#ifdef CONFIG_SERIAL_EARLY_DEBUG
+#if IS_ENABLED(CONFIG_SERIAL_EARLY_DEBUG)
 int serial_init(void);
 #endif
 

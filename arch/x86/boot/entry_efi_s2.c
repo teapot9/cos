@@ -33,12 +33,13 @@
 #include "../kernel/idt.h"
 #include <elf.h>
 #include "../mm/debug.h"
+#include <kconfig.h>
 
 noreturn void entry_efi_s2(const struct entry_efi_data * info)
 {
 	int err;
 
-#ifdef CONFIG_SERIAL_EARLY_DEBUG
+#if IS_ENABLED(CONFIG_SERIAL_EARLY_DEBUG)
 	/* Serial debug */
 	serial_init();
 #endif
@@ -65,7 +66,7 @@ noreturn void entry_efi_s2(const struct entry_efi_data * info)
 	err = vmm_init();
 	if (err)
 		panic("could not initialize VMM, errno = %d\n", err);
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("===== start of dump current VMM =====\n", 0);
 	dump_vmm_current();
 	pr_debug("===== end of dump current VMM =====\n", 0);

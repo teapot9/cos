@@ -1,5 +1,7 @@
 .intel_syntax noprefix
 
+#include <kconfig.h>
+
 .text
 
 entry_efi_wrapper:

@@ -14,6 +14,7 @@
 #include <memlist.h>
 #include <mm/memmap.h>
 #include <panic.h>
+#include <kconfig.h>
 
 static bool is_early_init = false;
 static struct memlist early_pmaps;
@@ -34,7 +35,7 @@ int early_pmap(void * paddr, size_t size)
 	if (unlikely(pmm_is_init))
 		return -EINVAL;
 	int err = memlist_add(&early_pmaps, paddr, size, false);
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("early_pmap(%p, %zu) -> %d\n", paddr, size, err);
 #endif
 	return err;
@@ -49,7 +50,7 @@ void early_punmap(void * paddr, size_t size)
 	int err = memlist_del(&early_pmaps, paddr, size, false);
 	if (err)
 		pr_err("early_punmap: failed to unmap %zu bytes", size);
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("early_punmap(%p, %zu)\n", paddr, size);
 #endif
 }
@@ -81,7 +82,7 @@ int pmm_init(struct memmap * newmap)
 	}
 	memlist_free(&early_pmaps, false);
 
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("pmm initialization, errno = %d\n", err);
 #endif
 	return err;

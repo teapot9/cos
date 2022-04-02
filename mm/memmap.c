@@ -6,8 +6,9 @@
 
 #include <mm.h>
 #include <mm/helper.h>
+#include <kconfig.h>
 
-#ifdef CONFIG_MM_DEBUG
+#if IS_ENABLED(CONFIG_MM_DEBUG)
 #include <print.h>
 void memmap_print(struct memmap * map, const char * prefix)
 {

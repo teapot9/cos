@@ -4,27 +4,28 @@
 #include "fonts.h"
 
 #include <errno.h>
+#include <kconfig.h>
 
 #include <mm.h>
-#ifdef CONFIG_FONT_PSF
+#if IS_ENABLED(CONFIG_FONT_PSF)
 #include "psf.h"
 #endif
 
-#if defined(CONFIG_FONT_PSF)
+#if IS_ENABLED(CONFIG_FONT_PSF)
 #define UNUSED_IF_NO_FONT
 #else
 #define UNUSED_IF_NO_FONT __attribute__((unused))
 #endif
 
 #if 1
-#ifdef CONFIG_FONT_BUILTIN_TERMINUS_8X16
+#if IS_ENABLED(CONFIG_FONT_BUILTIN_TERMINUS_8X16)
 #include "font_ter_v16n.psf.h"
 #endif
 
 /* public: fonts.h */
 int font_load_default(const struct font ** dst_font)
 {
-#if defined(CONFIG_FONT_BUILTIN_TERMINUS_8X16)
+#if IS_ENABLED(CONFIG_FONT_BUILTIN_TERMINUS_8X16)
 	return font_new(dst_font, font_ter_v16n_psf, font_ter_v16n_psf_len);
 #else
 	*dst_font = NULL;
@@ -54,7 +55,7 @@ int font_new(const struct font ** dst_font,
 		return -ENOMEM;
 
 	if (false) {
-#ifdef CONFIG_FONT_PSF
+#if IS_ENABLED(CONFIG_FONT_PSF)
 	} else if (psf_test_magic(file, len)) {
 		font->type = FONT_TYPE_PSF;
 		if ((ret = psf_font_new(&font->info.psf, file, len)))
@@ -77,7 +78,7 @@ return_ret_free_font:
 void font_free(const struct font * font)
 {
 	switch (font->type) {
-#ifdef CONFIG_FONT_PSF
+#if IS_ENABLED(CONFIG_FONT_PSF)
 	case FONT_TYPE_PSF:
 		return;
 #endif
@@ -92,7 +93,7 @@ int font_bitmap(UNUSED_IF_NO_FONT bool * dst,
                 UNUSED_IF_NO_FONT uint32_t uc)
 {
 	switch (font->type) {
-#ifdef CONFIG_FONT_PSF
+#if IS_ENABLED(CONFIG_FONT_PSF)
 	case FONT_TYPE_PSF:
 		return psf_bitmap(dst, &font->info.psf, uc);
 #endif
@@ -105,7 +106,7 @@ int font_bitmap(UNUSED_IF_NO_FONT bool * dst,
 size_t font_width(const struct font * font)
 {
 	switch (font->type) {
-#ifdef CONFIG_FONT_PSF
+#if IS_ENABLED(CONFIG_FONT_PSF)
 	case FONT_TYPE_PSF:
 		return psf_char_width(&font->info.psf);
 #endif
@@ -118,7 +119,7 @@ size_t font_width(const struct font * font)
 size_t font_height(const struct font * font)
 {
 	switch (font->type) {
-#ifdef CONFIG_FONT_PSF
+#if IS_ENABLED(CONFIG_FONT_PSF)
 	case FONT_TYPE_PSF:
 		return psf_char_height(&font->info.psf);
 #endif
