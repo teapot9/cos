@@ -34,8 +34,8 @@ clean-y += $(wildcard include/config/*)
 clean-y += include/generated/autoconf.h
 
 
-.PHONY: all
-all: image
+.PHONY: allx
+allx: image all
 
 .PHONY: image
 image: $(BUILD)/$(COS_KERNEL).elf
@@ -45,8 +45,6 @@ $(BUILD)/$(COS_KERNEL).elf: $(BUILD)/modules.o
 	$(SED) -e 's/@@IMAGE_BASE@@/0xffffffff80000000/g' $(SRC)/arch/$(ARCH)/sections.lds.in >$(sections)
 	$(LD) -dT $(sections) $(LDFLAGS) -pie -static -entry=entry_efi_wrapper_s2 -o $@ $^
 #	$(LD) -dT $(sections) $(LDFLAGS) -pie -static -entry=entry_efi_s2 -o $@ $^
-
-$(BUILD)/include/generated/autoconf.h $(BUILD)/include/config/auto.conf $(BUILD)/include/config/auto.conf.cmd: syncconfig $(KCONFIG)
 
 include $(SRC_ROOT)/Makefile.rules
 
@@ -60,13 +58,16 @@ menuconfig:
 	$(MCONF) Kconfig
 
 .PHONY: syncconfig
-syncconfig: $(KCONFIG)
+syncconfig:
 	$(CONF) --syncconfig Kconfig
 
 .PHONY: rebuild
 rebuild:
 	$(Q)$(MAKE) clean
 	$(Q)$(MAKE) all
+
+$(BUILD)/include/generated/autoconf.h $(BUILD)/include/config/auto.conf $(BUILD)/include/config/auto.conf.cmd: $(KCONFIG)
+	$(CONF) --syncconfig Kconfig
 
 .PHONY: FORCE
 FORCE:
