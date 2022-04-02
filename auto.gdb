@@ -9,11 +9,13 @@
 
 
 
+# Reload symbols to kernel offset (0xffff...)
 @break entry_efi_wrapper_s2
 *symbol-file
 *symbol-file -readnow cos.elf
 *cont
 
+# Break as soon as possible, get out of the infinite loop, continue
 @break entry_efi_s1
 @bt
 @set tmp=1
