@@ -1,0 +1,17 @@
+#!/bin/bash
+#set -eu
+
+shopt -s failglob globstar
+dirs='arch dev include kernel lib mm'
+
+all_headers() {
+	find $dirs -name '*.h' | sort
+}
+
+used_headers() {
+	grep -h ':' **/*.d | sed 's/\(.*\):.*/\1/' | grep '\.h$' \
+		| while read -r line; do realpath "$line"; done \
+		| sort | uniq | sed "s:$PWD/::"
+}
+
+diff "$@" <(all_headers) <(used_headers)
