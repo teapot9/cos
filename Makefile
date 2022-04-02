@@ -38,7 +38,7 @@ clean-y += include/generated/autoconf.h
 allx: image all
 
 .PHONY: image
-image: $(BUILD)/$(COS_KERNEL).elf
+image: $(BUILD)/$(COS_KERNEL).elf $(BUILD)/bootloader.o
 	$(Q)$(MAKE) -C arch/$(ARCH)/boot SRC_ROOT=$(SRC_ROOT) BUILD_ROOT=$(BUILD_ROOT) image
 
 $(BUILD)/$(COS_KERNEL).elf: $(BUILD)/modules.o
