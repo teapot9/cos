@@ -32,8 +32,10 @@ const efi_loaded_image_protocol_t * efistub_image_proto(void);
 int efistub_memmap_and_exit(struct memmap * map);
 
 /**
- * @brief Get kernel cmdline
+ * @brief Get EFI cmdline
+ *
+ * Return cmdline in a dynamically allocated buffer
  */
-int efistub_cmdline(const char ** cmdline_dst);
+const char * efistub_firmware_cmdline(void);
 
 #endif // FIRMWARE_EFI_H

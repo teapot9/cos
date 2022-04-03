@@ -59,7 +59,7 @@ size_t strncpy(char * dst, const char * src, size_t len)
 {
 	size_t copied = 0;
 
-	while (copied < len - 1 && src[copied]) {
+	while (copied < len && src[copied]) {
 		dst[copied] = src[copied];
 		copied++;
 	}

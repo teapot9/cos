@@ -101,8 +101,8 @@ noreturn void entry_efi_s1(efi_handle_t image_handle,
 		pr_info("Early init: EFI console\n", 0);
 
 	/* cmdline */
-	err = efistub_cmdline(&boot_data.cmdline);
-	kernel_cmdline = boot_data.cmdline;
+	err = cmdline_init(efistub_firmware_cmdline);
+	boot_data.cmdline = kernel_cmdline;
 	if (err)
 		panic("failed to get cmdline, errno = %d", err);
 	pr_info("Early init: cmdline: %s\n", kernel_cmdline);

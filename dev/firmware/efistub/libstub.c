@@ -13,12 +13,7 @@
 # include <firmware/acpi.h>
 #endif
 
-#define _str(x) #x
-#define str(x) _str(x)
-const char * const extra_cmdline = CONFIG_CMDLINE;
-
-/* Return EFI cmdline in a dynamically allocated buffer */
-static char * get_efi_cmdline(void)
+const char * efistub_firmware_cmdline(void)
 {
 	char * cmdline = NULL;
 	size_t size;
@@ -47,56 +42,6 @@ static char * get_efi_cmdline(void)
 	}
 
 	return cmdline;
-}
-
-/* firmware/efistub.h */
-/* Return cmdline in a dynamically allocated buffer */
-int efistub_cmdline(const char ** cmdline_dst)
-{
-	if (cmdline_dst == NULL)
-		return -EINVAL;
-	size_t size = 0;
-	size_t start = 0;
-	char * efi_cmdline = get_efi_cmdline();
-
-	if (efi_cmdline != NULL)
-		size += strlen(efi_cmdline);
-	if (size)
-		size += sizeof(char); // space
-	size += strlen(extra_cmdline);
-
-	char * cmdline = malloc(size);
-	if (cmdline == NULL) {
-		pr_err("Failed to allocate %zu bytes for cmdline\n", 0);
-		kfree(efi_cmdline);
-		*cmdline_dst = "";
-		return -ENOMEM;
-	}
-
-#if IS_ENABLED(CONFIG_CMDLINE_OVERRIDE)
-	if (*extra_cmdline) {
-		strncpy(cmdline + start, extra_cmdline, size - start);
-		start = strlen(cmdline);
-		cmdline[start] = ' ';
-		cmdline[++start] = 0;
-	}
-#endif
-	if (efi_cmdline != NULL) {
-		strncpy(cmdline + start, efi_cmdline, size - start);
-		start = strlen(cmdline);
-	}
-#if IS_ENABLED(CONFIG_CMDLINE_OVERRIDE)
-	if (efi_cmdline != NULL && *efi_cmdline) {
-		cmdline[start] = ' ';
-		cmdline[++start] = 0;
-	}
-	strncpy(cmdline + start, extra_cmdline, size - start);
-	start = strlen(cmdline);
-#endif
-
-	kfree(efi_cmdline);
-	*cmdline_dst = cmdline;
-	return 0;
 }
 
 void efistub_parse_configuration_table(void)
