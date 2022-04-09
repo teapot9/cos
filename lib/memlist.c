@@ -48,7 +48,9 @@ static inline bool mlist_is_ordered(
 	struct memlist_elt * is_before, struct memlist_elt * is_after
 )
 {
-	uint8_t * is_before_end = (uint8_t *) is_before->addr + is_before->size;
+	uint8_t * is_before_end = is_before->addr == 0
+		? is_before->addr
+		: (uint8_t *) is_before->addr + is_before->size;
 	return is_before_end <= (uint8_t *) is_after->addr;
 }
 
@@ -290,7 +292,9 @@ size_t memlist_virtual_size(struct memlist * l) {
 	uint8_t * max_addr = (void *) 0;
 	struct memlist_elt * cur = (struct memlist_elt *) l->l.first;
 	while (cur != NULL) {
-		uint8_t * local_max = (uint8_t *) cur->addr + cur->size;
+		uint8_t * local_max = cur->addr == 0
+			? (void *) cur->size
+			: (uint8_t *) cur->addr + cur->size;
 		if (local_max > max_addr)
 			max_addr = local_max;
 		cur = (struct memlist_elt *) cur->l.next;

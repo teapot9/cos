@@ -17,7 +17,7 @@ void memmap_print(struct memmap * map, const char * prefix)
 		prefix = "";
 	list_foreach(cur, map->l.l.first) {
 		pr_debug("%s: [%p; %p] (%zu bytes): %s\n", prefix,
-		         cur->l.addr, (uint8_t *) cur->l.addr + cur->l.size,
+		         cur->l.addr, (uintptr_t) cur->l.addr + cur->l.size,
 		         cur->l.size, memmap_type_str(cur->type));
 	}
 }

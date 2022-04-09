@@ -7,6 +7,7 @@
 entry_efi_wrapper:
 	lea rax, [rip + boot_kstack + CONFIG_KERNEL_FRAME_SIZE]
 	mov rsp, rax
+	mov rbp, 0
 	jmp rdx
 
 set_kstack:

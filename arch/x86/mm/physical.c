@@ -71,8 +71,10 @@ int physical_init(union pml4e * pml4)
 			pr_crit("cannot map %p to %p", paddr, vaddr);
 			return err;
 		}
-		vaddr += PAGE_SIZE_PDPT;
-		paddr += PAGE_SIZE_PDPT;
+		vaddr = vaddr == 0
+			? (void *) PAGE_SIZE_PDPT : vaddr + PAGE_SIZE_PDPT;
+		paddr = paddr == 0
+			? (void *) PAGE_SIZE_PDPT : paddr + PAGE_SIZE_PDPT;
 	}
 	return 0;
 }

@@ -3,7 +3,8 @@
 @break isr_handler if frame->interrupt < 32
 @break halt
 #@break do_call
-
+#rbreak __ubsan*
+break __ubsan_handle_pointer_overflow
 
 
 

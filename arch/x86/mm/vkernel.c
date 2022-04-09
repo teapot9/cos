@@ -117,7 +117,10 @@ int vkernel_identity_paging(void) {
 		                    false, false);
 		if (err)
 			return err;
-		paddr += PAGE_SIZE_PDPT;
+		if (paddr == 0) // special case to avoid adding to NULL pointer
+			paddr = (void *) PAGE_SIZE_PDPT;
+		else
+			paddr += PAGE_SIZE_PDPT;
 	}
 	return 0;
 }
