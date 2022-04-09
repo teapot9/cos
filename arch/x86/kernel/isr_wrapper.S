@@ -44,11 +44,22 @@ isr_wrapper:
 	mov di, ds
 	push rdi
 
-	// pushed 26 * 8 bytes: 16-byte aligned
-	mov rdi, rsp
+	// set argument: interrupt frame
+	mov rdi, rsp // pushed 26*8 bytes: 16-byte aligned
+
+	// push 0 to set end of backtrace: 2*8 bytes
+	mov rbp, 0
+	push rbp
+	push rbp
+
 	call isr_handler
 
+	// pop 0 for backtrace
+	pop rbp
+	pop rbp
+
 do_iret:
+	// pop interrupt frame
 	pop rdi
 	mov ds, di
 	pop rdi

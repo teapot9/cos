@@ -4,7 +4,6 @@
 @break halt
 #@break do_call
 #rbreak __ubsan*
-break __ubsan_handle_pointer_overflow
 
 
 

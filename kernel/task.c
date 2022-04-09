@@ -13,6 +13,7 @@
 #include <mm/helper.h>
 #include <mm/early.h>
 #include <sched.h>
+#include <string.h>
 
 #define kstack_aligned(x) ((uint8_t *) aligned(x, KSTACK_ALIGN) + KSTACK_SIZE)
 
@@ -100,7 +101,7 @@ static int thread_init(
 	thread->ubsan = 0;
 #endif
 
-	void * stack_start;
+	void * stack_ptr;
 	if (is_kernel_process(parent)) {
 		size_t alloc_size = KSTACK_SIZE;
 		thread->stack = valloc(
@@ -108,11 +109,14 @@ static int thread_init(
 			KSTACK_ALIGN, true, thread->parent->pid != 0, false);
 		if (thread->stack == NULL)
 			return -ENOMEM;
-		stack_start = (uint8_t *) thread->stack + KSTACK_SIZE;
+		stack_ptr = (uint8_t *) thread->stack + KSTACK_SIZE;
 	} else {
 		// Should create user stack in user CR3
 		return -ENOTSUP;
 	}
+	stack_ptr = (void **) stack_ptr - 2;
+	((void **) stack_ptr)[0] = 0; // push 0 on initial stack
+	((void **) stack_ptr)[1] = 0;
 
 	thread->task_state = (struct interrupt_frame) {0};
 	uword_t data_seg = is_kernel_process(parent) ?
@@ -126,7 +130,7 @@ static int thread_init(
 	thread->task_state.cs = is_kernel_process(parent) ?
 		gdt_segment(GDT_KERN_CS) : gdt_segment(GDT_USER_CS);
 	thread->task_state.flags = read_rflags();
-	thread->task_state.sp = (uword_t) stack_start;
+	thread->task_state.sp = (uword_t) stack_ptr;
 	thread->task_state.ss = data_seg;
 
 	return 0;
