@@ -3,7 +3,25 @@ config UBSAN
 	help
 	  Undefined behavior sanitizer.
 
+config UBSAN_IMPLICIT_CONVERSION
+	bool "ubsan: implicit conversion"
+	depends on UBSAN
+	help
+	  Enable implicit conversion sanitizer.
+
 config STACK_PROTECTOR
 	bool "Stack protector"
 	help
 	  Enable compiler's stack protectors.
+
+config STACK_USAGE
+	bool "Stack usage"
+	help
+	  Generate *.su files containing stack usage information.
+
+config STACK_USAGE_WARN
+	int "Warn on big stack usage"
+	default 1024
+	depends on STACK_USAGE
+	help
+	  Warn if stack usage greater than provided value.

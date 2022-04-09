@@ -36,6 +36,11 @@ clean-y += include/generated/autoconf.h
 
 .PHONY: allx
 allx: image all
+ifeq ($(CONFIG_STACK_USAGE), y)
+ifneq ($(CONFIG_STACK_USAGE_WARN), 0)
+	./scripts/checkstack $(CONFIG_STACK_USAGE_WARN)
+endif
+endif
 
 .PHONY: image
 image: $(BUILD)/$(COS_KERNEL).elf $(BUILD)/bootloader.o

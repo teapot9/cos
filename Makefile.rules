@@ -70,7 +70,7 @@ bootloader-clean := $(filter-out %/, $(bootloader-y) $(bootloader-))
 clean-files := $(addprefix $(BUILD)/, $(filter-out %/, $(obj-y) $(obj-) $(clean-y)) $(bootloader-clean:.o=.bootloader.o))
 .PHONY: clean
 clean: $(clean-dirs)
-	rm -f $(clean-files) $(bdeps) $(BUILD)/modules.o $(BUILD)/bootloader.o
+	rm -f $(clean-files) $(clean-files:.o=.su) $(bdeps) $(BUILD)/modules.o $(BUILD)/bootloader.o
 
 # C build rules
 

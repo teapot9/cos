@@ -15,6 +15,13 @@
 #include <cpp.h>
 #include <mm/helper.h>
 
+#undef malloc
+#undef kmalloc
+#undef realloc
+#undef krealloc
+#undef free
+#undef kfree
+
 /*
  * used memory block:
  * +--------+--------+------------------------+--------+

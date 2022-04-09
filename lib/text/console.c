@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include <lock.h>
 #include <device.h>
 #include <module.h>
 #include <mm.h>
@@ -173,9 +174,15 @@ void console_reset(void)
 /* public: console.h */
 void console_update(void)
 {
-	if (consoles == NULL)
+	static struct spinlock nblock = nblock_init();
+	if (!nblock_lock(&nblock))
 		return;
+
+	if (consoles == NULL)
+		goto exit;
 
 	for (size_t i = 0; i < console_count; i++)
 		con_update(consoles[i]);
+exit:
+	nblock_unlock(&nblock);
 }

@@ -1,0 +1,11 @@
+#!/bin/sh
+# Find functions using more than $1 bytes of stack
+set -eu
+
+max="$1"
+find . -name '*.su' -exec cat {} \; | while read -r line; do
+	n="$(echo "${line}" | cut -f2)"
+	if [ "${n}" -ge "${max}" ]; then
+		echo "Warning: stack usage greater than ${max}: ${line}"
+	fi
+done | sort -k2 -n

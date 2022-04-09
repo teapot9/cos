@@ -44,10 +44,6 @@ void nblock_unlock(struct spinlock * s);
 #define mutex_lock(x)
 #define mutex_unlock(x)
 #define mutex_unlock_all(x)
-#define spinlock_lock(x)
-#define spinlock_unlock(x)
-#define nblock_lock(x)
-#define nblock_unlock(x)
 #endif
 
 #endif // LOCK_H

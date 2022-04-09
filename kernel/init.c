@@ -97,11 +97,18 @@ void kernel_initcalls(void)
 extern uint8_t _binary__tmp_albert_bin_start[];
 extern uint8_t _binary__tmp_albert_bin_end[];
 
+int pipo(int x[static 1]) {
+	if (*x > 5)
+		return 33;
+}
+
 /* public: init.h */
 noreturn void kernel_main(void)
 {
 	pr_info("Kernel main thread started\n", 0);
 	setup();
+	int * y = malloc(2321);
+	int x = pipo(y);
 	halt();
 	panic("Kernel should never exit main function\n");
 }

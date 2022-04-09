@@ -42,6 +42,7 @@ noreturn void entry_efi_s2(const struct entry_efi_data * info)
 #if IS_ENABLED(CONFIG_SERIAL_EARLY_DEBUG)
 	/* Serial debug */
 	serial_init();
+	pr_info("Early init: serial\n", 0);
 #endif
 
 	/* Create GDT & IDT */
@@ -89,8 +90,10 @@ noreturn void entry_efi_s2(const struct entry_efi_data * info)
 	}
 #endif
 
+#if IS_BUILTIN(CONFIG_FB_EFIGOP)
 	/* Save GOP data */
 	struct gop * gop = gop_save(info->gop);
+#endif
 
 	/* cmdline */
 	kernel_cmdline = strdup(info->cmdline);
@@ -117,12 +120,14 @@ noreturn void entry_efi_s2(const struct entry_efi_data * info)
 		panic("Failed to create kernel process, errno = %d",
 		      main_pid);
 
+#if IS_BUILTIN(CONFIG_FB_EFIGOP)
 	/* EFI GOP */
 	err = gop_init(gop);
 	if (err)
 		pr_err("failed to initialize EFI GOP, errno = %d\n", err);
 	else
 		pr_info("Early init: EFI GOP\n", 0);
+#endif
 
 	/* Start scheduling + trampoline */
 	sched_enable();

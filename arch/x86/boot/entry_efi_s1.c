@@ -107,9 +107,11 @@ noreturn void entry_efi_s1(efi_handle_t image_handle,
 		panic("failed to get cmdline, errno = %d", err);
 	pr_info("Early init: cmdline: %s\n", kernel_cmdline);
 
+#if IS_BUILTIN(CONFIG_FB_EFIGOP)
 	/* EFI GOP */
 	gop_init(&boot_data.gop);
 	pr_info("Early init: EFI GOP\n", 0);
+#endif
 
 	/* memmap & EFI exit */
 	struct memmap map = memmap_new();

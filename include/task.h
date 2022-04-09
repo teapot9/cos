@@ -2,8 +2,14 @@
 #define TASK_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <isr.h>
+#include <lock.h>
+
+#define MAX_PID 1024
+#define KSTACK_SIZE CONFIG_KERNEL_FRAME_SIZE
+#define KSTACK_ALIGN 0x10
 
 struct cpu;
 struct process;
@@ -18,6 +24,32 @@ enum tstate {
 	TASK_WAITING,
 	TASK_TERMINATED,
 };
+
+struct process {
+	struct process * parent;
+	size_t pid;
+	struct tlist * threads;
+	uword_t cr3;
+	size_t last_tid;
+};
+
+struct thread {
+	struct semaphore lock;
+	struct process * parent;
+	size_t tid;
+	_Atomic enum tstate state;
+	uint8_t kstack[KSTACK_SIZE + KSTACK_ALIGN];
+	struct interrupt_frame task_state;
+	void * stack;
+	struct cpu * running;
+	struct semaphore_list * semaphores;
+#if IS_ENABLED(CONFIG_UBSAN)
+	int ubsan;
+#endif
+};
+
+struct thread * thread_current(void);
+struct process * process_current(void);
 
 int thread_new(
 	struct process * proc, void (* start)(void)

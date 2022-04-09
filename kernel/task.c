@@ -96,6 +96,9 @@ static int thread_init(
 	thread->state = TASK_READY;
 	thread->running = NULL;
 	thread->semaphores = NULL;
+#if IS_ENABLED(CONFIG_UBSAN)
+	thread->ubsan = 0;
+#endif
 
 	void * stack_start;
 	if (is_kernel_process(parent)) {
@@ -174,6 +177,19 @@ struct tlist * thread_lget(struct process * p, tid_t tid)
 	while (cur != NULL && cur->thread.tid != tid)
 		cur = cur->next;
 	return cur;
+}
+
+/* public: task.h */
+struct thread * thread_current(void)
+{
+	return cpu_running(cpu_current());
+}
+
+/* public: task.h */
+struct process * process_current(void)
+{
+	struct thread * t = thread_current();
+	return t == NULL ? NULL : t->parent;
 }
 
 /* public: task.h */

@@ -82,6 +82,17 @@ else
 	COMMON_FLAGS += -fno-stack-protector
 endif
 
+ifeq ($(CONFIG_STACK_USAGE), y)
+	COMMON_FLAGS += -fstack-usage
+endif
+
+ifeq ($(CONFIG_UBSAN), y)
+	COMMON_FLAGS += -fsanitize=undefined
+endif
+ifeq ($(CONFIG_UBSAN_IMPLICIT_CONVERSION), y)
+	COMMON_FLAGS += -fsanitize=implicit-conversion
+endif
+
 BIN2C = $(SRC_ROOT)/scripts/bin2c
 
 #CPPFLAGS += $(shell $(SRC_ROOT)/scripts/get_config_cppflags $(SRC_ROOT))

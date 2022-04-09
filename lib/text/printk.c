@@ -29,6 +29,8 @@ size_t printk(const char * fmt, ...)
 	return ret;
 }
 
+#define SIZE_AVAIL_REQ 8
+
 #define kmsg_pos_add(written) \
 	do { \
 		size_t start1 = printk_kmsg_start; \
@@ -36,8 +38,11 @@ size_t printk(const char * fmt, ...)
 		bool has_cycled = false; \
 		\
 		printk_kmsg_end += written; \
-		if (printk_kmsg_end >= KMSG_BUFSIZE) { \
-			printk_kmsg_end = printk_kmsg_end - KMSG_BUFSIZE; \
+		if (printk_kmsg_end + SIZE_AVAIL_REQ >= KMSG_BUFSIZE) { \
+			for (size_t i = printk_kmsg_end; \
+			     i < KMSG_BUFSIZE; i++) \
+				printk_kmsg[i] = 0; \
+			printk_kmsg_end = 0; \
 			has_cycled = true; \
 		} \
 		if ((start1 < end1 && printk_kmsg_start < printk_kmsg_end \
@@ -77,13 +82,24 @@ size_t vprintk(const char * fmt, va_list ap)
 		return ret;
 
 	_Static_assert(KMSG_BUFSIZE >= STR_BUFSIZE, "KMSG_BUFSIZE too small");
+
+	size_t kbuf_remain = KMSG_BUFSIZE - printk_kmsg_end;
 	ret = strncpy(printk_kmsg + printk_kmsg_end, buffer,
-	              KMSG_BUFSIZE - printk_kmsg_end);
+	              kbuf_remain - 1);
+	if (ret == kbuf_remain - 1 && printk_kmsg[KMSG_BUFSIZE - 2]) {
+		printk_kmsg[KMSG_BUFSIZE - 1] = 0;
+		ret++;
+	}
 	kmsg_pos_add(ret + 1);
 
 	if (buffer[ret] && buffer[ret + 1]) {
+		kbuf_remain = KMSG_BUFSIZE - printk_kmsg_end;
 		ret = strncpy(printk_kmsg + printk_kmsg_end, buffer + ret,
-		              KMSG_BUFSIZE - printk_kmsg_end);
+		              kbuf_remain - 1);
+		if (ret == kbuf_remain - 1 && printk_kmsg[KMSG_BUFSIZE - 2]) {
+			printk_kmsg[KMSG_BUFSIZE - 1] = 0;
+			ret++;
+		}
 		kmsg_pos_add(ret + 1);
 	}
 

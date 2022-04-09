@@ -7,18 +7,36 @@
 
 #include <task.h>
 
+#define DEFAULT_MEMORY_ALLOC_ALIGN __BIGGEST_ALIGNMENT__
+
 struct memblock {
 	void * addr;
 	size_t size;
 };
 
 // kmm
-void * malloc(size_t size);
+void * malloc(size_t size)
+	__attribute__((malloc, alloc_size(1)));
+#define malloc(s) __builtin_assume_aligned( \
+	__builtin_malloc(s), DEFAULT_MEMORY_ALLOC_ALIGN \
+)
+void * kmalloc(size_t size, size_t align)
+	__attribute__((malloc, alloc_size(1)));
+#define kmalloc(s, a) __builtin_assume_aligned(kmalloc(s, a), a)
+
+void * realloc(void * oldptr, size_t newsize)
+	__attribute__((alloc_size(2)));
+#define realloc(p, s) __builtin_assume_aligned( \
+	__builtin_realloc(p, s), DEFAULT_MEMORY_ALLOC_ALIGN \
+)
+void * krealloc(void * oldptr, size_t newsize, size_t align)
+	__attribute__((alloc_size(2)));
+#define krealloc(p, s, a) __builtin_assume_aligned(krealloc(p, s, a), a)
+
 void free(void * ptr);
-void * realloc(void * oldptr, size_t newsize);
-void * kmalloc(size_t size, size_t align);
+#define free(p) __builtin_free(p)
 void kfree(const void * ptr);
-void * krealloc(void * oldptr, size_t newsize, size_t align);
+#define kfree(p) kfree(p)
 
 // vmm
 int vmap(pid_t pid, void * paddr, void * vaddr, size_t * size);

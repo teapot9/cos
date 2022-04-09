@@ -7,6 +7,12 @@
 typedef void * value_handle;
 typedef value_handle uptr;
 
+enum type_kind {
+	TK_INTEGER = 0x0000,
+	TK_FLOAT = 0x0001,
+	TK_UNKNOWN = 0xFFFF,
+};
+
 struct source_location {
 	const char * filename;
 	uint32_t line;
@@ -20,7 +26,7 @@ struct type_descriptor {
 };
 
 struct type_mismatch_data {
-  struct source_location Loc;
+  struct source_location loc;
   const struct type_descriptor * type;
   uintptr_t log_alignment;
   unsigned char type_check_kind;
@@ -115,5 +121,109 @@ struct report_options {
 	uptr pc;
 	uptr bp;
 };
+
+/* ubsan callbacks */
+
+void __ubsan_handle_type_mismatch_v1(
+	struct type_mismatch_data * data, value_handle ptr
+);
+
+void __ubsan_handle_alignment_assumption(
+	struct alignment_assumption_data * data, uintptr_t ptr,
+	uintptr_t alignment, uintptr_t offset
+);
+
+void __ubsan_handle_negate_overflow(
+	struct overflow_data * data, value_handle old_val
+);
+
+void __ubsan_handle_divrem_overflow(
+	struct overflow_data * data, value_handle lhs, value_handle rhs
+);
+
+void __ubsan_handle_shift_out_of_bounds(
+	struct shift_out_of_bound_data * data,
+	value_handle lhs, value_handle rhs
+);
+
+void __ubsan_handle_out_of_bounds(
+	struct out_of_bounds_data * data, value_handle index
+);
+
+void __ubsan_handle_builtin_unreachable(
+	struct unreachable_data * data
+);
+
+void __ubsan_handle_missing_return(
+	struct unreachable_data * data
+);
+
+void __ubsan_handle_vla_bound_not_positive(
+	struct vla_bound_data * data, value_handle bound
+);
+
+void __ubsan_handle_float_cast_overflow(
+	void * data, value_handle from
+);
+
+void __ubsan_handle_load_invalid_value(
+	struct invalid_value_data * data, value_handle val
+);
+
+void __ubsan_handle_implicit_conversion(
+	struct implicit_conversion_data * data,
+	value_handle src, value_handle dst
+);
+
+void __ubsan_handle_invalid_builtin(
+	struct invalid_builtin_data * data
+);
+
+void __ubsan_handle_invalid_objc_cast(
+	struct invalid_obj_c_cast * data, value_handle ptr
+);
+
+void __ubsan_handle_nonnull_return_v1(
+	struct non_null_return_data * data, struct source_location * loc
+);
+
+void __ubsan_handle_nullability_return_v1(
+	struct non_null_return_data * data, struct source_location * loc
+);
+
+void __ubsan_handle_nonnull_arg(
+	struct non_null_arg_data * data
+);
+
+void __ubsan_handle_nullability_arg(
+	struct non_null_arg_data * data
+);
+
+void __ubsan_handle_pointer_overflow(
+	struct pointer_overflow_data * data,
+	void * base, void * result
+);
+
+void __ubsan_handle_cfi_bad_type(
+	struct cfi_check_fail_data * data, value_handle vtable,
+	bool valid_vtable, struct report_options opts
+);
+
+void __ubsan_handle_cfi_check_fail(
+	struct cfi_check_fail_data * data, value_handle val,
+	uptr valid_vtable
+);
+
+void __ubsan_handle_add_overflow(
+	struct overflow_data * data, value_handle lhs, value_handle rhs
+);
+
+void __ubsan_handle_sub_overflow(
+	struct overflow_data * data, value_handle lhs, value_handle rhs
+);
+
+void __ubsan_handle_mul_overflow(
+	struct overflow_data * data, value_handle lhs, value_handle rhs
+);
 
 #endif // LIB_COMPILER_UBSAN_H

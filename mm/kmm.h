@@ -7,7 +7,6 @@
 
 #define EARLY_MEMORY_BUFFER_SIZE (128 * 1024 * 10)
 #define DEFAULT_MEMORY_BLOCK_SIZE (1024 * 1024)
-#define DEFAULT_MEMORY_ALLOC_ALIGN 8
 
 struct memory_block {
 	struct memory_block * next;
