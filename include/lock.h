@@ -3,35 +3,29 @@
 
 #include <stdatomic.h>
 #include <stdbool.h>
+#include <spinlock.h>
+#include <list.h>
 
-struct thread_list;
-struct semaphore_list;
+struct thread;
 
 struct semaphore {
 	atomic_uint val;
-	struct thread_list * threads;
+	struct list waiting;
 };
 
-struct spinlock {
-	atomic_bool val;
-};
-
-#define semaphore_init(n) (struct semaphore) {.val = (n), .threads = NULL}
+#define semaphore_init(n) (struct semaphore) \
+	{.val = (n), .waiting = list_new()}
 //void semaphore_init(struct semaphore * s, unsigned n);
 void semaphore_lock(struct semaphore * s);
 void semaphore_unlock(struct semaphore * s);
-void semaphore_unlock_all(struct semaphore_list * l);
+void semaphore_unlock_all(struct thread * t);
 
 #define mutex_init() semaphore_init(1)
 //#define mutex_init() (struct semaphore) {.val = 1, .threads = NULL}
 //void mutex_init(struct semaphore * s);
 void mutex_lock(struct semaphore * s);
 void mutex_unlock(struct semaphore * s);
-void mutex_unlock_all(struct semaphore_list * l);
-
-#define spinlock_init() (struct spinlock) {.val = true}
-void spinlock_lock(struct spinlock * s);
-void spinlock_unlock(struct spinlock * s);
+void mutex_unlock_all(struct thread * t);
 
 #define nblock_init() spinlock_init()
 bool nblock_lock(struct spinlock * s);

@@ -6,6 +6,7 @@
 
 #include <isr.h>
 #include <lock.h>
+#include <list.h>
 
 #define MAX_PID 1024
 #define KSTACK_SIZE CONFIG_KERNEL_FRAME_SIZE
@@ -42,7 +43,7 @@ struct thread {
 	struct interrupt_frame task_state;
 	void * stack;
 	struct cpu * running;
-	struct semaphore_list * semaphores;
+	struct list semaphores;
 #if IS_ENABLED(CONFIG_UBSAN)
 	int ubsan;
 #endif
@@ -65,7 +66,6 @@ struct thread * thread_get(struct process * p, tid_t tid);
 void task_switch(struct cpu * cpu, struct thread * new);
 void task_set_state(struct thread * t, enum tstate state);
 enum tstate task_get_state(struct thread * t);
-struct semaphore_list ** task_semaphores(struct thread * t);
 
 union cr3 * process_cr3(struct process * proc);
 

@@ -5,10 +5,12 @@
 
 #include <mm.h>
 #include <string.h>
+#include <lock.h>
 
 static inline void add(struct list * l, struct list_head * prev,
                        struct list_head * next, struct list_head * new)
 {
+	spinlock_lock(&l->lock);
 	new->prev = prev;
 	new->next = next;
 	if (prev != NULL)
@@ -19,10 +21,12 @@ static inline void add(struct list * l, struct list_head * prev,
 		l->first = new;
 	if (l->last == prev)
 		l->last = new;
+	spinlock_unlock(&l->lock);
 }
 
 void list_free_all(struct list * l, bool free_list)
 {
+	spinlock_lock(&l->lock);
 	struct list_head * elt = l->first;
 	while (elt != NULL) {
 		struct list_head * next = elt->next;
@@ -48,6 +52,7 @@ void list_add(struct list * l, size_t index, struct list_head * elt)
 
 void list_del(struct list * l, struct list_head * elt, bool do_free)
 {
+	spinlock_lock(&l->lock);
 	elt->prev->next = elt->next;
 	elt->next->prev = elt->prev;
 	if (l->first == elt)
@@ -56,6 +61,7 @@ void list_del(struct list * l, struct list_head * elt, bool do_free)
 		l->last = elt->prev;
 	if (do_free)
 		kfree(elt);
+	spinlock_unlock(&l->lock);
 }
 
 void list_append(struct list * l, struct list_head * elt)

@@ -11,70 +11,72 @@
 #include <cpu.h>
 #include <mm.h>
 #include <panic.h>
+#include <list.h>
 
-static void add_to_thread(struct thread * t, struct semaphore * s)
+static inline struct list_head * list(struct waiting_elt * elt) {
+	return (struct list_head *) elt;
+}
+
+static inline struct waiting_elt * waiting(struct list_head * l) {
+	return (struct waiting_elt *) l;
+}
+
+static int add_to_thread(struct thread * t, struct semaphore * s)
 {
-	struct semaphore_list ** l = task_semaphores(t);
-	if (l == NULL)
-		return;
+	if (t == NULL || s == NULL)
+		return -EINVAL;
 
-	struct semaphore_list * new = malloc(sizeof(**l));
-	if (new == NULL)
-		panic("cannot add to list of semaphore, maybe kill proc");
+	struct semaphore_elt * elt = malloc(sizeof(*elt));
+	if (elt == NULL)
+		return -ENOMEM;
+	elt->s = s;
 
-	new->s = s;
-	new->next = *l;
-	*l = new;
+	list_append(&t->semaphores, &elt->l);
+	return 0;
 }
 
 static int del_from_thread(struct thread * t, struct semaphore * s)
 {
-	struct semaphore_list ** l = task_semaphores(t);
-	if (l == NULL)
+	if (t == NULL || s == NULL)
 		return -EINVAL;
 
-	while (*l != NULL && (*l)->s != s)
-		l = &(*l)->next;
-	if (*l == NULL)
-		return -ENOENT;
+	struct semaphore_elt * cur;
+	list_foreach(cur, t->semaphores.first) {
+		if (cur->s == s) {
+			list_del(&t->semaphores, &cur->l, true);
+			return 0;
+		}
+	}
+	return -ENOENT;
+}
 
-	struct semaphore_list * tmp = *l;
-	*l = tmp->next;
-	kfree(tmp);
+static int add_to_waiting(struct semaphore * s, struct thread * t)
+{
+	if (s == NULL || t == NULL)
+		return -EINVAL;
+
+	struct waiting_elt * elt = malloc(sizeof(*elt));
+	if (elt == NULL)
+		return -ENOMEM;
+	elt->t = t;
+
+	list_append(&s->waiting, &elt->l);
 	return 0;
 }
 
-static void add_thread(struct semaphore * s, struct thread * t)
+static int del_from_waiting(struct semaphore * s, struct thread * t)
 {
-	struct thread_list ** l = &s->threads;
-
-	while (*l != NULL)
-		l = &(*l)->next;
-	struct thread_list * new = malloc(sizeof(**l));
-	if (new == NULL)
-		panic("cannot add to waiting list, maybe kill proc");
-
-	new->t = t;
-	new->next = *l;
-	*l = new;
-}
-
-static int del_thread(struct semaphore * s, struct thread * t)
-{
-	struct thread_list ** l = &s->threads;
-
-	if (l == NULL)
+	if (s == NULL || t == NULL)
 		return -EINVAL;
 
-	while (*l != NULL && (*l)->t != t)
-		l = &(*l)->next;
-	if (*l == NULL)
-		return -ENOENT;
-
-	struct thread_list * tmp = *l;
-	*l = tmp->next;
-	kfree(tmp);
-	return 0;
+	struct waiting_elt * cur;
+	list_foreach(cur, s->waiting.first) {
+		if (cur->t == t) {
+			list_del(&s->waiting, &cur->l, true);
+			return 0;
+		}
+	}
+	return -ENOENT;
 }
 
 static void do_sleep(struct cpu * cpu, struct thread * cur)
@@ -87,20 +89,18 @@ static void do_sleep(struct cpu * cpu, struct thread * cur)
 	task_switch(cpu, next);
 }
 
-#if 0
-void semaphore_init(struct semaphore * s, unsigned n)
+static void wake_next_waiting(struct semaphore * s)
 {
-	s->val = n;
-	s->threads = NULL;
-}
-#endif
+	if (s == NULL)
+		return;
 
-static void wake_next_thread(struct thread_list * l)
-{
-	while (l != NULL && task_get_state(l->t) != TASK_WAITING)
-		l = l->next;
-	if (l != NULL)
-		task_set_state(l->t, TASK_READY);
+	struct waiting_elt * cur;
+	list_foreach(cur, s->waiting.first) {
+		if (task_get_state(cur->t) == TASK_WAITING) {
+			task_set_state(cur->t, TASK_READY);
+			break;
+		}
+	}
 }
 
 void semaphore_lock(struct semaphore * s)
@@ -113,7 +113,7 @@ void semaphore_lock(struct semaphore * s)
 	unsigned expected;
 	unsigned desired;
 	add_to_thread(t, s); // add to thread's semaphores
-	add_thread(s, t); // add thread to semaphore's waiting list
+	add_to_waiting(s, t); // add thread to semaphore's waiting list
 	do {
 		if (s->val > 0) {
 			expected = s->val;
@@ -124,7 +124,16 @@ void semaphore_lock(struct semaphore * s)
 			sched_yield();
 		}
 	} while (!atomic_compare_exchange_strong(&s->val, &expected, desired));
-	del_thread(s, t); // remove from semaphore's waiting list
+	del_from_waiting(s, t); // remove from semaphore's waiting list
+}
+
+static void _semaphore_unlock(struct semaphore * s, struct thread * t)
+{
+	if (s == NULL || t == NULL)
+		return;
+	del_from_thread(t, s); // remove from thread's semaphores
+	s->val++;
+	wake_next_waiting(s);
 }
 
 void semaphore_unlock(struct semaphore * s)
@@ -133,27 +142,15 @@ void semaphore_unlock(struct semaphore * s)
 	if (t == NULL) {
 		return;
 	}
-	del_from_thread(t, s); // remove from thread's semaphores
-	s->val++;
-	wake_next_thread(s->threads);
+	_semaphore_unlock(s, t);
 }
 
-void semaphore_unlock_all(struct semaphore_list * l)
+void semaphore_unlock_all(struct thread * t)
 {
-	struct thread * t = cpu_running(cpu_current());
-	if (t == NULL) {
+	if (t == NULL)
 		return;
-	}
-	while (l != NULL) {
-		int waiting = 0;
-		int owned = 0;
-		struct semaphore_list * next = l->next;
-		struct semaphore * s = l->s;
-		while (del_thread(s, t) != -ENOENT)
-			waiting++;
-		while (del_from_thread(t, s) != -ENOENT)
-			owned++;
-		s->val += owned - waiting;
-		l = next;
+	while (t->semaphores.first != NULL) {
+		struct semaphore_elt * cur = (void *) t->semaphores.first;
+		_semaphore_unlock(cur->s, t);
 	}
 }

@@ -3,20 +3,26 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+
+#include <spinlock.h>
 #include <cpp.h>
 #include <assert.h>
 
 struct list {
 	struct list_head * first;
 	struct list_head * last;
+	struct spinlock lock;
 };
+
+#include <lock.h>
 
 struct list_head {
 	struct list_head * next;
 	struct list_head * prev;
 };
 
-#define list_new() (struct list) {.first = NULL, .last = NULL}
+#define list_new() (struct list) \
+	{.first = NULL, .last = NULL, .lock = spinlock_init()}
 void list_free_all(struct list * l, bool free_list);
 int list_copy(struct list * dst, struct list * l, size_t elt_size);
 

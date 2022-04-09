@@ -2,7 +2,6 @@
 @break kernel_main
 @break isr_handler if frame->interrupt < 32
 #@break do_call
-b console.c:181
 
 
 

@@ -20,7 +20,7 @@ void mutex_unlock(struct semaphore * s)
 	semaphore_unlock(s);
 }
 
-void mutex_unlock_all(struct semaphore_list * l)
+void mutex_unlock_all(struct thread * t)
 {
-	semaphore_unlock_all(l);
+	semaphore_unlock_all(t);
 }

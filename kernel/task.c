@@ -95,7 +95,7 @@ static int thread_init(
 	thread->tid = new_tid(parent);
 	thread->state = TASK_READY;
 	thread->running = NULL;
-	thread->semaphores = NULL;
+	thread->semaphores = list_new();
 #if IS_ENABLED(CONFIG_UBSAN)
 	thread->ubsan = 0;
 #endif
@@ -292,7 +292,7 @@ void thread_kill(struct thread * t)
 {
 	mutex_lock(&t->lock);
 	t->state = TASK_TERMINATED;
-	semaphore_unlock_all(t->semaphores);
+	semaphore_unlock_all(t);
 	mutex_unlock(&t->lock);
 }
 
@@ -366,12 +366,6 @@ void task_set_state(struct thread * t, enum tstate state)
 enum tstate task_get_state(struct thread * t)
 {
 	return t->state;
-}
-
-/* public: task.h */
-struct semaphore_list ** task_semaphores(struct thread * t)
-{
-	return &t->semaphores;
 }
 
 /* public: task.h */
