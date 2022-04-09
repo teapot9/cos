@@ -1,6 +1,7 @@
 @break entry_efi_s2
 @break kernel_main
 @break isr_handler if frame->interrupt < 32
+@break halt
 #@break do_call
 
 

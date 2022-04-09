@@ -177,22 +177,22 @@ static struct free_memory_header ** find_free_block_size_all(
 
 /* Value of used.size_left (taking align into account) */
 static size_t calc_size_left(
-	struct free_memory_header * block, size_t align
+	void * block_start, size_t align
 )
 {
-	uint8_t * block_start = (void *) block;
+	uint8_t * block_start8 = block_start;
 	uint8_t * effective_start = aligned_up(
-		block_start + sizeof(struct free_memory_header), align
+		block_start8 + sizeof(struct used_memory_header), align
 	);
-	return effective_start - block_start;
+	return effective_start - block_start8;
 }
 
 /* Value of used.size_right */
 static size_t calc_size_right(
-	struct free_memory_header * block, size_t size, size_t size_left
+	size_t block_size, size_t size, size_t size_left
 )
 {
-	return block->size - size - size_left;
+	return block_size - size - size_left;
 }
 
 /* Merge with next free block if possible */
@@ -230,8 +230,8 @@ static int alloc_free_block(
 
 	*cur_free = free_.next; // make this memory block unusable (temporary)
 
-	size_t size_left = calc_size_left(&free_, align);
-	size_t size_right = calc_size_right(&free_, size, size_left);
+	size_t size_left = calc_size_left((void *) block_start, align);
+	size_t size_right = calc_size_right(free_.size, size, size_left);
 	struct used_memory_header * used =
 		(void *) (block_start + size_left - sizeof(*used));
 	if (free_.size != size_left + size_right + size)

@@ -26,6 +26,7 @@ struct used_memory_header {
 };
 static_assert((1 << 8) > sizeof(struct free_memory_header),
 	      "free_memory_info is too big");
-
+static_assert((1 << 8) > sizeof(struct used_memory_header),
+              "used_memory_header is too big");
 
 #endif // MM_KMM_H
