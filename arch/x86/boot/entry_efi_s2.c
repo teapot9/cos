@@ -38,6 +38,7 @@
 noreturn void entry_efi_s2(const struct entry_efi_data * info)
 {
 	int err;
+	kmm_init();
 
 #if IS_ENABLED(CONFIG_SERIAL_EARLY_DEBUG)
 	/* Serial debug */

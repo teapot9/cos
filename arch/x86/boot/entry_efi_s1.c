@@ -79,6 +79,7 @@ noreturn void entry_efi_s1(efi_handle_t image_handle,
                            efi_system_table_t * system_table)
 {
 	int err = 0;
+	kmm_init();
 
 #if IS_ENABLED(CONFIG_DEBUG)
 	debug_base_addr(image_handle, system_table);

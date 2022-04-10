@@ -25,4 +25,6 @@ int process_pid0(void);
 /* Save cmdline (dynamically allocated buffer) in dst */
 int cmdline_init(const char * (* firmware_cmdline)(void));
 
+void kmm_init(void);
+
 #endif // SETUP_H

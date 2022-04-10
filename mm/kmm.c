@@ -63,16 +63,6 @@ static struct spinlock kmm_lock = spinlock_init();
 	spinlock_unlock(&kmm_lock); \
 	restore_interrupts(); \
 } while (0)
-#define maybe_kmm_init() do { \
-	if (unlikely(!kmm_is_init())) \
-		kmm_early_init(); \
-} while (0)
-
-/* Check if memory manager has been initialized */
-static inline bool kmm_is_init(void)
-{
-	return first_block != NULL;
-}
 
 /* Initialize a new memory block */
 static void init_block(struct memory_block * block, size_t size)
@@ -86,11 +76,12 @@ static void init_block(struct memory_block * block, size_t size)
 		block->size - sizeof(*block);
 }
 
+/* public: setup.h */
 /* Initialize kernel memory manager */
-static void kmm_early_init(void)
+void kmm_init(void)
 {
-	if (kmm_is_init())
-		return;
+	if (first_block != NULL)
+		return; // already init
 	first_block = (void *) early_memory_buffer;
 	init_block(first_block, sizeof(early_memory_buffer));
 }
@@ -366,7 +357,6 @@ static void * _kmalloc(size_t size, size_t align)
 /* public: mm.h */
 void * kmalloc(size_t size, size_t align)
 {
-	maybe_kmm_init();
 	lock();
 	void * ret = _kmalloc(size, align);
 	unlock();
@@ -401,7 +391,6 @@ static void _kfree(void * ptr)
 /* public: mm.h */
 void kfree(const void * ptr)
 {
-	maybe_kmm_init();
 	lock();
 	_kfree((void *) ptr);
 	unlock();
@@ -441,7 +430,6 @@ static void * _krealloc(void * oldptr, size_t newsize, size_t align)
 /* public: mm.h */
 void * krealloc(void * oldptr, size_t newsize, size_t align)
 {
-	maybe_kmm_init();
 	lock();
 	void * ret = _krealloc(oldptr, newsize, align);
 	unlock();
