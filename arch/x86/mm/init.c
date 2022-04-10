@@ -123,7 +123,7 @@ static void enable_paging(void) {
 	write_msr(X86_64_MSR_EFER,
 		  read_msr(X86_64_MSR_EFER) | (1 << 8)); // Set EFER.LME
 	write_cr4(read_cr4() | (1 << 5)); // Set CR4.PAE
-	write_cr0(read_cr0() | (1 << 31)); // Set CR0.PG
+	write_cr0(read_cr0() | ((unsigned) 1 << 31)); // Set CR0.PG
 }
 
 /* public: mm/early.h */
