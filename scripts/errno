@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+guard=ERRNO_H
+printf '#ifndef %s\n#define %s\n\n' "${guard}" "${guard}"
+errno -l | while read -r errno; do
+	name="$(echo "${errno}" | cut -f1 -d' ')"
+	code="$(echo "${errno}" | cut -f2 -d' ')"
+	desc="$(echo "${errno}" | cut -f3- -d' ')"
+	printf '#define %s %s // %s\n' "${name}" "${code}" "${desc}"
+done
+printf '\n#endif // %s\n' "${guard}"

@@ -25,6 +25,8 @@ else
 	SILENT=0
 endif
 
+CPPFLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
+CPPFLAGS += -I$(SRC_ROOT)/arch/$(ARCH)/include -I$(SRC_ROOT)/include
 BOOT_FLAGS += -mcmodel=small -fPIC -DBOOTLOADER
 COMMON_FLAGS += -msse3
 COMMON_FLAGS += -mno-red-zone -mabi=sysv
@@ -33,9 +35,8 @@ COMMON_FLAGS += -mcmodel=kernel -fno-pie
 COMMON_FLAGS += -Wall -Wextra -Wpedantic
 COMMON_FLAGS += -Wtype-limits -Wstrict-prototypes -Wtype-limits
 COMMON_FLAGS += -Wframe-larger-than=$(CONFIG_KERNEL_FRAME_SIZE)
-CPPFLAGS += -I$(SRC_ROOT)/arch/$(ARCH)/include -I$(SRC_ROOT)/include
-CFLAGS += -std=c18
-CXXFLAGS += -std=c++17
+CFLAGS += -nostdinc -std=c18
+CXXFLAGS += -nostdinc++ -std=c++17
 CXXFLAGS += -fno-rtti #-fno-exceptions
 LDFLAGS += -znodefaultlib -nostdlib -znocombreloc
 LDFLAGS += -unresolved-symbols=report-all --orphan-handling=warn

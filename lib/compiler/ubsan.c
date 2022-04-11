@@ -6,7 +6,6 @@
 
 #include <print.h>
 #include <task.h>
-#include <inttypes.h>
 
 #define VALUE_BUFFER 32
 #define UBSAN_RECURSE_MAX 3
@@ -150,7 +149,7 @@ void __ubsan_handle_type_mismatch_v1(
 	const char * err = type_check_str(data->type_check_kind);
 	char ptr_str[VALUE_BUFFER];
 	value_str(ptr_str, sizeof(ptr_str), ptr, data->type);
-	pr_err("%s %s [aligned %" PRIuPTR "] (%s)\n", err, ptr_str,
+	pr_err("%s %s [aligned %p] (%s)\n", err, ptr_str,
 	       data->log_alignment, data->type->type_name);
 
 	ubsan_end();
@@ -307,8 +306,8 @@ void __ubsan_handle_alignment_assumption(
 		return;
 	ubsan_start(&data->loc, "alignment assumption");
 
-	pr_err("address %p[%" PRIuPTR "] to %s was expected to be %"
-	       PRIuPTR " aligned but is not\n",
+	pr_err("address %p[%p] to %s was expected to be %p"
+	       " aligned but is not\n",
 	       ptr, offset, data->type->type_name, alignment);
 	pr_err("assumption defined in %s:%d:%d\n",
 	       data->assumption_loc.filename, data->assumption_loc.line,
