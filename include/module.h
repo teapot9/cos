@@ -6,8 +6,9 @@
 #include <asm/asm.h>
 #include <cpp.h>
 
-typedef int (*initcall_t)(void);
+typedef int (* initcall_t)(void);
 typedef int initcall_entry_t;
+typedef void (* constructor_t)(void);
 
 /**
  * @brief Define a module entry point

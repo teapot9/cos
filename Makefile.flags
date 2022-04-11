@@ -25,15 +25,18 @@ else
 	SILENT=0
 endif
 
+BOOT_FLAGS += -mcmodel=small -fPIC -DBOOTLOADER
 COMMON_FLAGS += -msse3
 COMMON_FLAGS += -mno-red-zone -mabi=sysv
-COMMON_FLAGS += -ffreestanding -fpic -fPIC -fpie
+COMMON_FLAGS += -ffreestanding
+COMMON_FLAGS += -mcmodel=kernel -fno-pie
 COMMON_FLAGS += -Wall -Wextra -Wpedantic
 COMMON_FLAGS += -Wtype-limits -Wstrict-prototypes -Wtype-limits
 COMMON_FLAGS += -Wframe-larger-than=$(CONFIG_KERNEL_FRAME_SIZE)
-COMMON_FLAGS += -I$(SRC_ROOT)/arch/$(ARCH)/include -I$(SRC_ROOT)/include
+CPPFLAGS += -I$(SRC_ROOT)/arch/$(ARCH)/include -I$(SRC_ROOT)/include
 CFLAGS += -std=c18
-CXXFLAGS += -fno-rtti -fno-exceptions
+CXXFLAGS += -std=c++17
+CXXFLAGS += -fno-rtti #-fno-exceptions
 LDFLAGS += -znodefaultlib -nostdlib -znocombreloc
 LDFLAGS += -unresolved-symbols=report-all --orphan-handling=warn
 LDFLAGS += --warn-common --warn-alternate-em
@@ -87,7 +90,8 @@ ifeq ($(CONFIG_STACK_USAGE), y)
 endif
 
 ifeq ($(CONFIG_UBSAN), y)
-	COMMON_FLAGS += -fsanitize=undefined
+	# disable function sanitizer: requires RTTI
+	COMMON_FLAGS += -fsanitize=undefined -fno-sanitize=function
 endif
 ifeq ($(CONFIG_UBSAN_IMPLICIT_CONVERSION), y)
 	COMMON_FLAGS += -fsanitize=implicit-conversion

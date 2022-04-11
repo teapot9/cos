@@ -22,6 +22,11 @@
 #undef free
 #undef kfree
 
+__attribute__ ((constructor)) void bar(void)
+{
+	int a = 0;
+}
+
 /*
  * used memory block:
  * +--------+--------+------------------------+--------+

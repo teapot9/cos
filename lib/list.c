@@ -53,8 +53,10 @@ void list_add(struct list * l, size_t index, struct list_head * elt)
 void list_del(struct list * l, struct list_head * elt, bool do_free)
 {
 	spinlock_lock(&l->lock);
-	elt->prev->next = elt->next;
-	elt->next->prev = elt->prev;
+	if (elt->prev != NULL)
+		elt->prev->next = elt->next;
+	if (elt->next != NULL)
+		elt->next->prev = elt->prev;
 	if (l->first == elt)
 		l->first = elt->next;
 	if (l->last == elt)

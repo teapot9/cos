@@ -134,6 +134,8 @@ int elf64_mem_setup(pid_t pid, void * start, size_t size) {
 		switch (phdr->p_type) {
 		case PT_LOAD:;
 			/* Allocate */
+			if (phdr->p_memsz == 0 && phdr->p_filesz == 0)
+				break;
 			void * paddr = palloc(0, phdr->p_memsz, phdr->p_align);
 			if (paddr == NULL)
 				return -ENOMEM;
@@ -209,6 +211,8 @@ int elf64_mem_finalize(pid_t pid, void * start, size_t size) {
 		switch (phdr->p_type) {
 		case PT_LOAD:;
 			/* Set permissions */
+			if (phdr->p_memsz == 0)
+				break;
 			bool exec = phdr->p_flags & PF_X;
 			bool user = pid != 0;
 			bool write = phdr->p_flags & PF_W;

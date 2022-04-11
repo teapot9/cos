@@ -35,6 +35,11 @@
 #include "../mm/debug.h"
 #include <kconfig.h>
 
+__attribute__ ((constructor)) void foo(void)
+{
+	int a = 0;
+}
+
 noreturn void entry_efi_s2(const struct entry_efi_data * info)
 {
 	int err;

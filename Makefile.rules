@@ -101,28 +101,28 @@ $(BUILD)/%.o: $(BUILD)/%.i
 # C++ build rules
 
 $(BUILD)/%.ii: $(SRC)/%.cc
-	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
+	$(CXX) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
 
 $(BUILD)/%.ii: $(BUILD)/%.cc
-	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
+	$(CXX) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -E -o $@ $<
 
 $(BUILD)/%.s: $(SRC)/%.cc
-	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -S -o $@ $<
+	$(CXX) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -S -o $@ $<
 
 $(BUILD)/%.s: $(BUILD)/%.cc
-	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -S -o $@ $<
+	$(CXX) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -S -o $@ $<
 
 $(BUILD)/%.s: $(BUILD)/%.ii
-	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) -S -o $@ $<
+	$(CXX) $(COMMON_FLAGS) $(CXXFLAGS) -S -o $@ $<
 
 $(BUILD)/%.o: $(SRC)/%.cc
-	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
+	$(CXX) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.o: $(BUILD)/%.cc
-	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
+	$(CXX) $(COMMON_FLAGS) $(CXXFLAGS) $(CPPFLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.o: $(BUILD)/%.ii
-	$(CC) $(COMMON_FLAGS) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(COMMON_FLAGS) $(CXXFLAGS) -c -o $@ $<
 
 # Language independant rules
 
@@ -144,19 +144,19 @@ $(BUILD)/%.o: $(BUILD)/%.s
 # Bootloader build rules
 
 $(BUILD)/%.bootloader.o: $(SRC)/%.c
-	$(CC) $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -DBOOTLOADER -MMD -MP -c -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) $(BOOT_FLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.bootloader.o: $(BUILD)/%.bootloader.c
-	$(CC) $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) -DBOOTLOADER -MMD -MP -c -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) $(CPPFLAGS) $(BOOT_FLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.bootloader.o: $(BUILD)/%.bootloader.i
-	$(CC) $(COMMON_FLAGS) $(CFLAGS) -c -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CFLAGS) $(BOOT_FLAGS) -c -o $@ $<
 
 $(BUILD)/%.bootloader.o: $(SRC)/%.S
-	$(CC) $(COMMON_FLAGS) $(CPPFLAGS) -DBOOTLOADER -MMD -MP -c -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CPPFLAGS) $(BOOT_FLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.bootloader.o: $(BUILD)/%.bootloader.S
-	$(CC) $(COMMON_FLAGS) $(CPPFLAGS) -DBOOTLOADER -MMD -MP -c -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(CPPFLAGS) $(BOOT_FLAGS) -MMD -MP -c -o $@ $<
 
 $(BUILD)/%.bootloader.o: $(BUILD)/%.bootloader.s
-	$(CC) $(COMMON_FLAGS) -c -o $@ $<
+	$(CC) $(COMMON_FLAGS) $(BOOT_FLAGS) -c -o $@ $<

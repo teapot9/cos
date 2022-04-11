@@ -49,6 +49,7 @@ SECTIONS
 		*(.rdata*)
 		*(.srodata)
 		*(.gnu.linkonce.r.*)
+		. = ALIGN(8);
 		__initcalltest = .;
 		KEEP(*(.initcall.test))
 		__initcall_early = .;
@@ -60,6 +61,13 @@ SECTIONS
 		__initcall_misc = .;
 		KEEP(*(.initcall.misc))
 		__initcall_end = .;
+		. = ALIGN(8);
+		__constructors_start = .;
+		KEEP(*(SORT(.ctors.*)))
+		KEEP(*(.ctors))
+		KEEP(*(SORT(.init_array.*)))
+		KEEP(*(.init_array))
+		__constructors_end = .;
 	} :rdata
 	. = ALIGN(4096);
 	.data :

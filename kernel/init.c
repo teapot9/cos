@@ -19,6 +19,9 @@ extern initcall_entry_t __initcall_device[];
 extern initcall_entry_t __initcall_misc[];
 extern initcall_entry_t __initcall_end[];
 
+extern constructor_t __constructors_start[];
+extern constructor_t __constructors_end[];
+
 static inline initcall_entry_t * initcall_start(size_t lvl)
 {
 	switch (lvl) {
@@ -71,10 +74,21 @@ static void kernel_initcall_level(size_t level)
 	pr_info("Modules init: end level %d\n", level);
 }
 
+void constructors(void)
+{
+	for (constructor_t * fn = __constructors_start;
+	     fn < __constructors_end; fn++) {
+		constructor_t call = *fn;
+		pr_debug("constructor: %p\n", call);
+		call();
+	}
+}
+
 static void setup(void)
 {
 	enable_nmi();
 	restore_interrupts();
+	constructors();
 	kernel_initcalls_early();
 	// while (1)
 		// pr_debug("printing string to debug fb\n", 0);
@@ -98,18 +112,9 @@ void kernel_initcalls(void)
 extern uint8_t _binary__tmp_albert_bin_start[];
 extern uint8_t _binary__tmp_albert_bin_end[];
 
-int pipo(int x[static 1]) {
-	if (*x > 5)
-		return 33;
-}
-
 /* public: init.h */
-noreturn void kernel_main(void)
+void kernel_main(void)
 {
 	pr_info("Kernel main thread started\n", 0);
 	setup();
-	int * y = malloc(2321);
-	int x = pipo(y);
-	halt();
-	panic("Kernel should never exit main function\n");
 }
