@@ -1,5 +1,8 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct device;
 
@@ -21,4 +24,7 @@ void console_clear(void);
 
 void console_reset(void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif // CONSOLE_H

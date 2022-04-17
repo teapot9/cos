@@ -1,5 +1,8 @@
 #ifndef CTYPE_H
 #define CTYPE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdbool.h>
 
@@ -18,4 +21,7 @@ static inline char toupper(char c)
 	return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
 }
 
+#ifdef __cplusplus
+}
+#endif
 #endif // CTYPE_H

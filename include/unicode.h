@@ -1,5 +1,8 @@
 #ifndef UNICODE_H
 #define UNICODE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stddef.h>
 #include <stdint.h>
@@ -112,4 +115,7 @@ size_t utf16_to_utf(char * dst, const uint16_t * src, size_t len);
  */
 size_t utf16_copy(uint16_t * dst, const uint16_t * src, size_t len);
 
+#ifdef __cplusplus
+}
+#endif
 #endif // UNICODE_H

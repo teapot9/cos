@@ -1,5 +1,8 @@
 #ifndef FONT_H
 #define FONT_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -19,4 +22,7 @@ size_t font_width(const struct font * font);
 
 size_t font_height(const struct font * font);
 
+#ifdef __cplusplus
+}
+#endif
 #endif // FONT_H

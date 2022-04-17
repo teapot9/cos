@@ -1,5 +1,8 @@
 #ifndef CPP_H
 #define CPP_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define _stringify(x) #x
 #define stringify(x) _stringify(x)
@@ -77,4 +80,7 @@
 #define _ARRAY(ten, unit, value) _ARRAY_H##ten(value) _ARRAY_##unit(value)
 #define ARRAY(ten, unit, value) _ARRAY(ten, unit, value)
 
+#ifdef __cplusplus
+}
+#endif
 #endif // CPP_H

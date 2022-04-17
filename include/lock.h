@@ -1,5 +1,8 @@
 #ifndef LOCK_H
 #define LOCK_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdatomic.h>
 #include <stdbool.h>
@@ -40,4 +43,7 @@ void nblock_unlock(struct spinlock * s);
 #define mutex_unlock_all(x)
 #endif
 
+#ifdef __cplusplus
+}
+#endif
 #endif // LOCK_H

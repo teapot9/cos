@@ -1,5 +1,8 @@
 #ifndef DEBUG_H
 #define DEBUG_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <print.h>
 #include <kconfig.h>
@@ -26,4 +29,7 @@ static inline void kbreak() {
 	while (0)
 #endif // !CONFIG_DEBUG
 
+#ifdef __cplusplus
+}
+#endif
 #endif // DEBUG_H

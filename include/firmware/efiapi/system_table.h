@@ -1,5 +1,8 @@
 #ifndef FIRMWARE_EFIAPI_SYSTEM_TABLE_H
 #define FIRMWARE_EFIAPI_SYSTEM_TABLE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <firmware/efiapi/efiapi.h>
 
@@ -73,4 +76,7 @@ typedef struct {
 	efi_configuration_table_t *configuration_table;
 } efi_system_table_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif // FIRMWARE_EFIAPI_SYSTEM_TABLE_H

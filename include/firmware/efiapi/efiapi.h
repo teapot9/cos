@@ -1,5 +1,8 @@
 #ifndef FIRMWARE_EFIAPI_EFIAPI_H
 #define FIRMWARE_EFIAPI_EFIAPI_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdint.h>
 #include <kconfig.h>
@@ -151,4 +154,7 @@ typedef struct {
 	uint32_t _reserved;
 } efi_memory_attributes_table;
 
+#ifdef __cplusplus
+}
+#endif
 #endif // FIRMWARE_EFIAPI_EFIAPI_H

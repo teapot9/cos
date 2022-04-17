@@ -1,5 +1,8 @@
 #ifndef STRING_H
 #define STRING_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stddef.h>
 #include <stdint.h>
@@ -65,4 +68,7 @@ void memset(void * dst, uint8_t data, size_t len);
 
 int memcmp(const void * p1, const void * p2, size_t len);
 
+#ifdef __cplusplus
+}
+#endif
 #endif // STRING_H

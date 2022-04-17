@@ -1,5 +1,8 @@
 #ifndef FIRMWARE_EFIAPI_CONSOLE_H
 #define FIRMWARE_EFIAPI_CONSOLE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <firmware/efiapi/boot.h>
 #include <firmware/efiapi/efiapi.h>
@@ -226,4 +229,7 @@ struct _efi_graphics_output_protocol {
 	efi_graphics_output_protocol_mode_t * mode;
 };
 
+#ifdef __cplusplus
+}
+#endif
 #endif // FIRMWARE_EFIAPI_CONSOLE_H

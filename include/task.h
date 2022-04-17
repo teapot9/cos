@@ -1,5 +1,8 @@
 #ifndef TASK_H
 #define TASK_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stddef.h>
 #include <stdint.h>
@@ -7,6 +10,7 @@
 #include <isr.h>
 #include <lock.h>
 #include <list.h>
+#include <types.h>
 
 #define MAX_PID 1024
 #define KSTACK_SIZE CONFIG_KERNEL_FRAME_SIZE
@@ -15,9 +19,6 @@
 struct cpu;
 struct process;
 struct thread;
-
-typedef size_t pid_t;
-typedef size_t tid_t;
 
 enum tstate {
 	TASK_READY,
@@ -69,4 +70,7 @@ enum tstate task_get_state(struct thread * t);
 
 union cr3 * process_cr3(struct process * proc);
 
+#ifdef __cplusplus
+}
+#endif
 #endif // TASK_H

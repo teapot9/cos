@@ -37,7 +37,7 @@ COMMON_FLAGS += -Wtype-limits -Wstrict-prototypes -Wtype-limits
 COMMON_FLAGS += -Wframe-larger-than=$(CONFIG_KERNEL_FRAME_SIZE)
 CFLAGS += -nostdinc -std=c18
 CXXFLAGS += -nostdinc++ -std=c++17
-CXXFLAGS += -fno-rtti #-fno-exceptions
+CXXFLAGS += -fno-rtti -fno-exceptions
 LDFLAGS += -znodefaultlib -nostdlib -znocombreloc
 LDFLAGS += -unresolved-symbols=report-all --orphan-handling=warn
 LDFLAGS += --warn-common --warn-alternate-em

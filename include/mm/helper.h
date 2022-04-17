@@ -1,5 +1,8 @@
 #ifndef MM_HELPER_H
 #define MM_HELPER_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -69,4 +72,7 @@ static inline bool is_aligned(void * a, size_t align)
 	return !((uintptr_t) a % align);
 }
 
+#ifdef __cplusplus
+}
+#endif
 #endif // MM_HELPER_H

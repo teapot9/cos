@@ -84,12 +84,26 @@ void constructors(void)
 	}
 }
 
+#if IS_ENABLED(CONFIG_DEBUG)
+static void compiler_tests(void)
+{
+	int ret;
+	ret = compiler_test_cxx(COMPILER_TEST_VALUE);
+	if (ret != COMPILER_TEST_VALUE)
+		panic("C++ compiler test failed on line %d", ret);
+}
+#endif
+
 static void setup(void)
 {
 	enable_nmi();
 	restore_interrupts();
 	constructors();
 	kernel_initcalls_early();
+#if IS_ENABLED(CONFIG_DEBUG)
+	compiler_tests();
+#endif
+
 	// while (1)
 		// pr_debug("printing string to debug fb\n", 0);
 	sched_enable();

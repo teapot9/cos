@@ -1,5 +1,8 @@
 #ifndef FIRMWARE_EFIAPI_BOOT_H
 #define FIRMWARE_EFIAPI_BOOT_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <firmware/efiapi/device_path.h>
 #include <firmware/efiapi/efiapi.h>
@@ -343,4 +346,7 @@ typedef struct _efi_boot_services {
 	efi_create_event_ex_t create_event_ex;
 } efi_boot_services_t ;
 
+#ifdef __cplusplus
+}
+#endif
 #endif // FIRMWARE_EFIAPI_BOOT_H

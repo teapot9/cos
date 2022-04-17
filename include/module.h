@@ -1,5 +1,8 @@
 #ifndef MODULE_H
 #define MODULE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <assert.h>
 
@@ -54,4 +57,7 @@ struct module {
 	const char * const name;
 };
 
+#ifdef __cplusplus
+}
+#endif
 #endif // MODULE_H

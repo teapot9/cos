@@ -1,5 +1,8 @@
 #ifndef PRINT_H
 #define PRINT_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stddef.h>
 #include <stdarg.h>
@@ -114,4 +117,7 @@ const char * kmsg_next(const char * ptr);
  */
 const char * kmsg_get_str(const char * ptr);
 
+#ifdef __cplusplus
+}
+#endif
 #endif // PRINT_H

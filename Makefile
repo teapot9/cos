@@ -58,6 +58,13 @@ CONF ?= conf
 
 include $(BUILD)/include/config/auto.conf.cmd
 
+%.var:
+	@echo $($*)
+
+.PHONY: noop
+noop:
+	$(NOOP)
+
 .PHONY: menuconfig
 menuconfig:
 	$(MCONF) Kconfig

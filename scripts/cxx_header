@@ -1,0 +1,17 @@
+#!/bin/sh
+
+for k in "$@"; do ed "$k" <<EOF
+-0i
+#ifdef __cplusplus
+}
+#endif
+.
+3i
+#ifdef __cplusplus
+extern "C" {
+#endif
+.
+w
+q
+EOF
+done

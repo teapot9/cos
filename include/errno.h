@@ -1,5 +1,8 @@
 #ifndef ERRNO_H
 #define ERRNO_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define EPERM 1 // Operation not permitted
 #define ENOENT 2 // No such file or directory
@@ -136,4 +139,7 @@
 #define EHWPOISON 133 // Memory page has hardware error
 #define ENOTSUP 95 // Operation not supported
 
+#ifdef __cplusplus
+}
+#endif
 #endif // ERRNO_H

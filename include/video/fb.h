@@ -1,5 +1,8 @@
 #ifndef VIDEO_FB_H
 #define VIDEO_FB_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stddef.h>
 #include <stdint.h>
@@ -27,4 +30,7 @@ int fb_plot(const struct fb * fb, unsigned int x, unsigned int y,
 
 int fb_move_up(const struct fb * fb, unsigned int scanlines);
 
+#ifdef __cplusplus
+}
+#endif
 #endif // VIDEO_FB_H

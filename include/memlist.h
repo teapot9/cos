@@ -1,5 +1,8 @@
 #ifndef MEMLIST_H
 #define MEMLIST_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <list.h>
 
@@ -65,4 +68,7 @@ int memlist_del(struct memlist * l, void * addr, size_t size, bool strict);
 int memlist_add_elt(struct memlist * l, struct memlist_elt * elt, bool strict);
 #endif
 
+#ifdef __cplusplus
+}
+#endif
 #endif // MEMLIST_H

@@ -1,5 +1,8 @@
 #ifndef FIRMWARE_EFIAPI_LOADED_IMAGE_H
 #define FIRMWARE_EFIAPI_LOADED_IMAGE_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <firmware/efiapi/device_path.h>
 #include <firmware/efiapi/system_table.h>
@@ -27,4 +30,7 @@ typedef struct {
 	efi_image_unload_t unload;
 } efi_loaded_image_protocol_t;
 
+#ifdef __cplusplus
+}
+#endif
 #endif // FIRMWARE_EFIAPI_LOADED_IMAGE_H

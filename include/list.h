@@ -1,5 +1,8 @@
 #ifndef LIST_H
 #define LIST_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -41,4 +44,7 @@ void list_add_before(struct list * l, struct list_head * next,
 	for (elt = (typeof(elt)) start; elt != NULL; \
 	     elt = (typeof(elt)) ((struct list_head *) elt)->next)
 
+#ifdef __cplusplus
+}
+#endif
 #endif // LIST_H

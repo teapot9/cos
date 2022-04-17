@@ -335,3 +335,18 @@ void __ubsan_handle_implicit_conversion(
 
 	ubsan_end();
 }
+
+void __ubsan_handle_nonnull_return_v1(
+	struct non_null_return_data * data, struct source_location * loc
+)
+{
+	if (ubsan_abort())
+		return;
+	ubsan_start(loc, "non-null return");
+
+	pr_err("NULL pointer returned from function that should not\n", 0);
+	pr_err("non-null attribute in %s:%d:%d\n", data->attr_loc.filename,
+	       data->attr_loc.line, data->attr_loc.column);
+
+	ubsan_end();
+}

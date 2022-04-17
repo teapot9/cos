@@ -1,5 +1,8 @@
 #ifndef SETUP_H
 #define SETUP_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdnoreturn.h>
 
@@ -27,4 +30,20 @@ int cmdline_init(const char * (* firmware_cmdline)(void));
 
 void kmm_init(void);
 
+/* Compiler tests
+ * These functions returns COMPILER_TEST_VALUE on success, and expects
+ * COMPILER_TEST_VALUE as sole argument.
+ * If error, failed test line is returned.
+ */
+#if IS_ENABLED(CONFIG_DEBUG)
+
+#define COMPILER_TEST_VALUE -9999
+
+int compiler_test_cxx(int value);
+
+#endif // CONFIG_DEBUG
+
+#ifdef __cplusplus
+}
+#endif
 #endif // SETUP_H

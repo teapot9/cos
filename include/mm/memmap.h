@@ -1,5 +1,8 @@
 #ifndef MM_MEMMAP_H
 #define MM_MEMMAP_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stddef.h>
 
@@ -66,4 +69,7 @@ int memmap_undef(
 	struct memmap * map, void * start, size_t size
 );
 
+#ifdef __cplusplus
+}
+#endif
 #endif // MM_MEMMAP_H
