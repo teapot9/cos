@@ -41,7 +41,7 @@ static inline initcall_entry_t * initcall_start(size_t lvl)
 #define initcall_count 4
 #define initcall_end(lvl) initcall_start(lvl + 1)
 
-__attribute__((no_sanitize("undefined"))) // don't know how to fix type mismatch
+__attribute__((no_sanitize("all")))
 static inline initcall_t initcall_from_entry(initcall_entry_t * entry)
 {
 	return (initcall_t) ((unsigned long) entry + *entry);

@@ -179,8 +179,9 @@ int elf64_load_data(pid_t pid, void * start, size_t size) {
 			memcpy(vaddr,
 			       (uint8_t *) start + phdr->p_offset,
 			       phdr->p_filesz);
-			memset((uint8_t *) vaddr + phdr->p_filesz, 0,
-			       phdr->p_memsz - phdr->p_filesz);
+			void * zero_start = (void *)
+				((uintptr_t) vaddr + phdr->p_filesz);
+			memset(zero_start, 0, phdr->p_memsz - phdr->p_filesz);
 			physical_tmp_unmap(vaddr);
 			break;
 		case PT_DYNAMIC:

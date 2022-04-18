@@ -126,7 +126,7 @@ size_t vprintk(const char * fmt, va_list ap)
 /* public: print.h */
 const char * kmsg_next(const char * ptr)
 {
-	size_t pos = ptr - printk_kmsg;
+	size_t pos = (size_t) (ptr - printk_kmsg);
 	size_t newpos = 0;
 
 	if (ptr == NULL) {

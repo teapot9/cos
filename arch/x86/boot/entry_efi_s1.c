@@ -129,11 +129,6 @@ noreturn void entry_efi_s1(efi_handle_t image_handle,
 	/* Serial debug */
 	serial_init();
 #endif
-	uint64_t cr4 = read_cr4();
-	cr4 &= ~(1 << 7);
-	write_cr4(cr4);
-	cr4 |= 1 << 7;
-	write_cr4(cr4);
 
 	/* pmm */
 	err = pmm_init(&map);

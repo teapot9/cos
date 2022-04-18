@@ -107,7 +107,7 @@ static uintmax_t value_uint(const value_handle val,
 static intmax_t value_int(const value_handle val,
                           const struct type_descriptor * type)
 {
-	return value_uint(val, type);
+	return (intmax_t) value_uint(val, type);
 }
 
 static void value_str(char * dst, size_t len, const value_handle val,
@@ -120,8 +120,10 @@ static void value_str(char * dst, size_t len, const value_handle val,
 
 	bool is_signed = value_signed(type);;
 
-	snprintf(dst, len, is_signed ? "%jd" : "0x%jx",
-	         is_signed ? value_int(val, type) : value_uint(val, type));
+	if (is_signed)
+		snprintf(dst, len, "%jd", value_int(val, type));
+	else
+		snprintf(dst, len, "0x%jx", value_uint(val, type));
 }
 
 static void ubsan_overflow(

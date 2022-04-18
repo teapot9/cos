@@ -23,7 +23,7 @@ static void * to_kmem(void * vaddr) {
 		// Never NULL because NULL == 1:1 mapping
 		return NULL;
 	union linear_addr * laddr = (void *) &vaddr;
-	laddr->pdpt._unused = -1;
+	laddr->pdpt._unused = ~0u;
 	return vaddr;
 }
 
