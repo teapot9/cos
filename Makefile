@@ -14,6 +14,8 @@ endif
 
 #SRC_ROOT := $(ROOT)
 #BUILD_ROOT := $(ROOT)
+export SRC_ROOT
+export BUILD_ROOT
 
 V = 1
 ifdef V

@@ -91,11 +91,16 @@ ifeq ($(CONFIG_STACK_USAGE), y)
 endif
 
 ifeq ($(CONFIG_UBSAN), y)
+	common-flags += -fsanitize=undefined
+ifeq ($(CONFIG_CC_IS_CLANG), y)
 	# disable function sanitizer: requires RTTI
-	common-flags += -fsanitize=undefined -fno-sanitize=function
+	common-flags += -fno-sanitize=function
+endif
 endif
 ifeq ($(CONFIG_UBSAN_IMPLICIT_CONVERSION), y)
+ifeq ($(CONFIG_CC_IS_CLANG), y)
 	common-flags += -fsanitize=implicit-conversion
+endif
 endif
 
 BIN2C = $(SRC_ROOT)/scripts/bin2c
