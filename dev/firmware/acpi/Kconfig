@@ -1,0 +1,6 @@
+config ACPI_DEBUG
+	bool "ACPI debugging"
+	default DEBUG
+	depends on DEBUG
+	help
+	  ACPI debugging

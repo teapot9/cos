@@ -1,0 +1,31 @@
+#!/bin/sh
+set -eu
+
+help() {
+	cat <<EOF
+Usage: $0 UPSTREAM DESTINATION
+Create symlinks for ACPICA headers
+
+UPSTREAM: upstream ACPICA include directory
+DESTINATION: kernel ACPICA include directory
+EOF
+}
+
+if [ "$#" -ne 2 ]; then
+	if [ "${1-}" = '-h' ] || [ "${1-}" = '--help' ]; then
+		help
+	else
+		help >&2
+	fi
+fi
+
+src="$1"
+dst="$2"
+
+for k in "$dst"/*; do
+	if ! [ -e "$k" ]; then rm -v "$k"; fi
+done
+for k in "$src"/*; do
+	l="$dst/$(basename -- "$k")"
+	if ! [ -e "$l" ]; then echo ln -rsv "$k" "$l"; fi
+done

@@ -27,8 +27,8 @@ include $(SRC_ROOT)/Makefile.flags
 KCONFIG ?= .config
 
 sections = $(BUILD)/arch/$(ARCH)/sections.lds
-obj-y = arch/ dev/ kernel/ lib/ mm/
-bootloader-y = $(obj-y)
+obj-y = arch/ dev/ kernel/ lib/ mm/ third_party/
+bootloader-y := $(obj-y)
 clean-y += $(COS_KERNEL).elf $(sections)
 clean-y += $(wildcard include/config/*)
 clean-y += include/generated/autoconf.h
@@ -52,6 +52,9 @@ $(BUILD)/$(COS_KERNEL).elf: $(BUILD)/modules.o
 #	$(LD) -dT $(sections) $(LDFLAGS) -pie -static -entry=entry_efi_s2 -o $@ $^
 
 include $(SRC_ROOT)/Makefile.rules
+
+$(BUILD)/%.a:
+	$(MAKE) -C $(dir $@) SRC_ROOT=$(SRC_ROOT) BUILD_ROOT=$(BUILD_ROOT)
 
 MCONF ?= mconf
 CONF ?= conf

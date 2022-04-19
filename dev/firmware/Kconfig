@@ -15,4 +15,8 @@ menuconfig ACPI
 	help
 	  Advanced Configuration and Power Interface support
 
+if ACPI
+source "dev/firmware/acpi/Kconfig"
+endif
+
 endmenu

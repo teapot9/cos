@@ -1,0 +1,3 @@
+[submodule "third_party/acpica/upstream"]
+	path = third_party/acpica/upstream
+	url = git@github.com:acpica/acpica.git

@@ -28,13 +28,13 @@ endif
 CPPFLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
 CPPFLAGS += -I$(SRC_ROOT)/arch/$(ARCH)/include -I$(SRC_ROOT)/include
 BOOT_FLAGS += -mcmodel=small -fPIC -DBOOTLOADER
-COMMON_FLAGS += -msse3
-COMMON_FLAGS += -mno-red-zone -mabi=sysv
-COMMON_FLAGS += -ffreestanding
-COMMON_FLAGS += -mcmodel=kernel -fno-pie
-COMMON_FLAGS += -Wall -Wextra -Wpedantic
-COMMON_FLAGS += -Wtype-limits -Wstrict-prototypes -Wtype-limits
-COMMON_FLAGS += -Wframe-larger-than=$(CONFIG_KERNEL_FRAME_SIZE)
+common-flags += -msse3
+common-flags += -mno-red-zone -mabi=sysv
+common-flags += -ffreestanding
+common-flags += -mcmodel=kernel -fno-pie
+common-flags += -Wall -Wextra -Wpedantic
+common-flags += -Wtype-limits -Wstrict-prototypes -Wtype-limits
+common-flags += -Wframe-larger-than=$(CONFIG_KERNEL_FRAME_SIZE)
 CFLAGS += -nostdinc -std=c18
 CXXFLAGS += -nostdinc++ -std=c++17
 CXXFLAGS += -fno-rtti -fno-exceptions
@@ -43,61 +43,63 @@ LDFLAGS += -unresolved-symbols=report-all --orphan-handling=warn
 LDFLAGS += --warn-common --warn-alternate-em
 
 ifeq ($(CC), gcc)
-	COMMON_FLAGS += -mgeneral-regs-only
+	common-flags += -mgeneral-regs-only
 endif
 
 ifeq ($(CONFIG_X86_64), y)
-	COMMON_FLAGS += -m64
+	common-flags += -m64
 endif
 ifeq ($(CONFIG_X86_32), y)
-	COMMON_FLAGS += -m32
+	common-flags += -m32
 endif
 
 ifeq ($(CONFIG_DEBUG), y)
-	COMMON_FLAGS += -g
+	common-flags += -g
 endif
 
 ifeq ($(CONFIG_CC_OPTIMIZE_O0), y)
-	COMMON_FLAGS += -O0
+	common-flags += -O0
 endif
 ifeq ($(CONFIG_CC_OPTIMIZE_O1), y)
-	COMMON_FLAGS += -O1
+	common-flags += -O1
 endif
 ifeq ($(CONFIG_CC_OPTIMIZE_O2), y)
-	COMMON_FLAGS += -O2
+	common-flags += -O2
 endif
 ifeq ($(CONFIG_CC_OPTIMIZE_O3), y)
-	COMMON_FLAGS += -O3
+	common-flags += -O3
 endif
 ifeq ($(CONFIG_CC_OPTIMIZE_OS), y)
-	COMMON_FLAGS += -Os
+	common-flags += -Os
 endif
 
 ifeq ($(CONFIG_ASM_DEFAULT_INTEL), y)
-	COMMON_FLAGS += -masm=intel
+	common-flags += -masm=intel
 endif
 ifeq ($(CONFIG_ASM_DEFAULT_ATT), y)
-	COMMON_FLAGS += -masm=att
+	common-flags += -masm=att
 endif
 
 ifeq ($(CONFIG_STACK_PROTECTOR), y)
-	COMMON_FLAGS += -fstack-protector-all -mstack-protector-guard=global
+	common-flags += -fstack-protector-all -mstack-protector-guard=global
 else
-	COMMON_FLAGS += -fno-stack-protector
+	common-flags += -fno-stack-protector
 endif
 
 ifeq ($(CONFIG_STACK_USAGE), y)
-	COMMON_FLAGS += -fstack-usage
+	common-flags += -fstack-usage
 endif
 
 ifeq ($(CONFIG_UBSAN), y)
 	# disable function sanitizer: requires RTTI
-	COMMON_FLAGS += -fsanitize=undefined -fno-sanitize=function
+	common-flags += -fsanitize=undefined -fno-sanitize=function
 endif
 ifeq ($(CONFIG_UBSAN_IMPLICIT_CONVERSION), y)
-	COMMON_FLAGS += -fsanitize=implicit-conversion
+	common-flags += -fsanitize=implicit-conversion
 endif
 
 BIN2C = $(SRC_ROOT)/scripts/bin2c
 
-#CPPFLAGS += $(shell $(SRC_ROOT)/scripts/get_config_cppflags $(SRC_ROOT))
+CFLAGS := $(common-flags) $(CFLAGS)
+CXXFLAGS := $(common-flags) $(CXXFLAGS)
+ASFLAGS := $(common-flags) $(ASFLAGS)
