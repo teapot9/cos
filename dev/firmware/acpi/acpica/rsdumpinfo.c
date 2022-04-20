@@ -1,1 +1,0 @@
-../../../../third_party/acpica/source/components/resources/rsdumpinfo.c
