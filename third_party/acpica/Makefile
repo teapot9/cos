@@ -1,5 +1,6 @@
 include $(SRC_ROOT)/Makefile.flags
 
+CPPFLAGS := $(filter-out -iquote=%, $(CPPFLAGS))
 CPPFLAGS += -I$(BUILD)/include -DBUILDING_ACPICA
 CFLAGS := $(filter-out -Wextra -Wpedantic, $(CFLAGS))
 CFLAGS += -Wno-unused

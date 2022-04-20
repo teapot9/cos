@@ -15,10 +15,9 @@ export SED ?= sed
 include $(BUILD_ROOT)/.config
 
 RELAPATH := $(shell realpath --relative-to=$(SRC_ROOT) .)
+ARCHDIR := arch/$(ARCH)
 SRC := $(abspath $(SRC_ROOT)/$(RELAPATH))
 BUILD := $(abspath $(BUILD_ROOT)/$(RELAPATH))
-#$(info SRC = $(SRC))
-#$(info BUILD = $(BUILD))
 ifeq ($(findstring s,$(firstword -$(MAKEFLAGS))),s)
 	SILENT=1
 else
@@ -41,6 +40,11 @@ CXXFLAGS += -fno-rtti -fno-exceptions
 LDFLAGS += -znodefaultlib -nostdlib -znocombreloc
 LDFLAGS += -unresolved-symbols=report-all --orphan-handling=warn
 LDFLAGS += --warn-common --warn-alternate-em
+
+ifneq ($(RELAPATH),.)
+	CPPFLAGS += -iquote=$(SRC_ROOT)/$(RELAPATH)
+	CPPFLAGS += -iquote=$(SRC_ROOT)/$(ARCHDIR)/$(RELAPATH)
+endif
 
 ifeq ($(CC), gcc)
 	common-flags += -mgeneral-regs-only
