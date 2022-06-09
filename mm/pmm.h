@@ -1,7 +1,7 @@
 #ifndef MM_PMM_H
 #define MM_PMM_H
 
-#include <mm.h>
+#include <alloc.h>
 #include <stddef.h>
 #include <stdbool.h>
 

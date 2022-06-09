@@ -9,7 +9,7 @@
 #include <string.h>
 #include <print.h>
 #include <module.h>
-#include <mm.h>
+#include <alloc.h>
 #include <mm/early.h>
 #include <mm/map.h>
 #include <kconfig.h>

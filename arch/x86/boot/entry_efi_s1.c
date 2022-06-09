@@ -8,6 +8,7 @@
 #include <list.h>
 #include <memlist.h>
 #include <mm/memmap.h>
+#include <mm/pmm.h>
 #include <sched.h>
 #include <task.h>
 #include "../../../kernel/task.h"
@@ -21,8 +22,8 @@
 #include <firmware/efiapi/system_table.h>
 #include <firmware/efiapi/console.h>
 #include <fonts.h>
-#include <mm.h>
-#include <mm/early.h>
+#include <alloc.h>
+#include <mm/vmm.h>
 #include <print.h>
 #include <debug.h>
 #include <string.h>
@@ -33,7 +34,6 @@
 #include <setup.h>
 #include <cmdline.h>
 #include <panic.h>
-#include <mm/memmap.h>
 #include <setup.h>
 #include <elf.h>
 #include <memlist.h>

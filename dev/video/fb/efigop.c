@@ -8,8 +8,8 @@
 #include <stddef.h>
 
 #include "fb.h"
-#include <mm.h>
-#include <mm/early.h>
+#include <alloc.h>
+#include <mm/vmm.h>
 #include <print.h>
 #include <firmware/efistub.h>
 #include <firmware/efiapi/console.h>

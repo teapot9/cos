@@ -10,7 +10,7 @@
 #include <lock.h>
 #include <device.h>
 #include <module.h>
-#include <mm.h>
+#include <alloc.h>
 #include <string.h>
 #include <print.h>
 

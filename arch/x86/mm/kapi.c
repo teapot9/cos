@@ -1,7 +1,9 @@
-#include <mm.h>
+#include <alloc.h>
 
 #include <errno.h>
 
+#include <mm/pmm.h>
+#include <mm/vmm.h>
 #include <print.h>
 #include <mm/paging.h>
 #include "paging.h"

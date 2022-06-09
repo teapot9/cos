@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <kconfig.h>
 
-#include <mm.h>
+#include <alloc.h>
 #if IS_ENABLED(CONFIG_FONT_PSF)
 #include "psf.h"
 #endif

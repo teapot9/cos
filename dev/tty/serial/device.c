@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 #include <device.h>
-#include <mm.h>
+#include <alloc.h>
 #include <print.h>
 #include <kconfig.h>
 

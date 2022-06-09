@@ -1,3 +1,4 @@
+#include <mm/vmm.h>
 #include <setup.h>
 #include <task.h>
 #include "task.h"
@@ -6,16 +7,12 @@
 #include <print.h>
 #include <cpu.h>
 #include <panic.h>
-#include <mm.h>
+#include <alloc.h>
 #include <asm/cpu.h>
 #include <gdt.h>
 #include <errno.h>
-#include <mm/helper.h>
-#include <mm/early.h>
 #include <sched.h>
 #include <string.h>
-
-#define kstack_aligned(x) ((uint8_t *) aligned(x, KSTACK_ALIGN) + KSTACK_SIZE)
 
 struct process processes[MAX_PROC_CNT];
 uint8_t used[MAX_PROC_CNT] = {0};
@@ -201,7 +198,7 @@ int thread_new(
 	struct process * proc, void (* start)(void)
 )
 {
-	struct tlist * new = malloc(sizeof(*new));
+	struct tlist * new = kmalloc(sizeof(*new), THREAD_STRUCT_ALIGN);
 	if (new == NULL)
 		return -ENOMEM;
 
@@ -318,7 +315,7 @@ struct thread * thread_get(struct process * p, tid_t tid)
 /* public: task.h */
 void * thread_kstack_ptr(struct thread * thread)
 {
-	return kstack_aligned(thread->kstack);
+	return thread->kstack + KSTACK_SIZE;
 }
 
 /* public: task.h */

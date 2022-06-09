@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <string.h>
 #include <kconfig.h>
-#include <mm.h>
+#include <alloc.h>
 
 const char * kernel_cmdline = "";
 static const char * const extra_cmdline = CONFIG_CMDLINE;

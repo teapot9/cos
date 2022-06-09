@@ -1,4 +1,4 @@
-#include <mm/early.h>
+#include <mm/vmm.h>
 #include "vkernel.h"
 #include "paging.h"
 #include "physical.h"

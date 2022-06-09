@@ -3,8 +3,9 @@
 
 #include <errno.h>
 
-#include <mm/helper.h>
-#include <mm.h>
+#include <mm/block.h>
+#include <mm/align.h>
+#include <alloc.h>
 #include <string.h>
 
 static void inline copy_user_data(

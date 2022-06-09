@@ -3,7 +3,7 @@
 
 #include <errno.h>
 
-#include <mm.h>
+#include <alloc.h>
 #include <string.h>
 #include <lock.h>
 

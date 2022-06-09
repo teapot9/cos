@@ -2,7 +2,7 @@
 
 #include <errno.h>
 
-#include <mm/helper.h>
+#include <mm/align.h>
 
 #define is_table_entry(entry) ( \
 	same_type(entry, union pml4e) || same_type(entry, union pdpte) \

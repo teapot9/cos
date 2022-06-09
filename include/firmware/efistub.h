@@ -8,7 +8,7 @@ extern "C" {
 
 #include <firmware/efiapi/system_table.h>
 #include <firmware/efiapi/loaded_image.h>
-#include <mm.h>
+#include <alloc.h>
 #include <string.h>
 
 struct memmap;

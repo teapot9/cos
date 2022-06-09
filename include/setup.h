@@ -43,6 +43,9 @@ int compiler_test_cxx(int value);
 
 #endif // CONFIG_DEBUG
 
+int vmm_init(void);
+void vmm_enable_paging(void);
+
 #ifdef __cplusplus
 }
 #endif

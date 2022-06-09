@@ -1,13 +1,14 @@
 #define pr_fmt(fmt) "pmm: " fmt
+#include <mm/pmm.h>
 
-#include <mm.h>
+#include <alloc.h>
 #include "pmm.h"
 
 #include <stdint.h>
 #include <errno.h>
 
 #include <print.h>
-#include <mm/helper.h>
+#include <mm/align.h>
 #include <memlist.h>
 #include <mm/memmap.h>
 #include <kconfig.h>

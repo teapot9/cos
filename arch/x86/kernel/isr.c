@@ -4,7 +4,7 @@
 #include <errno.h>
 
 #include <asm/cpu.h>
-#include <mm.h>
+#include <alloc.h>
 #include <panic.h>
 #include <print.h>
 #include <debug.h>

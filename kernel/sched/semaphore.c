@@ -9,7 +9,7 @@
 #include <sched.h>
 #include <task.h>
 #include <cpu.h>
-#include <mm.h>
+#include <alloc.h>
 #include <panic.h>
 #include <list.h>
 

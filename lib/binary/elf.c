@@ -6,7 +6,9 @@
 #include <errno.h>
 #include <stdbool.h>
 
-#include <mm.h>
+#include <mm/pmm.h>
+#include <mm/vmm.h>
+#include <alloc.h>
 #include <print.h>
 #include <string.h>
 #include <mm/physical.h>

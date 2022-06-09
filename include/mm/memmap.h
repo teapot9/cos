@@ -30,11 +30,13 @@ struct memmap_elt {
 };
 
 struct memmap memmap_new(void);
-#define memmap_free(elt, free_ptr) do { \
-	memlist_free(elt.l, free_ptr); \
-	if (!free_ptr) \
-		*elt = memmap_new(); \
-	} while (0)
+
+static inline void memmap_free(struct memmap * map, bool free_ptr)
+{
+	memlist_free(&map->l, free_ptr);
+	if (!free_ptr)
+		*map = memmap_new();
+}
 
 static inline int memmap_copy(struct memmap * dst, struct memmap * src)
 {

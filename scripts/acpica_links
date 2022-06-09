@@ -27,5 +27,5 @@ for k in "$dst"/*; do
 done
 for k in "$src"/*; do
 	l="$dst/$(basename -- "$k")"
-	if ! [ -e "$l" ]; then echo ln -rsv "$k" "$l"; fi
+	if ! [ -e "$l" ]; then ln -rsv "$k" "$l"; fi
 done

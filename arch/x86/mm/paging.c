@@ -1,9 +1,11 @@
 #include <mm/paging.h>
+#include <mm/align.h>
+#include <mm/pmm.h>
 #include "paging.h"
 #include "physical.h"
 #include <errno.h>
 #include <asm/cpu.h>
-#include <mm/early.h>
+#include <mm/vmm.h>
 #include <print.h>
 
 #ifndef BOOTLOADER

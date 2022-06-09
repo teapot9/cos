@@ -1,5 +1,5 @@
-#ifndef MM_HELPER_H
-#define MM_HELPER_H
+#ifndef _MM_ALIGN_H
+#define _MM_ALIGN_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -7,29 +7,6 @@ extern "C" {
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
-#define __end(a, s) (a == 0 ? (void *) s : (uint8_t *) a + s)
-
-static inline bool is_next(void * a1, size_t s1, void * a2, size_t s2)
-{
-	return (a1 < a2 && __end(a1, s1) == a2)
-		|| (a1 > a2 && __end(s2, s2) == a1);
-}
-
-static inline bool is_overlap(void * a1, size_t s1, void * a2, size_t s2)
-{
-	return (a1 < a2 && __end(a1, s1) > a2)
-		|| (a1 > a2 && __end(a2, s2) > a1)
-		|| a1 == a2;
-}
-
-/* Is memory block 2 inside block 1 */
-static inline bool is_inside(void * a1, size_t s1, void * a2, size_t s2)
-{
-	return a1 <= a2
-		&& __end(a1, s1)
-		>= __end(a2, s2);
-}
 
 static inline void * aligned_up(void * a, size_t align)
 {
@@ -39,11 +16,6 @@ static inline void * aligned_up(void * a, size_t align)
 	size_t mod = (size_t) ia % align;
 	uint8_t * aligned = mod ? ia - mod + align : ia;
 	return aligned;
-}
-
-static inline void * aligned(void * a, size_t align)
-{
-	return aligned_up(a, align);
 }
 
 static inline void * aligned_down(void * a, size_t align)
@@ -56,15 +28,24 @@ static inline void * aligned_down(void * a, size_t align)
 	return aligned;
 }
 
+static inline void * aligned(void * a, size_t align)
+{
+	return aligned_up(a, align);
+}
+
 static inline size_t align_diff_down(void * a, size_t align)
 {
 	return (uint8_t *) a - (uint8_t *) aligned_down(a, align);
 }
 
-#define align_diff align_diff_up
 static inline size_t align_diff_up(void * a, size_t align)
 {
 	return (uint8_t *) aligned_up(a, align) - (uint8_t *) a;
+}
+
+static inline size_t align_diff(void * a, size_t align)
+{
+	return align_diff_up(a, align);
 }
 
 static inline bool is_aligned(void * a, size_t align)
@@ -75,4 +56,4 @@ static inline bool is_aligned(void * a, size_t align)
 #ifdef __cplusplus
 }
 #endif
-#endif // MM_HELPER_H
+#endif // _MM_ALIGN_H

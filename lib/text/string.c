@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <mm.h>
+#include <alloc.h>
 
 /* public: string.h */
 size_t strlen(const char * s)

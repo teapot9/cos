@@ -11,9 +11,9 @@
 #include <firmware/efiapi/efiapi.h>
 #include <firmware/efiapi/system_table.h>
 #include <firmware/efiapi/boot.h>
-#include <mm.h>
-#include <mm/early.h>
+#include <alloc.h>
 #include <mm/memmap.h>
+#include <mm/pmm.h>
 #include <kconfig.h>
 
 #if IS_ENABLED(CONFIG_MM_DEBUG)

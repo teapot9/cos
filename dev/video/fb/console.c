@@ -10,7 +10,7 @@
 #include <fonts.h>
 #include <video/fb.h>
 #include <print.h>
-#include <mm.h>
+#include <alloc.h>
 #include "fb.h"
 
 static size_t total_fbcon_count = 0;

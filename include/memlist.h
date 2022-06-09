@@ -25,12 +25,15 @@ struct memlist_elt {
 		.compat = compat_fcn, \
 		.elt_size = size, \
 	}
+
 #define memlist_new_default() memlist_new(NULL, sizeof(struct memlist_elt))
-#define memlist_free(elt, free_ptr) do { \
-	list_free_all(elt.l, free_ptr); \
-	if (!free_ptr) \
-		*elt = memlist_new_default(); \
-	} while (0)
+
+static inline void memlist_free(struct memlist * list, bool free_ptr)
+{
+	list_free_all(&list->l, free_ptr);
+	if (!free_ptr)
+		*list = memlist_new_default();
+}
 
 static inline int memlist_copy(struct memlist * dst, struct memlist * src)
 {
@@ -52,21 +55,6 @@ struct memlist_elt * memlist_search(
 );
 
 size_t memlist_virtual_size(struct memlist * l);
-
-#if 0
-struct memlist_elt * memlist_search_size(
-	struct memlist * l, size_t size, size_t align
-);
-struct memlist_elt * memlist_search(
-	struct memlist * l, void * addr, size_t size, bool full
-);
-bool memlist_exists(struct memlist * l, void * addr, size_t size, bool full);
-
-int memlist_add(struct memlist * l, void * addr, size_t size, bool strict);
-int memlist_del(struct memlist * l, void * addr, size_t size, bool strict);
-
-int memlist_add_elt(struct memlist * l, struct memlist_elt * elt, bool strict);
-#endif
 
 #ifdef __cplusplus
 }

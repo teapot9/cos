@@ -5,7 +5,7 @@
 
 #include "acpi.h"
 #include "acpica/acexcep.h"
-#include <mm.h>
+#include <alloc.h>
 
 ACPI_STATUS AcpiOsInitialize(void)
 {

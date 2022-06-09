@@ -1,10 +1,12 @@
-#include <mm/early.h>
+#include <mm/vmm.h>
+#include <mm/pmm.h>
+#include <setup.h>
 #include "physical.h"
 #include <memlist.h>
 #include <mm/memmap.h>
 #include "paging.h"
 #include "vmm.h"
-#include <mm.h>
+#include <alloc.h>
 #include <errno.h>
 #include <print.h>
 #include "vkernel.h"

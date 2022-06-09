@@ -4,7 +4,7 @@
 #include "paging.h"
 
 #include <asm/cpu.h>
-#include <mm.h>
+#include <alloc.h>
 #include <print.h>
 
 static void print_vmmap_pt(union pte * pt, uint64_t base)

@@ -17,8 +17,8 @@
 #include <firmware/efiapi/system_table.h>
 #include <firmware/efiapi/console.h>
 #include <fonts.h>
-#include <mm.h>
-#include <mm/early.h>
+#include <alloc.h>
+#include <mm/vmm.h>
 #include <print.h>
 #include <debug.h>
 #include <string.h>

@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #include <string.h>
-#include <mm.h>
+#include <alloc.h>
 #include <print.h>
 
 static int init_tss(struct tss * tss, void * kernel_stack)

@@ -13,7 +13,7 @@
 #include <cpu.h>
 #include <asm/io.h>
 #include <print.h>
-#include <mm.h>
+#include <alloc.h>
 #include <module.h>
 #include "clock.h"
 

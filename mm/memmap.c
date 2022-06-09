@@ -4,8 +4,8 @@
 
 #include <errno.h>
 
-#include <mm.h>
-#include <mm/helper.h>
+#include <alloc.h>
+#include <mm/align.h>
 #include <kconfig.h>
 
 #if IS_ENABLED(CONFIG_MM_DEBUG)

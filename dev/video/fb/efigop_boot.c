@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "fb.h"
-#include <mm.h>
+#include <alloc.h>
 #include <mm/early.h>
 #include <print.h>
 #include <firmware/efistub.h>

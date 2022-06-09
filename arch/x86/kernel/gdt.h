@@ -10,7 +10,7 @@
 #include <cpp.h>
 #include <asm/asm.h>
 #include "isr.h"
-#include <mm.h>
+#include <alloc.h>
 
 struct PACKED gdt_desc {
 	unsigned limit_low : 16;

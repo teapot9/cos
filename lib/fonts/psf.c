@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <stdbool.h>
 
-#include <mm.h>
+#include <alloc.h>
 #include <unicode.h>
 
 static inline bool psf_eof(const struct psf_font * font,

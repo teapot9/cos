@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 #include "vmm.h"
-#include <mm/helper.h>
-#include <mm.h>
+#include <mm/block.h>
+#include <alloc.h>
 #include <asm/asm.h>
 #include <cpp.h>
 

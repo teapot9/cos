@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+
+import sys
+import guard
+
+extern, g = guard.get_guard(sys.argv[1])
+
+print(f'#ifndef {g}')
+print(f'#define {g}')
+if extern:
+    print('#ifdef __cplusplus')
+    print('extern "C" {')
+    print('#endif')
+print()
+if extern:
+    print('#ifdef __cplusplus')
+    print('} // extern "C"')
+    print('#endif')
+print(f'#endif // {g}')

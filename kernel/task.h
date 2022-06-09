@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <cpp.h>
 #include <isr.h>
-#include <mm.h>
+#include <alloc.h>
 #include <task.h>
 #include <lock.h>
 #include <kconfig.h>
@@ -19,7 +19,7 @@ struct cpu;
 struct semaphore_list;
 
 struct tlist {
-	struct thread thread;
+	struct thread __attribute__((aligned(THREAD_STRUCT_ALIGN))) thread;
 	struct tlist * next;
 };
 

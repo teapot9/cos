@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include <mm.h>
+#include <alloc.h>
 
 #define USER_SPACE_START (void *) 0x0
 #define USER_SPACE_END (void *) 0x00007fffffffffff

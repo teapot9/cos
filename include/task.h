@@ -15,6 +15,7 @@ extern "C" {
 #define MAX_PID 1024
 #define KSTACK_SIZE CONFIG_KERNEL_FRAME_SIZE
 #define KSTACK_ALIGN 0x10
+#define THREAD_STRUCT_ALIGN KSTACK_ALIGN
 
 struct cpu;
 struct process;
@@ -40,7 +41,7 @@ struct thread {
 	struct process * parent;
 	size_t tid;
 	_Atomic enum tstate state;
-	uint8_t kstack[KSTACK_SIZE + KSTACK_ALIGN];
+	uint8_t __attribute__((aligned(KSTACK_ALIGN))) kstack[KSTACK_SIZE];
 	struct interrupt_frame task_state;
 	void * stack;
 	struct cpu * running;

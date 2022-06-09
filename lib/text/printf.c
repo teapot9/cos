@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include <string.h>
-#include <mm.h>
+#include <alloc.h>
 #include <strtox.h>
 
 #define STR_BUFSIZE 256

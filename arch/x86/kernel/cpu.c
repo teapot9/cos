@@ -8,8 +8,7 @@
 #include <panic.h>
 #include <task.h>
 #include <string.h>
-#include <mm.h>
-#include <mm/helper.h>
+#include <alloc.h>
 #include <print.h>
 #include <device.h>
 #include "gdt.h"
@@ -52,14 +51,11 @@ int cpu_reg(const struct device ** dev)
 {
 	int err;
 	size_t nproc = 0;
-	struct cpu * cpu = NULL;
 
-	void * cpu_ptr = malloc(sizeof(*cpu) + CPU_ALIGN);
-	if (cpu_ptr == NULL)
+	struct cpu * cpu = kmalloc(sizeof(*cpu), CPU_ALIGN);
+	if (cpu == NULL)
 		return -ENOMEM;
-	cpu = aligned(cpu_ptr, CPU_ALIGN);
 
-	cpu->alloc_ptr = cpu_ptr;
 	cpu->running = NULL;
 	cpu->state = NULL;
 

@@ -2,7 +2,8 @@
 
 #include <assert.h>
 
-#include <mm.h>
+#include <mm/pmm.h>
+#include <alloc.h>
 #include <cpp.h>
 #include "vmm.h"
 #include "paging.h"

@@ -11,7 +11,7 @@
 #include <cpu.h>
 #include <sched.h>
 #include <task.h>
-#include <mm.h>
+#include <alloc.h>
 
 extern initcall_entry_t __initcall_early[];
 extern initcall_entry_t __initcall_core[];

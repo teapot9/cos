@@ -1,6 +1,6 @@
 #define pr_fmt(fmt) "kmm: " fmt
 
-#include <mm.h>
+#include <alloc.h>
 #include "kmm.h"
 
 #include <string.h>
@@ -11,9 +11,11 @@
 #include <cpu.h>
 #include <lock.h>
 #include <print.h>
-#include <mm.h>
+#include <alloc.h>
 #include <cpp.h>
-#include <mm/helper.h>
+#include <mm/align.h>
+#include <mm/block.h>
+#include <mm/vmm.h>
 
 #undef malloc
 #undef kmalloc
