@@ -470,7 +470,7 @@ void * page_find_free(pid_t pid, size_t size, size_t align, void * start) {
 	size_t current_psize = target_page_size(size);
 	void * _start = pid ? USER_SPACE_START : KERNEL_SPACE_START;
 	uint8_t * real_start = start < _start ? _start : start;
-	real_start = aligned(aligned(real_start, align), current_psize);
+	real_start = aligned_up(aligned_up(real_start, align), current_psize);
 	bool kmem = is_kmem(real_start, size);
 
 	bool is_first_iter = true;

@@ -58,7 +58,7 @@ void * palloc(pid_t pid, size_t size, size_t align)
 		pr_crit("cannot find %zu bytes of pmem\n", size);
 		return NULL;
 	}
-	void * paddr = aligned(found->l.addr, align);
+	void * paddr = aligned_up(found->l.addr, align);
 	int err = pmap(pid, paddr, size);
 	if (err) {
 		pr_err("cannot allocate %zu bytes of pmem, errno = %d\n",

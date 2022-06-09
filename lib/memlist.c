@@ -123,7 +123,7 @@ struct memlist_elt * memlist_search(
 {
 	struct memlist_elt * cur;
 	list_foreach(cur, l->l.first) {
-		if (cur->size - align_diff(cur->addr, align) >= size)
+		if (cur->size - align_diff_up(cur->addr, align) >= size)
 			return cur;
 	}
 	return NULL;
