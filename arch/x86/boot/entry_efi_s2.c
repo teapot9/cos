@@ -65,7 +65,7 @@ noreturn void entry_efi_s2(const struct entry_efi_data * info)
 		pr_info("Early init: EFI stub\n", 0);
 
 	/* pmm */
-	memmap_print(info->pmemmap, "pmemmap");
+	memmap_dump(info->pmemmap, "pmemmap");
 	pmm_init(info->pmemmap);
 	pr_info("Early init: PMM\n", 0);
 

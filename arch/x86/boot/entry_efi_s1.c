@@ -122,7 +122,7 @@ noreturn void entry_efi_s1(efi_handle_t image_handle,
 	}
 	pr_info("Early init: exited boot services\n", 0);
 #if IS_ENABLED(CONFIG_MM_DEBUG)
-	memmap_print(&map, "pmemmap");
+	memmap_dump(&map, "pmemmap");
 #endif
 
 #if IS_ENABLED(CONFIG_SERIAL_EARLY_DEBUG)
@@ -175,7 +175,7 @@ noreturn void entry_efi_s1(efi_handle_t image_handle,
 			      err);
 	}
 	boot_data.pmemmap = &kpmemmap;
-	memmap_print(boot_data.pmemmap, "new pmemmap");
+	memmap_dump(boot_data.pmemmap, "new pmemmap");
 
 	/* Save bootloader memory */
 	bootloader_mem = memlist_new_default();

@@ -27,7 +27,7 @@ int pmap(pid_t pid, void * paddr, size_t size)
 		pr_warn("physical mapping of size %zu "
 		        "bytes is not multiple of 4096\n", size);
 
-	struct memmap_elt * found = memmap_get(&memmap, paddr, size, true);
+	struct memmap_elt * found = memmap_find_addr(&memmap, paddr, size, true);
 	if (found == NULL)
 		return -ENOENT;
 	if (pid != 0) {
@@ -53,7 +53,7 @@ void * palloc(pid_t pid, size_t size, size_t align)
 		return NULL;
 
 	struct memmap_elt * found =
-		memmap_search(&memmap, size, align, MEMORY_TYPE_FREE, 0);
+		memmap_find_size(&memmap, size, align, MEMORY_TYPE_FREE, 0);
 	if (found == NULL) {
 		pr_crit("cannot find %zu bytes of pmem\n", size);
 		return NULL;
@@ -79,7 +79,7 @@ void punmap(pid_t pid, void * paddr, size_t size)
 		return;
 	}
 
-	struct memmap_elt * found = memmap_get(&memmap, paddr, size, true);
+	struct memmap_elt * found = memmap_find_addr(&memmap, paddr, size, true);
 	if (found == NULL
 	    || found->type != MEMORY_TYPE_USED
 	    || found->owner != pid)

@@ -283,7 +283,7 @@ static int register_efi_memmap_desc(
 #if IS_ENABLED(CONFIG_MM_DEBUG)
 	pr_debug("register memmap [%p; %p] (%zu bytes): %s\n",
 		 memstart(desc), (uintptr_t) memstart(desc) + memsize(desc),
-		 memsize(desc), memmap_type_str(type));
+		 memsize(desc), memmap_strtype(type));
 #endif
 	return typeinfo;
 }

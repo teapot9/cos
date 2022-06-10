@@ -1,6 +1,5 @@
 #define pr_fmt(fmt) "mm: " fmt
 #include <mm/memmap.h>
-#include "memmap.h"
 
 #include <errno.h>
 
@@ -10,7 +9,7 @@
 
 #if IS_ENABLED(CONFIG_MM_DEBUG)
 #include <print.h>
-void memmap_print(struct memmap * map, const char * prefix)
+void memmap_dump(struct memmap * map, const char * prefix)
 {
 	struct memmap_elt * cur;
 	if (prefix == NULL)
@@ -18,7 +17,7 @@ void memmap_print(struct memmap * map, const char * prefix)
 	list_foreach(cur, map->l.l.first) {
 		pr_debug("%s: [%p; %p] (%zu bytes): %s\n", prefix,
 		         cur->l.addr, (uintptr_t) cur->l.addr + cur->l.size,
-		         cur->l.size, memmap_type_str(cur->type));
+		         cur->l.size, memmap_strtype(cur->type));
 	}
 }
 #endif
@@ -38,7 +37,7 @@ struct memmap memmap_new(void)
 	};
 }
 
-const char * memmap_type_str(enum memory_type type)
+const char * memmap_strtype(enum memory_type type)
 {
 	switch (type) {
 	case MEMORY_TYPE_RESERVED:
@@ -60,7 +59,7 @@ const char * memmap_type_str(enum memory_type type)
 	}
 }
 
-struct memmap_elt * memmap_search(
+struct memmap_elt * memmap_find_size(
 	struct memmap * map, size_t size, size_t align,
 	enum memory_type type, pid_t owner
 )
