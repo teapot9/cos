@@ -1,3 +1,8 @@
+/**
+ * @file mm/block.h
+ * @brief Memory block helpers
+ */
+
 #ifndef _MM_BLOCK_H
 #define _MM_BLOCK_H
 #ifdef __cplusplus

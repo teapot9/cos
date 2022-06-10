@@ -1,3 +1,8 @@
+/**
+ * @file mm/align.h
+ * @brief Memory alignment helpers
+ */
+
 #ifndef _MM_ALIGN_H
 #define _MM_ALIGN_H
 #ifdef __cplusplus

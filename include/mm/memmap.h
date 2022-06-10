@@ -1,3 +1,8 @@
+/**
+ * @file mm/memmap.h
+ * @brief Memory map data structure
+ */
+
 #ifndef MM_MEMMAP_H
 #define MM_MEMMAP_H
 #ifdef __cplusplus
