@@ -1,3 +1,8 @@
+/**
+ * @file mm/physical.h
+ * @brief Physical memory access
+ */
+
 #ifndef _MM_PHYSICAL_H
 #define _MM_PHYSICAL_H
 #ifdef __cplusplus

@@ -1,3 +1,8 @@
+/**
+ * @file mm/vmm.h
+ * @brief Virtual memory manager
+ */
+
 #ifndef _MM_VMM_H
 #define _MM_VMM_H
 #ifdef __cplusplus

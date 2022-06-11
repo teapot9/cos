@@ -1,3 +1,8 @@
+/**
+ * @file mm/pmm.h
+ * @brief Physical memory manager
+ */
+
 #ifndef _MM_PMM_H
 #define _MM_PMM_H
 #ifdef __cplusplus
