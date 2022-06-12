@@ -238,52 +238,6 @@ int elf64_mem_finalize(pid_t pid, void * start, size_t size) {
 	return 0;
 }
 
-int elf64_kernel_remap(void * start, size_t size) {
-	int err = elf64_check(start, size);
-	if (err)
-		return err;
-
-	Elf64_Ehdr * hdr = start;
-	Elf64_Phdr * phdr;
-	array_foreach_s(phdr, (uint8_t *) start + hdr->e_phoff,
-	                hdr->e_phentsize, hdr->e_phnum) {
-		pr_debug_header("elf64_mem_remap: ", phdr);
-
-		switch (phdr->p_type) {
-		case PT_LOAD:;
-			/* Map memory */
-			// pid cr3 does not map phdr->p_vaddr -> PF
-			void * paddr = virt_to_phys_current(phdr->p_vaddr);
-			if (paddr == NULL)
-				return -ENOENT;
-			size_t memsz = phdr->p_memsz;
-			int err = vmap(0, paddr, phdr->p_vaddr, &memsz);
-			if (err)
-				return err;
-
-			/* Set permissions */
-			bool exec = phdr->p_flags & PF_X;
-			bool user = false;
-			bool write = phdr->p_flags & PF_W;
-			err = vreset(0, phdr->p_vaddr, phdr->p_memsz,
-			             write, user, exec);
-			if (err)
-				return err;
-			break;
-		case PT_DYNAMIC:
-		case PT_NOTE:
-			break;
-		case PT_INTERP:
-		case PT_SHLIB:
-		case PT_PHDR:
-			return -ENOTSUP;
-		default:
-			return -EINVAL;
-		}
-	}
-	return 0;
-}
-
 int elf64_load(pid_t pid, void (** entry)(void), void * start, size_t size)
 {
 	int err = elf64_check(start, size);
