@@ -1,5 +1,4 @@
 #define pr_fmt(fmt) "pic: " fmt
-#include <pic.h>
 #include "pic.h"
 
 #include "irqdev.h"

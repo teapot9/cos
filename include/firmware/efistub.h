@@ -1,3 +1,8 @@
+/**
+ * @file firmware/efistub.h
+ * @brief EFI stub library
+ */
+
 #ifndef FIRMWARE_EFI_H
 #define FIRMWARE_EFI_H
 #ifdef __cplusplus
