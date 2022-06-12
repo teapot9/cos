@@ -1,3 +1,8 @@
+/**
+ * @file string.h
+ * @brief String operations
+ */
+
 #ifndef STRING_H
 #define STRING_H
 #ifdef __cplusplus
@@ -14,6 +19,11 @@ extern "C" {
  */
 size_t strlen(const char * s);
 
+/**
+ * @brief Copy a string into a newly allocated buffer
+ * @param s Source
+ * @return String (allocated with kmalloc)
+ */
 char * strdup(const char * s);
 
 /**
@@ -66,6 +76,13 @@ void memcpy(void * dst, void * src, size_t len);
  */
 void memset(void * dst, uint8_t data, size_t len);
 
+/**
+ * @brief Compare memory buffers
+ * @param p1 First buffer
+ * @param p2 Second buffer
+ * @param len How many bytes to compare
+ * @return If identical, zero; otherwise difference between the last bytes
+ */
 int memcmp(const void * p1, const void * p2, size_t len);
 
 #ifdef __cplusplus

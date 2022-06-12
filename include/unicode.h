@@ -1,3 +1,8 @@
+/**
+ * @file unicode.h
+ * @brief Unicode conversion
+ */
+
 #ifndef UNICODE_H
 #define UNICODE_H
 #ifdef __cplusplus
