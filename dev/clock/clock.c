@@ -67,7 +67,7 @@ int clock_reg(
 	return 0;
 }
 
-int clock_new(size_t msec, void (*callback)(void), size_t nbcall)
+int timer_new(size_t msec, void (*callback)(void), size_t nbcall)
 {
 	struct clock * clock = get_clock();
 	if (clock == NULL)
@@ -75,7 +75,7 @@ int clock_new(size_t msec, void (*callback)(void), size_t nbcall)
 	return clock->new(msec, callback, nbcall);
 }
 
-int clock_del(void (*callback)(void))
+int timer_del(void (*callback)(void))
 {
 	struct clock * clock = get_clock();
 	if (clock == NULL)

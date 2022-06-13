@@ -47,7 +47,7 @@ static int sched_init(void)
 	int err;
 	pr_debug("init\n", 0);
 
-	err = clock_new(300, callback_timer, 0);
+	err = timer_new(300, callback_timer, 0);
 	if (err)
 		return err;
 	err = isr_reg(ISR_YIELD, callback_yield);

@@ -1,3 +1,8 @@
+/**
+ * @file console.h
+ * @brief System console devices
+ */
+
 #ifndef CONSOLE_H
 #define CONSOLE_H
 #ifdef __cplusplus
@@ -6,10 +11,15 @@ extern "C" {
 
 struct device;
 
-// Use a struct kmsg {int lvl; int categ; char * msg};
-
-// Update console at driver initialization
-
+/**
+ * @brief Register a new console
+ * @param dev Parent device
+ * @param update Callback to update console
+ * @param clear Callback to clear console
+ * @param enable Callback to enable console
+ * @param disable Callback to disable console
+ * @return errno
+ */
 int console_reg(
 	const struct device * dev,
 	void (*update)(const struct device *),
@@ -18,10 +28,19 @@ int console_reg(
 	void (*disable)(const struct device *)
 );
 
+/**
+ * @brief Update consoles
+ */
 void console_update(void);
 
+/**
+ * @brief Clear consoles
+ */
 void console_clear(void);
 
+/**
+ * @brief Reset consoles
+ */
 void console_reset(void);
 
 #ifdef __cplusplus
