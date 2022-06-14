@@ -1,10 +1,11 @@
 #define pr_fmt(fmt) "text: " fmt
 
-#include <print.h>
+#include <printf.h>
 
 #include <stdarg.h>
 #include <stdint.h>
 
+#include <printk.h>
 #include <string.h>
 #include <alloc.h>
 #include <strtox.h>

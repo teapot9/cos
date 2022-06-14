@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include <alloc.h>
-#include <print.h>
+#include <printk.h>
 
 #if 0
 static void print_memmap_desc(struct memmap_desc * desc)

@@ -11,7 +11,7 @@
 #include <device.h>
 #include <console.h>
 #include <module.h>
-#include <print.h>
+#include <printk.h>
 #include <firmware/efiapi/console.h>
 #include <firmware/efiapi/efiapi.h>
 #include <firmware/efiapi/system_table.h>

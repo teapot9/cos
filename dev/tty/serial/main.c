@@ -4,7 +4,7 @@
 #include <setup.h>
 
 #include <module.h>
-#include <print.h>
+#include <printk.h>
 
 static bool is_init = false;
 

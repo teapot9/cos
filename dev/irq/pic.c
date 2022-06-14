@@ -4,7 +4,7 @@
 #include "irqdev.h"
 #include <cpu.h>
 #include <asm/io.h>
-#include <print.h>
+#include <printk.h>
 #include <module.h>
 #include <device.h>
 

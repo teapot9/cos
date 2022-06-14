@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #include "gdt.h"
-#include <print.h>
+#include <printk.h>
 #include <asm/asm.h>
 #include <string.h>
 

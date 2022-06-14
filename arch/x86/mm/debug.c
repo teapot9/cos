@@ -5,7 +5,7 @@
 
 #include <asm/cpu.h>
 #include <alloc.h>
-#include <print.h>
+#include <printk.h>
 
 static void print_vmmap_pt(union pte * pt, uint64_t base)
 {

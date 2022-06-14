@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <asm/cpu.h>
 #include <mm/vmm.h>
-#include <print.h>
+#include <printk.h>
 
 #ifndef BOOTLOADER
 #include <task.h>

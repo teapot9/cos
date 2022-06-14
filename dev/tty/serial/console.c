@@ -7,7 +7,7 @@
 #include <cpp.h>
 #include <device.h>
 #include <console.h>
-#include <print.h>
+#include <printk.h>
 
 #define VT100_RESET "\033c"
 #define VT100_CLEAR "\033[2J\033[1;1H"

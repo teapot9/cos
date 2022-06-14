@@ -6,7 +6,7 @@
 #include <asm/cpu.h>
 #include <alloc.h>
 #include <panic.h>
-#include <print.h>
+#include <printk.h>
 #include <debug.h>
 #include <asm/asm.h>
 #include <irq.h>

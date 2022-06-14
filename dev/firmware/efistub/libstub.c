@@ -5,7 +5,7 @@
 
 #include <errno.h>
 
-#include <print.h>
+#include <printk.h>
 #include <unicode.h>
 #include <kconfig.h>
 

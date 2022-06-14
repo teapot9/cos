@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <errno.h>
 
-#include <print.h>
+#include <printk.h>
 #include <alloc.h>
 #include <device.h>
 #include <module.h>

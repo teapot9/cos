@@ -8,7 +8,7 @@
 #include <stdbool.h>
 
 #include <panic.h>
-#include <print.h>
+#include <printk.h>
 #include <cpu.h>
 #include <task.h>
 #include "../task.h"

@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <errno.h>
 
-#include <print.h>
+#include <printk.h>
 #include <mm/align.h>
 #include <memlist.h>
 #include <mm/memmap.h>

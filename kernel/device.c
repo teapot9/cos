@@ -7,7 +7,8 @@
 
 #include <string.h>
 #include <alloc.h>
-#include <print.h>
+#include <printk.h>
+#include <printf.h>
 #include <module.h>
 
 static const struct module core_mod = {

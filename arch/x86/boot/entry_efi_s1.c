@@ -24,7 +24,8 @@
 #include <fonts.h>
 #include <alloc.h>
 #include <mm/vmm.h>
-#include <print.h>
+#include <printk.h>
+#include <printf.h>
 #include <debug.h>
 #include <string.h>
 #include <unicode.h>

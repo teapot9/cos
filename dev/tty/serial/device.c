@@ -7,7 +7,7 @@
 
 #include <device.h>
 #include <alloc.h>
-#include <print.h>
+#include <printk.h>
 #include <kconfig.h>
 
 static size_t serial_count = 0;

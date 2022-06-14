@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include <string.h>
-#include <print.h>
+#include <printk.h>
 #include <module.h>
 #include <alloc.h>
 #include <mm/early.h>

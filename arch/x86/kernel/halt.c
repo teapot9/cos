@@ -1,6 +1,6 @@
 #include <power.h>
 
-#include <print.h>
+#include <printk.h>
 #include <asm/asm.h>
 
 /* public: power.h */

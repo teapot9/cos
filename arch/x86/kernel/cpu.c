@@ -9,7 +9,7 @@
 #include <task.h>
 #include <string.h>
 #include <alloc.h>
-#include <print.h>
+#include <printk.h>
 #include <device.h>
 #include "gdt.h"
 #include "idt.h"

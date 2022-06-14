@@ -4,7 +4,7 @@
 #include "task.h"
 
 #include <lock.h>
-#include <print.h>
+#include <printk.h>
 #include <cpu.h>
 #include <panic.h>
 #include <alloc.h>

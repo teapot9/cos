@@ -12,7 +12,7 @@
 #include <device.h>
 #include <cpu.h>
 #include <asm/io.h>
-#include <print.h>
+#include <printk.h>
 #include <alloc.h>
 #include <module.h>
 #include "clock.h"

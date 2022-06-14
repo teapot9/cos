@@ -2,7 +2,7 @@
 
 #include <stdnoreturn.h>
 
-#include <print.h>
+#include <printk.h>
 
 /* public: power.h */
 WEAK noreturn void halt(void)

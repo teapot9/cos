@@ -8,7 +8,7 @@
 #include <kconfig.h>
 
 #if IS_ENABLED(CONFIG_MM_DEBUG)
-#include <print.h>
+#include <printk.h>
 void memmap_dump(struct memmap * map, const char * prefix)
 {
 	struct memmap_elt * cur;

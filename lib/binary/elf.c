@@ -9,7 +9,7 @@
 #include <mm/pmm.h>
 #include <mm/vmm.h>
 #include <alloc.h>
-#include <print.h>
+#include <printk.h>
 #include <string.h>
 #include <mm/physical.h>
 #include <mm/paging.h>

@@ -10,7 +10,7 @@
 
 #include <cpu.h>
 #include <lock.h>
-#include <print.h>
+#include <printk.h>
 #include <alloc.h>
 #include <cpp.h>
 #include <mm/align.h>

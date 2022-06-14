@@ -10,7 +10,7 @@
 #include "fb.h"
 #include <alloc.h>
 #include <mm/vmm.h>
-#include <print.h>
+#include <printk.h>
 #include <firmware/efistub.h>
 #include <firmware/efiapi/console.h>
 #include <string.h>

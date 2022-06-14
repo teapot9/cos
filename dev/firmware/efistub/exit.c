@@ -7,7 +7,7 @@
 
 #include <setup.h>
 #include <device.h>
-#include <print.h>
+#include <printk.h>
 #include <firmware/efiapi/efiapi.h>
 #include <firmware/efiapi/system_table.h>
 #include <firmware/efiapi/boot.h>

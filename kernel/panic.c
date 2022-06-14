@@ -1,7 +1,8 @@
 #include <panic.h>
 
 #include <stdarg.h>
-#include <print.h>
+#include <printk.h>
+#include <printf.h>
 #include <power.h>
 #include <cpu.h>
 

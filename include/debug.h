@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-#include <print.h>
+#include <printk.h>
 #include <kconfig.h>
 
 #if IS_ENABLED(CONFIG_DEBUG)

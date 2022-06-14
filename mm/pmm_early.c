@@ -8,7 +8,7 @@
 #include <errno.h>
 
 #include <cpp.h>
-#include <print.h>
+#include <printk.h>
 #include <memlist.h>
 #include <mm/memmap.h>
 #include <mm/pmm.h>

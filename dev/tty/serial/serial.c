@@ -4,7 +4,7 @@
 
 #include <errno.h>
 
-#include <print.h>
+#include <printk.h>
 #include <asm/io.h>
 #include <string.h>
 #include <kconfig.h>

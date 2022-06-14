@@ -9,7 +9,7 @@
 #include <console.h>
 #include <fonts.h>
 #include <video/fb.h>
-#include <print.h>
+#include <printk.h>
 #include <alloc.h>
 #include "fb.h"
 

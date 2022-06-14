@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <memlist.h>
 #include <mm/memmap.h>
-#include <print.h>
+#include <printk.h>
 
 void * const physical_map = KERNEL_SPACE_START;
 

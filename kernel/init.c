@@ -4,7 +4,7 @@
 
 #include <lock.h>
 #include <debug.h>
-#include <print.h>
+#include <printk.h>
 #include <module.h>
 #include <power.h>
 #include <panic.h>

@@ -5,7 +5,7 @@
 
 #include <string.h>
 #include <alloc.h>
-#include <print.h>
+#include <printk.h>
 
 static int init_tss(struct tss * tss, void * kernel_stack)
 {

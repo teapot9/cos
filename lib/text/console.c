@@ -12,7 +12,7 @@
 #include <module.h>
 #include <alloc.h>
 #include <string.h>
-#include <print.h>
+#include <printk.h>
 
 static size_t console_count = 0;
 static size_t console_max = 0;

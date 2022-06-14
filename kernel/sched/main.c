@@ -7,7 +7,7 @@
 
 #include <asm/asm.h>
 #include <cpp.h>
-#include <print.h>
+#include <printk.h>
 #include <clock.h>
 #include <cpu.h>
 #include <task.h>

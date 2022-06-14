@@ -4,7 +4,8 @@
 
 #include <stdbool.h>
 
-#include <print.h>
+#include <printk.h>
+#include <printf.h>
 #include <task.h>
 
 #define VALUE_BUFFER 32

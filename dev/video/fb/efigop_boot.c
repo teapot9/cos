@@ -10,13 +10,13 @@
 #include "fb.h"
 #include <alloc.h>
 #include <mm/early.h>
-#include <print.h>
+#include <printk.h>
 #include <firmware/efistub.h>
 #include <firmware/efiapi/console.h>
 #include <string.h>
 #include <video/fb.h>
 #include <console.h>
-#include <print.h>
+#include <printk.h>
 
 static void print_current_mode(struct gop * gop)
 {

@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <stdatomic.h>
 
-#include <print.h>
+#include <printk.h>
 #include <sched.h>
 #include <task.h>
 #include <cpu.h>

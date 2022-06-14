@@ -8,7 +8,7 @@
 #include "vmm.h"
 #include <alloc.h>
 #include <errno.h>
-#include <print.h>
+#include <printk.h>
 #include "vkernel.h"
 #include <asm/cpu.h>
 

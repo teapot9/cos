@@ -11,7 +11,7 @@
 #include <firmware/efiapi/loaded_image.h>
 #include <device.h>
 #include <module.h>
-#include <print.h>
+#include <printk.h>
 
 const struct module efistub_mod = {
 	.name = "efistub",

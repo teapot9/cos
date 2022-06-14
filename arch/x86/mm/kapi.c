@@ -4,7 +4,7 @@
 
 #include <mm/pmm.h>
 #include <mm/vmm.h>
-#include <print.h>
+#include <printk.h>
 #include <mm/paging.h>
 #include "paging.h"
 #include <kconfig.h>
