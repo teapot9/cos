@@ -1,3 +1,5 @@
+#include <test/compiler.h>
+
 #include <new.h>
 #include <setup.h>
 

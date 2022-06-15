@@ -12,6 +12,7 @@
 #include <sched.h>
 #include <task.h>
 #include <alloc.h>
+#include <test/compiler.h>
 
 extern initcall_entry_t __initcall_early[];
 extern initcall_entry_t __initcall_core[];
