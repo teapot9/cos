@@ -1,3 +1,8 @@
+/**
+ * @file errno.h
+ * @brief errno definitions
+ */
+
 #ifndef ERRNO_H
 #define ERRNO_H
 #ifdef __cplusplus

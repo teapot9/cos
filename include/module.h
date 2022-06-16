@@ -1,3 +1,8 @@
+/**
+ * @file module.h
+ * @brief Kernel module functions
+ */
+
 #ifndef MODULE_H
 #define MODULE_H
 #ifdef __cplusplus

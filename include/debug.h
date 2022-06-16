@@ -1,3 +1,8 @@
+/**
+ * @file debug.h
+ * @brief Debugging
+ */
+
 #ifndef DEBUG_H
 #define DEBUG_H
 #ifdef __cplusplus
@@ -7,6 +12,12 @@ extern "C" {
 #include <printk.h>
 #include <kconfig.h>
 
+/**
+ * @brief Breakpoint
+ *
+ * CONFIG_DEBUG enabled: suspend execution until debugger resume.
+ * CONFIG_DEBUG disabled: print warning and continue execution.
+ */
 #if IS_ENABLED(CONFIG_DEBUG)
 # ifndef BOOTLOADER
 #  include <asm/asm.h>

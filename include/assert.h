@@ -1,11 +1,23 @@
+/**
+ * @file assert.h
+ * @brief Assertion
+ */
+
 #ifndef ASSERT_H
 #define ASSERT_H
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/**
+ * @brief Assertion
+ * @param expr Expression to test
+ *
+ * If expr == false, cause kernel panic. If expr == true or NDEBUG defined,
+ * no-op.
+ */
 #ifdef NDEBUG
-# define assert(ignore)((void) 0)
+# define assert(expr)((void) 0)
 #else
 # include <panic.h>
 # define assert(expr) do { \
