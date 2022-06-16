@@ -19,7 +19,7 @@ struct cpu;
 struct semaphore_list;
 
 struct tlist {
-	struct thread __attribute__((aligned(THREAD_STRUCT_ALIGN))) thread;
+	struct thread _aligned_(THREAD_STRUCT_ALIGN) thread;
 	struct tlist * next;
 };
 

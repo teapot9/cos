@@ -15,8 +15,8 @@ void __cxa_guard_release(int64_t * guard_object);
 void __cxa_guard_abort(int64_t * guard_object);
 
 extern void * __dso_handle;
-int __cxa_atexit(UNUSED void (* f)(void *), UNUSED void * p, UNUSED void * d);
-void __cxa_finalize(UNUSED void * d);
+int __cxa_atexit(_unused_ void (* f)(void *), _unused_ void * p, _unused_ void * d);
+void __cxa_finalize(_unused_ void * d);
 
 #if 0 // not implemented
 char* __cxa_demangle(const char * mangled_name,

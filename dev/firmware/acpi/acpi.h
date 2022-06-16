@@ -17,14 +17,14 @@ enum acpi_version {
 };
 
 union rsdp {
-	struct PACKED rsdp1 {
+	struct _packed_ rsdp1 {
 		char sig[8];
 		uint8_t csum;
 		char oem_id[6];
 		uint8_t rev;
 		uint32_t phy_rsdt_ptr;
 	} rsdp1;
-	struct PACKED rsdp2 {
+	struct _packed_ rsdp2 {
 		char sig[8];
 		uint8_t csum;
 		char oem_id[6];
@@ -37,7 +37,7 @@ union rsdp {
 	} rsdp2;
 };
 
-struct PACKED description_header {
+struct _packed_ description_header {
 	char sig[4];
 	uint32_t length;
 	uint8_t rev;
@@ -49,17 +49,17 @@ struct PACKED description_header {
 	uint32_t creator_rev;
 };
 
-struct PACKED rsdt {
+struct _packed_ rsdt {
 	struct description_header hdr;
 	uint32_t phy_entry_ptr[];
 };
 
-struct PACKED xsdt {
+struct _packed_ xsdt {
 	struct description_header hdr;
 	uint64_t phy_entry_ptr[];
 };
 
-struct PACKED fadt {
+struct _packed_ fadt {
 	struct description_header hdr;
 	uint32_t phy_firmware_ctrl;
 	uint32_t phy_dsdt;

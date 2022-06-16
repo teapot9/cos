@@ -5,7 +5,7 @@
 
 #include <isr.h>
 
-struct PACKED cpu_interrupt_frame {
+struct _packed_ cpu_interrupt_frame {
 	uword_t ip;
 	uword_t cs;
 	uword_t flags;

@@ -23,7 +23,7 @@ void * physical_tmp_map(void * paddr)
 	return (uint8_t *) physical_map + (size_t) paddr;
 }
 
-void physical_tmp_unmap(UNUSED void * vaddr)
+void physical_tmp_unmap(_unused_ void * vaddr)
 {
 	// noop
 }

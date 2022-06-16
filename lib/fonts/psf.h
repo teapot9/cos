@@ -6,6 +6,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <cpp.h>
+
 #define PSF1_MAGIC 0x0436
 #define PSF1_MAGIC0 0x36
 #define PSF1_MAGIC1 0x04
@@ -20,7 +22,7 @@
 #define PSF1_SEPARATOR  0xFFFF
 #define PSF1_STARTSEQ   0xFFFE
 
-struct __attribute__((packed)) psf1_header {
+struct _packed_ psf1_header {
 	uint16_t magic;
 	// uint8_t mode;
 	bool mode_has_seq : 1;
@@ -54,7 +56,7 @@ static_assert(sizeof(struct psf1_header) == 4,
 #define PSF2_SEPARATOR  0xFF
 #define PSF2_STARTSEQ   0xFE
 
-struct __attribute__((packed)) psf2_header {
+struct _packed_ psf2_header {
 	uint32_t magic;
 	uint32_t version;
 	uint32_t headersize;    /* offset of bitmaps in file */

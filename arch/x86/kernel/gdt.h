@@ -12,7 +12,7 @@
 #include "isr.h"
 #include <alloc.h>
 
-struct PACKED gdt_desc {
+struct _packed_ gdt_desc {
 	unsigned limit_low : 16;
 	unsigned base_low : 24;
 	bool ac : 1;
@@ -31,20 +31,20 @@ struct PACKED gdt_desc {
 };
 static_assert(sizeof(struct gdt_desc) == 8, "gdt_desc should be 8 bytes");
 
-struct PACKED tss_desc {
+struct _packed_ tss_desc {
 	struct gdt_desc gdt;
 	unsigned base_higher : 32;
 	unsigned _zero0 : 32;
 };
 static_assert(sizeof(struct tss_desc) == 16, "tss_desc should be 16 bytes");
 
-struct PACKED gdtr {
+struct _packed_ gdtr {
 	uint16_t size;
 	struct gdt * offset;
 };
 static_assert(sizeof(struct gdtr) == 10, "gdtr should be 10 bytes");
 
-struct PACKED tss {
+struct _packed_ tss {
 	uint32_t _reserved0;
 	uint64_t rsp0;
 	uint64_t rsp1;
@@ -62,7 +62,7 @@ struct PACKED tss {
 	uint16_t iopb_offset;
 };
 
-struct PACKED gdt {
+struct _packed_ gdt {
 	struct gdt_desc null;
 	struct gdt_desc kernel_code;
 	struct gdt_desc kernel_data;

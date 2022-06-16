@@ -16,7 +16,7 @@ enum idt_gate_type {
 	INT_TRAP_GATE = 0xF,
 };
 
-struct PACKED idt_desc {
+struct _packed_ idt_desc {
 	long unsigned offset_low : 16;
 	uint16_t segment;
 	unsigned ist : 3;
@@ -29,7 +29,7 @@ struct PACKED idt_desc {
 };
 static_assert(sizeof(struct idt_desc) == 16, "idt_desc must be 16 bytes");
 
-struct PACKED idtr {
+struct _packed_ idtr {
 	uint16_t limit;
 	struct idt_desc * idt;
 };

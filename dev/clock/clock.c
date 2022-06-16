@@ -33,7 +33,7 @@ static void new_def_clock(void)
 	def_clock = dev;
 }
 
-static int reg(UNUSED const struct device * dev)
+static int reg(_unused_ const struct device * dev)
 {
 	new_def_clock();
 	return 0;

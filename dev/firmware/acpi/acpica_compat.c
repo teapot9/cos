@@ -23,7 +23,7 @@ ACPI_PHYSICAL_ADDRESS AcpiOsGetRootPointer(void)
 }
 
 ACPI_STATUS AcpiOsPredefinedOverride(
-	UNUSED const ACPI_PREDEFINED_NAMES * PredefinedObject,
+	_unused_ const ACPI_PREDEFINED_NAMES * PredefinedObject,
 	ACPI_STRING * NewValue
 )
 {
@@ -32,7 +32,7 @@ ACPI_STATUS AcpiOsPredefinedOverride(
 }
 
 ACPI_STATUS AcpiOsTableOverride(
-	UNUSED ACPI_TABLE_HEADER *ExistingTable, ACPI_TABLE_HEADER **NewTable
+	_unused_ ACPI_TABLE_HEADER *ExistingTable, ACPI_TABLE_HEADER **NewTable
 )
 {
 	*NewTable = NULL;

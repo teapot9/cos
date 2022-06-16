@@ -221,7 +221,7 @@ enum st_info_type {
 	STT_HIPROC = 15,
 };
 
-struct PACKED st_info {
+struct _packed_ st_info {
 	unsigned type : 4;
 	unsigned binding : 4;
 };

@@ -7,14 +7,15 @@
 #include <kconfig.h>
 
 #include <alloc.h>
+#include <cpp.h>
 #if IS_ENABLED(CONFIG_FONT_PSF)
 #include "psf.h"
 #endif
 
 #if IS_ENABLED(CONFIG_FONT_PSF)
-#define UNUSED_IF_NO_FONT
+#define _unused_if_no_font_
 #else
-#define UNUSED_IF_NO_FONT __attribute__((unused))
+#define _unused_if_no_font_ _unused_
 #endif
 
 #if 1
@@ -42,8 +43,8 @@ int font_load_default(const struct font ** dst_font)
 
 /* public: fonts.h */
 int font_new(const struct font ** dst_font,
-             UNUSED_IF_NO_FONT const void * file,
-             UNUSED_IF_NO_FONT size_t len)
+             _unused_if_no_font_ const void * file,
+             _unused_if_no_font_ size_t len)
 {
 	if (dst_font == NULL)
 		return -EINVAL;
@@ -88,9 +89,9 @@ void font_free(const struct font * font)
 }
 
 /* public: fonts.h */
-int font_bitmap(UNUSED_IF_NO_FONT bool * dst,
+int font_bitmap(_unused_if_no_font_ bool * dst,
                 const struct font * font,
-                UNUSED_IF_NO_FONT uint32_t uc)
+                _unused_if_no_font_ uint32_t uc)
 {
 	switch (font->type) {
 #if IS_ENABLED(CONFIG_FONT_PSF)

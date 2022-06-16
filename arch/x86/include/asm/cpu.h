@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#include <cpp.h>
 #include <asm/asm.h>
 
 static inline uint64_t read_cr0(void)
@@ -67,7 +68,7 @@ static inline void write_msr(uint32_t msr, uint64_t val)
 	);
 }
 
-struct __attribute__((packed)) cr4 {
+struct _packed_ cr4 {
 	bool vme : 1;
 	bool pvi : 1;
 	bool tsd : 1;

@@ -102,7 +102,7 @@ extern "C" {
  * @param ... Arguments to use for formatting
  * @return Number of characters written, excluding NUL
  */
-size_t printk(const char * fmt, ...) ISR_AVAILABLE;
+size_t printk(const char * fmt, ...) _isr_available_;
 
 /**
  * @brief Format and write a string to the console
@@ -110,7 +110,7 @@ size_t printk(const char * fmt, ...) ISR_AVAILABLE;
  * @param ap Arguments to use for formatting
  * @return Number of characters written, excluding NUL
  */
-size_t vprintk(const char * fmt, va_list ap) ISR_AVAILABLE;
+size_t vprintk(const char * fmt, va_list ap) _isr_available_;
 
 /**
  * @brief Get the next kernel message

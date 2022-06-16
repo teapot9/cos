@@ -11,14 +11,14 @@
 #define KERNEL_PDPT_COUNT 256
 
 struct full_pml4 {
-	union pml4e ALIGNED(PAGE_TABLE_SIZE) entries[PAGE_TABLE_ELEMENTS];
+	union pml4e _aligned_(PAGE_TABLE_SIZE) entries[PAGE_TABLE_ELEMENTS];
 };
 struct full_pdpt {
-	union pdpte ALIGNED(PAGE_TABLE_SIZE) entries[PAGE_TABLE_ELEMENTS];
+	union pdpte _aligned_(PAGE_TABLE_SIZE) entries[PAGE_TABLE_ELEMENTS];
 };
 
-static struct full_pml4 ALIGNED(PAGE_TABLE_SIZE) kpml4;
-static struct full_pdpt ALIGNED(PAGE_TABLE_SIZE) kpdpt[KERNEL_PDPT_COUNT];
+static struct full_pml4 _aligned_(PAGE_TABLE_SIZE) kpml4;
+static struct full_pdpt _aligned_(PAGE_TABLE_SIZE) kpdpt[KERNEL_PDPT_COUNT];
 
 int vkernel_map_kmem(union pml4e * pml4) {
 	int err;
@@ -96,7 +96,7 @@ int vkernel_init(void) {
 
 int vkernel_identity_paging(void) {
 	/* This function expect virtual memory to be identity mapped */
-	static struct full_pdpt ALIGNED(PAGE_TABLE_SIZE) identity;
+	static struct full_pdpt _aligned_(PAGE_TABLE_SIZE) identity;
 	int err;
 
 	/* Create PDPT0 */

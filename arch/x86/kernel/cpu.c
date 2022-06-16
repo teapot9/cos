@@ -89,7 +89,7 @@ noreturn void cpu_start(void)
 {
 	struct cpu * cpu = cpu_current();
 
-	struct interrupt_frame base_frame __attribute__((aligned(16)));
+	struct interrupt_frame base_frame _aligned_(16);
 	cpu->state = &base_frame;
 
 	struct thread * next;

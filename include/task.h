@@ -67,7 +67,7 @@ struct thread {
 	/// Current state
 	_Atomic enum tstate state;
 	/// Thread kernel stack
-	uint8_t __attribute__((aligned(KSTACK_ALIGN))) kstack[KSTACK_SIZE];
+	uint8_t _aligned_(KSTACK_ALIGN) kstack[KSTACK_SIZE];
 	/// CPU state (used for interrupts and syscalls)
 	struct interrupt_frame task_state;
 	/// Thread standard stack pointer

@@ -20,7 +20,7 @@ extern "C" {
  *
  * This function never returns.
  */
-noreturn void panic(const char * fmt, ...) ISR_AVAILABLE;
+noreturn void panic(const char * fmt, ...) _isr_available_;
 
 #ifdef __cplusplus
 }

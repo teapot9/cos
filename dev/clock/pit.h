@@ -15,7 +15,7 @@
 #define PIT_IO_CHAN2 0x42
 #define PIT_IO_CMD 0x43
 
-struct PACKED pit_cmd {
+struct _packed_ pit_cmd {
 	bool bcd_mode : 1;
 	enum op_mode {
 		OP_INTERRUPT_TERMINAL = 0,

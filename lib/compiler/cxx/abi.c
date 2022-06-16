@@ -59,12 +59,12 @@ void __cxa_guard_abort(int64_t * guard_object)
 
 void * __dso_handle = (void *) &__dso_handle;
 
-int __cxa_atexit(UNUSED void (* f)(void *), UNUSED void * p, UNUSED void * d)
+int __cxa_atexit(_unused_ void (* f)(void *), _unused_ void * p, _unused_ void * d)
 {
 	return 0; // atexit functions are never called
 }
 
-void __cxa_finalize(UNUSED void * d)
+void __cxa_finalize(_unused_ void * d)
 {
 	// noop
 }

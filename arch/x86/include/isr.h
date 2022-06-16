@@ -17,7 +17,7 @@ typedef unsigned int uword_t;
 # error Unknown architecture type
 #endif
 
-struct PACKED interrupt_frame {
+struct _packed_ interrupt_frame {
 	uword_t ds;
 	uword_t es;
 	uword_t fs;

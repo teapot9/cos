@@ -51,7 +51,7 @@ static void mask(unsigned i)
 	outb(pic, inb(pic) | 1 << offset);
 }
 
-static void eoi(UNUSED const struct device * dev, unsigned irq)
+static void eoi(_unused_ const struct device * dev, unsigned irq)
 {
 	struct icw1 cmd = {.eoi = true, 0};
 	if (irq >= 8)
@@ -59,7 +59,7 @@ static void eoi(UNUSED const struct device * dev, unsigned irq)
 	outb(PIC1_CMD, *(uint8_t *) &cmd);
 }
 
-static void update(UNUSED const struct device * dev, bool irqs[IRQ_CNT])
+static void update(_unused_ const struct device * dev, bool irqs[IRQ_CNT])
 {
 	for (unsigned i = 0; i < IRQ_CNT; i++) {
 		if (irqs[i])
@@ -75,7 +75,7 @@ static int enable(const struct device * dev, bool irqs[IRQ_CNT])
 	return 0;
 }
 
-static void disable(UNUSED const struct device * dev)
+static void disable(_unused_ const struct device * dev)
 {
 	outb(PIC2_DATA, 0xFF);
 	outb(PIC1_DATA, 0xFF);
@@ -91,7 +91,7 @@ static int reg(const struct device * dev)
 	return irqdev_reg(NULL, dev, enable, disable, update, eoi);
 }
 
-static void unreg(UNUSED const struct device * dev)
+static void unreg(_unused_ const struct device * dev)
 {
 }
 

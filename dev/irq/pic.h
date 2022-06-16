@@ -11,7 +11,7 @@
 #define PIC2_CMD 0xA0
 #define PIC2_DATA 0xA1
 
-struct PACKED icw1 {
+struct _packed_ icw1 {
 	bool icw4 : 1;
 	bool single : 1;
 	bool interval4 : 1;
@@ -22,7 +22,7 @@ struct PACKED icw1 {
 };
 static_assert(sizeof(struct icw1) == 1, "icw1 must be 1 byte");
 
-struct PACKED icw4 {
+struct _packed_ icw4 {
 	bool m8086 : 1;
 	bool auto_eoi : 1;
 	bool buf_master : 1; // need buf_slave = true

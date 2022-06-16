@@ -22,14 +22,14 @@
 /* Data types */
 
 union cr3 {
-	struct __attribute__((packed)) cr3_normal {
+	struct _packed_ cr3_normal {
 		unsigned int _ignored1 : 3;
 		bool pwt : 1;
 		bool pcd : 1;
 		unsigned int _ignored2 : 7;
 		unsigned long int table : 52;
 	} normal;
-	struct __attribute__((packed)) cr3_pcide {
+	struct _packed_ cr3_pcide {
 		unsigned int pcid : 12;
 		unsigned long int table : 52;
 	} pcide;
@@ -37,7 +37,7 @@ union cr3 {
 static_assert(sizeof(union cr3) == 8, "cr3 must be 64 bits");
 
 union pml4e {
-	struct __attribute__((packed)) pml4_pdpt {
+	struct _packed_ pml4_pdpt {
 		bool p : 1;
 		bool rw : 1;
 		bool us : 1;
@@ -51,7 +51,7 @@ union pml4e {
 		unsigned int _ignored3 : 11;
 		bool xd : 1;
 	} pdpt;
-	struct __attribute__((packed)) pml4_absent {
+	struct _packed_ pml4_absent {
 		bool p : 1;
 		unsigned long int _ignored1 : 63;
 	} absent;
@@ -60,7 +60,7 @@ static_assert(sizeof(union pml4e) == 8 && sizeof(struct pml4_pdpt) == 8
               && sizeof(struct pml4_absent) == 8, "pml4e must be 64 bits");
 
 union pdpte {
-	struct __attribute__((packed)) pdpt_page {
+	struct _packed_ pdpt_page {
 		bool p : 1;
 		bool rw : 1;
 		bool us : 1;
@@ -78,7 +78,7 @@ union pdpte {
 		unsigned int pk : 4;
 		bool xd : 1;
 	} page;
-	struct __attribute__((packed)) pdpt_pd {
+	struct _packed_ pdpt_pd {
 		bool p : 1;
 		bool rw : 1;
 		bool us : 1;
@@ -92,7 +92,7 @@ union pdpte {
 		unsigned int _ignored3 : 11;
 		bool xd : 1;
 	} pd;
-	struct __attribute__((packed)) pdpt_absent {
+	struct _packed_ pdpt_absent {
 		bool p : 1;
 		unsigned long int _ignored1 : 63;
 	} absent;
@@ -102,7 +102,7 @@ static_assert(sizeof(union pdpte) == 8 && sizeof(struct pdpt_page) == 8
               "pdpte must be 64 bits");
 
 union pde {
-	struct __attribute__((packed)) pd_page {
+	struct _packed_ pd_page {
 		bool p : 1;
 		bool rw : 1;
 		bool us : 1;
@@ -120,7 +120,7 @@ union pde {
 		unsigned int pk : 4;
 		bool xd : 1;
 	} page;
-	struct __attribute__((packed)) pd_pt {
+	struct _packed_ pd_pt {
 		bool p : 1;
 		bool rw : 1;
 		bool us : 1;
@@ -134,7 +134,7 @@ union pde {
 		unsigned int _ignored3 : 11;
 		bool xd : 1;
 	} pt;
-	struct __attribute__((packed)) pd_absent {
+	struct _packed_ pd_absent {
 		bool p : 1;
 		unsigned long int _ignored1 : 63;
 	} absent;
@@ -144,7 +144,7 @@ static_assert(sizeof(union pde) == 8 && sizeof(struct pd_page) == 8
               "pde must be 64 bits");
 
 union pte {
-	struct __attribute__((packed)) pt_page {
+	struct _packed_ pt_page {
 		bool p : 1;
 		bool rw : 1;
 		bool us : 1;
@@ -160,7 +160,7 @@ union pte {
 		unsigned int pk : 4;
 		bool xd : 1;
 	} page;
-	struct __attribute__((packed)) pt_absent {
+	struct _packed_ pt_absent {
 		bool p : 1;
 		unsigned long int _ignored1 : 63;
 	} absent;
@@ -169,20 +169,20 @@ static_assert(sizeof(union pte) == 8 && sizeof(struct pt_page) == 8
               && sizeof(struct pt_absent) == 8, "pte must be 64 bits");
 
 union linear_addr {
-	struct __attribute__((packed)) lin_addr_pdpt {
+	struct _packed_ lin_addr_pdpt {
 		unsigned long int offset : 30;
 		unsigned long int pdpt : 9;
 		unsigned long int pml4 : 9;
 		unsigned long int _unused : 16;
 	} pdpt;
-	struct __attribute__((packed)) lin_addr_pd {
+	struct _packed_ lin_addr_pd {
 		unsigned long int offset : 21;
 		unsigned long int pd : 9;
 		unsigned long int pdpt : 9;
 		unsigned long int pml4 : 9;
 		unsigned long int _unused : 16;
 	} pd;
-	struct __attribute__((packed)) lin_addr_pt {
+	struct _packed_ lin_addr_pt {
 		unsigned long int offset : 12;
 		unsigned long int pt : 9;
 		unsigned long int pd : 9;

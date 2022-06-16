@@ -12,11 +12,11 @@
 
 struct thread;
 
-struct __attribute__((aligned(16))) cpu {
+struct _aligned_(16) cpu {
 	struct thread * running;
 	struct interrupt_frame * state;
-	struct gdt __attribute__((aligned(16))) gdt;
-	struct tss __attribute__((aligned(16))) tss;
+	struct gdt _aligned_(16) gdt;
+	struct tss _aligned_(16) tss;
 	int interrupt_state;
 	bool is_in_interrupt;
 };

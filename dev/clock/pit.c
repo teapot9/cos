@@ -162,7 +162,7 @@ static int reg(const struct device * dev)
 	return 0;
 }
 
-static void unreg(UNUSED const struct device * dev)
+static void unreg(_unused_ const struct device * dev)
 {
 }
 

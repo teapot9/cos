@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <cpp.h>
 #include <device.h>
 
 #define STANDARD_BASE_COM1 0x3F8
@@ -34,7 +35,7 @@ enum uart_id {
 	UART_ID_8250,
 };
 
-struct __attribute__((packed)) interrupt_enable_register {
+struct _packed_ interrupt_enable_register {
 	bool received_data_available : 1;
 	bool transmitter_holding_register_empty : 1;
 	bool receiver_line_status : 1;
@@ -46,7 +47,7 @@ struct __attribute__((packed)) interrupt_enable_register {
 static_assert(sizeof(struct interrupt_enable_register) == 1,
 	      "interrupt_enable_register must be 1B");
 
-struct __attribute__((packed)) interrupt_identification_register {
+struct _packed_ interrupt_identification_register {
 	bool interrupt_pending : 1;
 	unsigned mode : 3;
 	unsigned _reserved0 : 1;
@@ -56,7 +57,7 @@ struct __attribute__((packed)) interrupt_identification_register {
 static_assert(sizeof(struct interrupt_identification_register) == 1,
 	      "interrupt_identification_register must be 1B");
 
-struct __attribute__((packed)) fifo_control_register {
+struct _packed_ fifo_control_register {
 	bool enable : 1;
 	bool clear : 1;
 	bool transmit : 1;
@@ -68,7 +69,7 @@ struct __attribute__((packed)) fifo_control_register {
 static_assert(sizeof(struct fifo_control_register) == 1,
 	      "fifo_control_register must be 1B");
 
-struct __attribute__((packed)) line_control_register {
+struct _packed_ line_control_register {
 	unsigned word_length : 2;
 	unsigned stop_bit : 1;
 	unsigned parity : 3;
@@ -78,7 +79,7 @@ struct __attribute__((packed)) line_control_register {
 static_assert(sizeof(struct line_control_register) == 1,
 	      "line_control_register must be 1B");
 
-struct __attribute__((packed)) modem_control_register {
+struct _packed_ modem_control_register {
 	bool data_terminal_ready : 1;
 	bool request_to_send : 1;
 	bool aux1 : 1;
@@ -90,7 +91,7 @@ struct __attribute__((packed)) modem_control_register {
 static_assert(sizeof(struct modem_control_register) == 1,
 	      "modem_control_register must be 1B");
 
-struct __attribute__((packed)) line_status_register {
+struct _packed_ line_status_register {
 	bool data_ready : 1;
 	bool overrun_error : 1;
 	bool parity_error : 1;
@@ -103,7 +104,7 @@ struct __attribute__((packed)) line_status_register {
 static_assert(sizeof(struct line_status_register) == 1,
 	      "line_status_register must be 1B");
 
-struct __attribute__((packed)) modem_status_register {
+struct _packed_ modem_status_register {
 	bool delta_clear_to_send : 1;
 	bool delta_data_set_ready : 1;
 	bool trailing_edge_ring_indicator : 1;
