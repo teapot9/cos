@@ -3,8 +3,8 @@
  * @brief Memory list data structure
  */
 
-#ifndef MEMLIST_H
-#define MEMLIST_H
+#ifndef __MEMLIST_H
+#define __MEMLIST_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -160,4 +160,4 @@ size_t memlist_virtual_size(struct memlist * l);
 #ifdef __cplusplus
 }
 #endif
-#endif // MEMLIST_H
+#endif // __MEMLIST_H

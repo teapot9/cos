@@ -3,8 +3,8 @@
  * @brief Video framebuffer device
  */
 
-#ifndef VIDEO_FB_H
-#define VIDEO_FB_H
+#ifndef __VIDEO_FB_H
+#define __VIDEO_FB_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -87,4 +87,4 @@ int fb_move_up(const struct fb * fb, unsigned int scanlines);
 #ifdef __cplusplus
 }
 #endif
-#endif // VIDEO_FB_H
+#endif // __VIDEO_FB_H

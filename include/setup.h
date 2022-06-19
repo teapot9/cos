@@ -3,8 +3,8 @@
  * @brief Early initialization
  */
 
-#ifndef SETUP_H
-#define SETUP_H
+#ifndef __SETUP_H
+#define __SETUP_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -82,4 +82,4 @@ void vmm_enable_paging(void);
 #ifdef __cplusplus
 }
 #endif
-#endif // SETUP_H
+#endif // __SETUP_H

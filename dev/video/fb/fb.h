@@ -1,5 +1,5 @@
-#ifndef DRIVERS_VIDEO_FB_FB_H
-#define DRIVERS_VIDEO_FB_FB_H
+#ifndef _DEV_VIDEO_FB_FB_H
+#define _DEV_VIDEO_FB_FB_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -27,4 +27,4 @@ struct fb {
 
 extern const struct module fb_mod;
 
-#endif // DRIVERS_VIDEO_FB_FB_H
+#endif // _DEV_VIDEO_FB_FB_H

@@ -3,8 +3,8 @@
  * @brief C preprocessor helpers
  */
 
-#ifndef CPP_H
-#define CPP_H
+#ifndef __CPP_H
+#define __CPP_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -45,4 +45,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif // CPP_H
+#endif // __CPP_H

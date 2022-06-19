@@ -1,5 +1,5 @@
-#ifndef DEV_FIRMWARE_ACPI_ACPI_H
-#define DEV_FIRMWARE_ACPI_ACPI_H
+#ifndef _DEV_FIRMWARE_ACPI_ACPI_H
+#define _DEV_FIRMWARE_ACPI_ACPI_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -76,4 +76,4 @@ union rsdp * acpi_rsdp(void);
 enum acpi_version acpi_version(void);
 struct description_header * acpi_get_table(size_t index);
 
-#endif // DEV_FIRMWARE_ACPI_ACPI_H
+#endif // _DEV_FIRMWARE_ACPI_ACPI_H

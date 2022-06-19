@@ -1,5 +1,5 @@
-#ifndef DEV_TTY_SERIAL_SERIAL_H
-#define DEV_TTY_SERIAL_SERIAL_H
+#ifndef _DEV_TTY_SERIAL_SERIAL_H
+#define _DEV_TTY_SERIAL_SERIAL_H
 
 #include <assert.h>
 #include <stdbool.h>
@@ -134,4 +134,4 @@ int serial_console_reg(const struct device * dev);
 
 extern struct module serial_mod;
 
-#endif // DEV_TTY_SERIAL_SERIAL_H
+#endif // _DEV_TTY_SERIAL_SERIAL_H

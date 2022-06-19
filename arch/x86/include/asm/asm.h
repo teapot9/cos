@@ -1,5 +1,5 @@
-#ifndef ASM_H
-#define ASM_H
+#ifndef __ASM_ASM_H
+#define __ASM_ASM_H
 
 #include <kconfig.h>
 
@@ -24,4 +24,4 @@
 #define intel(code) ".intel_syntax noprefix\n" code _DEFAULT_ASM
 #define att(code) ".att_syntax\n" code _DEFAULT_ASM
 
-#endif // ASM_H
+#endif // __ASM_ASM_H

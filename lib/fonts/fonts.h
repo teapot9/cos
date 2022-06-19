@@ -1,5 +1,5 @@
-#ifndef KERNEL_FONTS_FONTS_H
-#define KERNEL_FONTS_FONTS_H
+#ifndef _LIB_FONTS_FONTS_H
+#define _LIB_FONTS_FONTS_H
 
 #include <kconfig.h>
 
@@ -22,4 +22,4 @@ struct font {
 	} info;
 };
 
-#endif // KERNEL_FONTS_FONTS_H
+#endif // _LIB_FONTS_FONTS_H

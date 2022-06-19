@@ -3,8 +3,8 @@
  * @brief Compiler checks
  */
 
-#ifndef TEST_COMPILER_H
-#define TEST_COMPILER_H
+#ifndef __TEST_COMPILER_H
+#define __TEST_COMPILER_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,4 +32,4 @@ int compiler_test_cxx(int value);
 #ifdef __cplusplus
 }
 #endif
-#endif // TEST_COMPILER_H
+#endif // __TEST_COMPILER_H

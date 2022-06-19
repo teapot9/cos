@@ -3,8 +3,8 @@
  * @brief String conversion
  */
 
-#ifndef STRTOX_H
-#define STRTOX_H
+#ifndef __STRTOX_H
+#define __STRTOX_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -66,4 +66,4 @@ int kstrto(const char * s, unsigned base, int * dst);
 #ifdef __cplusplus
 }
 #endif
-#endif // STRTOX_H
+#endif // __STRTOX_H

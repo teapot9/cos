@@ -3,8 +3,8 @@
  * @brief C++ allocation functions
  */
 
-#ifndef NEW_H
-#define NEW_H
+#ifndef __NEW_H
+#define __NEW_H
 #ifdef __cplusplus
 
 #include <stddef.h>
@@ -79,4 +79,4 @@ void operator delete(void *, void *) noexcept;
 void operator delete[](void *, void *) noexcept;
 
 #endif // __cpluspluc
-#endif // NEW_H
+#endif // __NEW_H

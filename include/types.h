@@ -3,8 +3,8 @@
  * @brief Base kernel data types
  */
 
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef __TYPES_H
+#define __TYPES_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,4 +30,4 @@ typedef uint32_t uintn_t;
 #ifdef __cplusplus
 }
 #endif
-#endif // TYPES_H
+#endif // __TYPES_H

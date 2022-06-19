@@ -1,5 +1,5 @@
-#ifndef DEV_IRQ_PIC_H
-#define DEV_IRQ_PIC_H
+#ifndef _DEV_IRQ_PIC_H
+#define _DEV_IRQ_PIC_H
 
 #include <stdbool.h>
 #include <assert.h>
@@ -32,4 +32,4 @@ struct _packed_ icw4 {
 };
 static_assert(sizeof(struct icw4) == 1, "icw4 must be 1 byte");
 
-#endif // DEV_IRQ_PIC_H
+#endif // _DEV_IRQ_PIC_H

@@ -3,8 +3,8 @@
  * @brief Character types
  */
 
-#ifndef CTYPE_H
-#define CTYPE_H
+#ifndef __CTYPE_H
+#define __CTYPE_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -44,4 +44,4 @@ static inline char toupper(char c)
 #ifdef __cplusplus
 }
 #endif
-#endif // CTYPE_H
+#endif // __CTYPE_H

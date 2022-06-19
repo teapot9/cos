@@ -3,8 +3,8 @@
  * @brief Clock devices and timers
  */
 
-#ifndef CLOCK_H
-#define CLOCK_H
+#ifndef __CLOCK_H
+#define __CLOCK_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,4 +31,4 @@ int timer_del(void (*callback)(void));
 #ifdef __cplusplus
 }
 #endif
-#endif // CLOCK_H
+#endif // __CLOCK_H

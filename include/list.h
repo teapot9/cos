@@ -3,8 +3,8 @@
  * @brief Linked list
  */
 
-#ifndef LIST_H
-#define LIST_H
+#ifndef __LIST_H
+#define __LIST_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -130,4 +130,4 @@ void list_add_before(struct list * l, struct list_head * next,
 #ifdef __cplusplus
 }
 #endif
-#endif // LIST_H
+#endif // __LIST_H

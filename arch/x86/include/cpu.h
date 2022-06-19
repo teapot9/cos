@@ -1,5 +1,5 @@
-#ifndef CPU_H
-#define CPU_H
+#ifndef __CPU_H
+#define __CPU_H
 
 #include <stddef.h>
 #include <stdnoreturn.h>
@@ -29,4 +29,4 @@ void cpu_save_state(struct cpu * cpu, struct interrupt_frame * state);
 void cpu_load_kstack(struct cpu * cpu, void * kstack);
 void cpu_set_task(struct cpu * cpu, struct thread * t);
 
-#endif // CPU_H
+#endif // __CPU_H

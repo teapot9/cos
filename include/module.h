@@ -3,8 +3,8 @@
  * @brief Kernel module functions
  */
 
-#ifndef MODULE_H
-#define MODULE_H
+#ifndef __MODULE_H
+#define __MODULE_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -65,4 +65,4 @@ struct module {
 #ifdef __cplusplus
 }
 #endif
-#endif // MODULE_H
+#endif // __MODULE_H

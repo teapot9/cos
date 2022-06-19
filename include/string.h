@@ -3,8 +3,8 @@
  * @brief String operations
  */
 
-#ifndef STRING_H
-#define STRING_H
+#ifndef __STRING_H
+#define __STRING_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -88,4 +88,4 @@ int memcmp(const void * p1, const void * p2, size_t len);
 #ifdef __cplusplus
 }
 #endif
-#endif // STRING_H
+#endif // __STRING_H

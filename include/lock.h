@@ -3,8 +3,8 @@
  * @brief Synchronization primitives
  */
 
-#ifndef LOCK_H
-#define LOCK_H
+#ifndef __LOCK_H
+#define __LOCK_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -108,4 +108,4 @@ void nblock_unlock(struct spinlock * s);
 #ifdef __cplusplus
 }
 #endif
-#endif // LOCK_H
+#endif // __LOCK_H

@@ -3,8 +3,8 @@
  * @brief Debugging
  */
 
-#ifndef DEBUG_H
-#define DEBUG_H
+#ifndef __DEBUG_H
+#define __DEBUG_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -43,4 +43,4 @@ static inline void kbreak() {
 #ifdef __cplusplus
 }
 #endif
-#endif // DEBUG_H
+#endif // __DEBUG_H

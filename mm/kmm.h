@@ -1,5 +1,5 @@
-#ifndef MM_KMM_H
-#define MM_KMM_H
+#ifndef _MM_KMM_H
+#define _MM_KMM_H
 
 #include <stddef.h>
 #include <assert.h>
@@ -29,4 +29,4 @@ static_assert((1 << 8) > sizeof(struct free_memory_header),
 static_assert((1 << 8) > sizeof(struct used_memory_header),
               "used_memory_header is too big");
 
-#endif // MM_KMM_H
+#endif // _MM_KMM_H

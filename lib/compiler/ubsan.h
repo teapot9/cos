@@ -1,5 +1,5 @@
-#ifndef LIB_COMPILER_UBSAN_H
-#define LIB_COMPILER_UBSAN_H
+#ifndef _LIB_COMPILER_UBSAN_H
+#define _LIB_COMPILER_UBSAN_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -226,4 +226,4 @@ void __ubsan_handle_mul_overflow(
 	struct overflow_data * data, value_handle lhs, value_handle rhs
 );
 
-#endif // LIB_COMPILER_UBSAN_H
+#endif // _LIB_COMPILER_UBSAN_H

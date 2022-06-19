@@ -1,5 +1,5 @@
-#ifndef _MM_PAGING_H
-#define _MM_PAGING_H
+#ifndef _X86_MM_PAGING_H
+#define _X86_MM_PAGING_H
 
 #include <assert.h>
 #include <stdbool.h>

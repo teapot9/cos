@@ -3,8 +3,8 @@
  * @brief Interrupt management
  */
 
-#ifndef IRQ_H
-#define IRQ_H
+#ifndef __IRQ_H
+#define __IRQ_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -41,4 +41,4 @@ void irq_eoi(unsigned irq);
 #ifdef __cplusplus
 }
 #endif
-#endif // IRQ_H
+#endif // __IRQ_H

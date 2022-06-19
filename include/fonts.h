@@ -3,8 +3,8 @@
  * @brief Font library
  */
 
-#ifndef FONT_H
-#define FONT_H
+#ifndef __FONTS_H
+#define __FONTS_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -63,4 +63,4 @@ size_t font_height(const struct font * font);
 #ifdef __cplusplus
 }
 #endif
-#endif // FONT_H
+#endif // __FONTS_H

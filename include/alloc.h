@@ -3,8 +3,8 @@
  * @brief Kernel memory allocation from heap
  */
 
-#ifndef MM_H
-#define MM_H
+#ifndef __ALLOC_H
+#define __ALLOC_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -74,4 +74,4 @@ void kfree(const void * ptr);
 #ifdef __cplusplus
 }
 #endif
-#endif // MM_H
+#endif // __ALLOC_H

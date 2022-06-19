@@ -3,8 +3,8 @@
  * @brief Unicode conversion
  */
 
-#ifndef UNICODE_H
-#define UNICODE_H
+#ifndef __UNICODE_H
+#define __UNICODE_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -123,4 +123,4 @@ size_t utf16_copy(uint16_t * dst, const uint16_t * src, size_t len);
 #ifdef __cplusplus
 }
 #endif
-#endif // UNICODE_H
+#endif // __UNICODE_H

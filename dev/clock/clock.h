@@ -1,5 +1,5 @@
-#ifndef DEV_CLOCK_CLOCK_H
-#define DEV_CLOCK_CLOCK_H
+#ifndef _DEV_CLOCK_CLOCK_H
+#define _DEV_CLOCK_CLOCK_H
 
 #include <stddef.h>
 
@@ -17,4 +17,4 @@ int clock_reg(
 	int (*del)(void (*callback)(void))
 );
 
-#endif // DEV_CLOCK_CLOCK_H
+#endif // _DEV_CLOCK_CLOCK_H

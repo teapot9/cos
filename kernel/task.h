@@ -1,5 +1,5 @@
-#ifndef KERNEL_TASK_H
-#define KERNEL_TASK_H
+#ifndef _KERNEL_TASK_H
+#define _KERNEL_TASK_H
 
 #include <stdatomic.h>
 #include <stdint.h>
@@ -27,4 +27,4 @@ extern struct process processes[MAX_PROC_CNT];
 struct process * process_next(size_t pid);
 struct tlist * thread_lget(struct process * p, tid_t tid);
 
-#endif // KERNEL_TASK_H
+#endif // _KERNEL_TASK_H

@@ -3,8 +3,8 @@
  * @brief System console devices
  */
 
-#ifndef CONSOLE_H
-#define CONSOLE_H
+#ifndef __CONSOLE_H
+#define __CONSOLE_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -46,4 +46,4 @@ void console_reset(void);
 #ifdef __cplusplus
 }
 #endif
-#endif // CONSOLE_H
+#endif // __CONSOLE_H

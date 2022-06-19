@@ -1,5 +1,5 @@
-#ifndef FIRMWARE_EFIAPI_DEVICE_PATH_H
-#define FIRMWARE_EFIAPI_DEVICE_PATH_H
+#ifndef __FIRMWARE_EFIAPI_DEVICE_PATH_H
+#define __FIRMWARE_EFIAPI_DEVICE_PATH_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,4 +19,4 @@ typedef struct {
 #ifdef __cplusplus
 }
 #endif
-#endif // FIRMWARE_EFIAPI_DEVICE_PATH_H
+#endif // __FIRMWARE_EFIAPI_DEVICE_PATH_H

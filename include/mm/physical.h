@@ -3,8 +3,8 @@
  * @brief Physical memory access
  */
 
-#ifndef _MM_PHYSICAL_H
-#define _MM_PHYSICAL_H
+#ifndef __MM_PHYSICAL_H
+#define __MM_PHYSICAL_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -25,4 +25,4 @@ void physical_tmp_unmap(void * vaddr);
 #ifdef __cplusplus
 }
 #endif
-#endif // MM_PHYSICAL_H
+#endif // __MM_PHYSICAL_H

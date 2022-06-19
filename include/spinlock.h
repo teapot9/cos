@@ -3,8 +3,8 @@
  * @brief Spinlock synchronization primitive
  */
 
-#ifndef SPINLOCK_H
-#define SPINLOCK_H
+#ifndef __SPINLOCK_H
+#define __SPINLOCK_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -39,4 +39,4 @@ void spinlock_unlock(struct spinlock * s);
 #ifdef __cplusplus
 }
 #endif
-#endif // SPINLOCK_H
+#endif // __SPINLOCK_H

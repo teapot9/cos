@@ -3,8 +3,8 @@
  * @brief System power management
  */
 
-#ifndef POWER_H
-#define POWER_H
+#ifndef __POWER_H
+#define __POWER_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -22,4 +22,4 @@ noreturn void halt(void);
 #ifdef __cplusplus
 }
 #endif
-#endif // POWER_H
+#endif // __POWER_H

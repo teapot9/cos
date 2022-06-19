@@ -1,5 +1,5 @@
-#ifndef LIB_BINARY_ELF_H
-#define LIB_BINARY_ELF_H
+#ifndef _LIB_BINARY_ELF_H
+#define _LIB_BINARY_ELF_H
 
 #include <stdint.h>
 #include <assert.h>
@@ -351,4 +351,4 @@ typedef struct
 	} d_un;
 } Elf64_Dyn;
 
-#endif // LIB_BINARY_ELF_H
+#endif // _LIB_BINARY_ELF_H

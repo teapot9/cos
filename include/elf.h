@@ -3,8 +3,8 @@
  * @brief ELF executable manipulation
  */
 
-#ifndef ELF_H
-#define ELF_H
+#ifndef __ELF_H
+#define __ELF_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -61,4 +61,4 @@ int elf64_load(pid_t pid, void (** entry)(void), void * start, size_t size);
 #ifdef __cplusplus
 }
 #endif
-#endif // ELF_H
+#endif // __ELF_H

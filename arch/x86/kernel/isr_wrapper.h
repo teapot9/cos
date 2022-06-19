@@ -1,5 +1,5 @@
-#ifndef ARCH_X86_KERNEL_ISR_WRAPPER_H
-#define ARCH_X86_KERNEL_ISR_WRAPPER_H
+#ifndef _X86_KERNEL_ISR_WRAPPER_H
+#define _X86_KERNEL_ISR_WRAPPER_H
 
 #define ISR_MAX 0x30
 
@@ -49,4 +49,4 @@
 #define isr_to_irq(i) ((i) - 0x20)
 #define irq_to_isr(i) ((i) + 0x20)
 
-#endif // ARCH_X86_KERNEL_ISR_WRAPPER_H
+#endif // _X86_KERNEL_ISR_WRAPPER_H

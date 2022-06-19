@@ -1,5 +1,5 @@
-#ifndef PLATFORM_SETUP_H
-#define PLATFORM_SETUP_H
+#ifndef __PLATFORM_SETUP_H
+#define __PLATFORM_SETUP_H
 
 #include <firmware/efiapi/efiapi.h>
 #include <firmware/efiapi/system_table.h>
@@ -31,4 +31,4 @@ int idt_init(void);
 
 int vmm_init(void);
 
-#endif // PLATFORM_SETUP_H
+#endif // __PLATFORM_SETUP_H

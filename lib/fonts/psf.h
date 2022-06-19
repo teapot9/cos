@@ -1,5 +1,5 @@
-#ifndef KERNEL_FONTS_PSF_H
-#define KERNEL_FONTS_PSF_H
+#ifndef _LIB_FONTS_PSF_H
+#define _LIB_FONTS_PSF_H
 
 #include <assert.h>
 #include <stdbool.h>
@@ -121,4 +121,4 @@ static inline bool psf_test_magic(const void * file, size_t len)
 	);
 }
 
-#endif // KERNEL_FONTS_PSF_H
+#endif // _LIB_FONTS_PSF_H

@@ -1,5 +1,5 @@
-#ifndef ASM_IO_H
-#define ASM_IO_H
+#ifndef __ASM_IO_H
+#define __ASM_IO_H
 
 #include <stdint.h>
 
@@ -23,4 +23,4 @@ static inline void io_wait(void)
 	outb(0x80, 0);
 }
 
-#endif // ASM_IO_H
+#endif // __ASM_IO_H

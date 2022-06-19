@@ -3,8 +3,8 @@
  * @brief Kernel configuration
  */
 
-#ifndef KCONFIG_H
-#define KCONFIG_H
+#ifndef __KCONFIG_H
+#define __KCONFIG_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -35,4 +35,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif // KCONFIG_H
+#endif // __KCONFIG_H

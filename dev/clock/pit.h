@@ -1,5 +1,5 @@
-#ifndef DEV_CLOCK_PIT_H
-#define DEV_CLOCK_PIT_H
+#ifndef _DEV_CLOCK_PIT_H
+#define _DEV_CLOCK_PIT_H
 
 #include <stdbool.h>
 #include <assert.h>
@@ -44,4 +44,4 @@ struct timer_list {
 	struct timer_list * prec;
 };
 
-#endif // DEV_CLOCK_PIT_H
+#endif // _DEV_CLOCK_PIT_H

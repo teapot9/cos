@@ -1,5 +1,5 @@
-#ifndef ASM_CPU_H
-#define ASM_CPU_H
+#ifndef __ASM_CPU_H
+#define __ASM_CPU_H
 
 #include <assert.h>
 #include <stdint.h>
@@ -113,4 +113,4 @@ static inline void swapgs(void)
 	asm volatile (intel("swapgs\n"));
 }
 
-#endif // ASM_CPU_H
+#endif // __ASM_CPU_H

@@ -3,8 +3,8 @@
  * @brief Kernel logging
  */
 
-#ifndef PRINTK_H
-#define PRINTK_H
+#ifndef __PRINTK_H
+#define __PRINTK_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -129,4 +129,4 @@ const char * kmsg_get_str(const char * ptr);
 #ifdef __cplusplus
 }
 #endif
-#endif // PRINTK_H
+#endif // __PRINTK_H

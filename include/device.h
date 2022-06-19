@@ -3,8 +3,8 @@
  * @brief Device data structure
  */
 
-#ifndef DEVICE_H
-#define DEVICE_H
+#ifndef __DEVICE_H
+#define __DEVICE_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -148,4 +148,4 @@ const struct module * core_module(void);
 #ifdef __cplusplus
 }
 #endif
-#endif // DEVICE_H
+#endif // __DEVICE_H

@@ -3,8 +3,8 @@
  * @brief EFI stub library
  */
 
-#ifndef FIRMWARE_EFI_H
-#define FIRMWARE_EFI_H
+#ifndef __FIRMWARE_EFISTUB_H
+#define __FIRMWARE_EFISTUB_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,4 +49,4 @@ const char * efistub_firmware_cmdline(void);
 #ifdef __cplusplus
 }
 #endif
-#endif // FIRMWARE_EFI_H
+#endif // __FIRMWARE_EFISTUB_H

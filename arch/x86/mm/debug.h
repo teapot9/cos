@@ -1,5 +1,5 @@
-#ifndef MM_DEBUG_H
-#define MM_DEBUG_H
+#ifndef _X86_MM_DEBUG_H
+#define _X86_MM_DEBUG_H
 
 #include "paging.h"
 

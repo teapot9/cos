@@ -3,8 +3,8 @@
  * @brief Task scheduler
  */
 
-#ifndef SCHED_H
-#define SCHED_H
+#ifndef __SCHED_H
+#define __SCHED_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,4 +38,4 @@ void sched_yield(void);
 #ifdef __cplusplus
 }
 #endif
-#endif // SCHED_H
+#endif // __SCHED_H

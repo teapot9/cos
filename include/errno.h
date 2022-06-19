@@ -3,8 +3,8 @@
  * @brief errno definitions
  */
 
-#ifndef ERRNO_H
-#define ERRNO_H
+#ifndef __ERRNO_H
+#define __ERRNO_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -147,4 +147,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif // ERRNO_H
+#endif // __ERRNO_H

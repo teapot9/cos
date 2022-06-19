@@ -1,5 +1,5 @@
-#ifndef DRIVERS_VIDEO_FB_CONSOLE_H
-#define DRIVERS_VIDEO_FB_CONSOLE_H
+#ifndef _DEV_VIDEO_FB_CONSOLE_H
+#define _DEV_VIDEO_FB_CONSOLE_H
 
 #include <device.h>
 
@@ -12,4 +12,4 @@ struct fbcon {
 
 int fbcon_reg(const struct device * fb);
 
-#endif // DRIVERS_VIDEO_FB_CONSOLE_H
+#endif // _DEV_VIDEO_FB_CONSOLE_H

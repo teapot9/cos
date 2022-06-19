@@ -1,5 +1,5 @@
-#ifndef ARCH_X86_KERNEL_CPU_H
-#define ARCH_X86_KERNEL_CPU_H
+#ifndef _X86_KERNEL_CPU_H
+#define _X86_KERNEL_CPU_H
 
 #include <cpp.h>
 #include "gdt.h"
@@ -21,4 +21,4 @@ struct _aligned_(16) cpu {
 	bool is_in_interrupt;
 };
 
-#endif // ARCH_X86_KERNEL_CPU_H
+#endif // _X86_KERNEL_CPU_H

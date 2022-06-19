@@ -1,4 +1,4 @@
-#ifndef KERNEL_SCHED_RR_H
-#define KERNEL_SCHED_RR_H
+#ifndef _KERNEL_SCHED_RR_H
+#define _KERNEL_SCHED_RR_H
 
-#endif // KERNEL_SCHED_RR_H
+#endif // _KERNEL_SCHED_RR_H

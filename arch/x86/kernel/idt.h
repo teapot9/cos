@@ -1,5 +1,5 @@
-#ifndef KERNEL_IDT_H
-#define KERNEL_IDT_H
+#ifndef _X86_KERNEL_IDT_H
+#define _X86_KERNEL_IDT_H
 
 #include <stdint.h>
 #include <assert.h>
@@ -49,4 +49,4 @@ static inline struct idtr sidt(void)
 
 int idt_create_load(void);
 
-#endif // KERNEL_IDT_H
+#endif // _X86_KERNEL_IDT_H

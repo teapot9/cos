@@ -1,5 +1,5 @@
-#ifndef BOOT_ENTRY_EFI_H
-#define BOOT_ENTRY_EFI_H
+#ifndef _X86_BOOT_ENTRY_EFI_H
+#define _X86_BOOT_ENTRY_EFI_H
 
 #include <stddef.h>
 
@@ -13,4 +13,4 @@ struct entry_efi_data {
 	size_t kernel_elf_size;
 };
 
-#endif // BOOT_ENTRY_EFI_H
+#endif // _X86_BOOT_ENTRY_EFI_H

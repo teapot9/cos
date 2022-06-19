@@ -1,5 +1,5 @@
-#ifndef ARCH_X86_KERNEL_GDT_H
-#define ARCH_X86_KERNEL_GDT_H
+#ifndef _X86_KERNEL_GDT_H
+#define _X86_KERNEL_GDT_H
 
 #include <assert.h>
 #include <stdbool.h>
@@ -176,4 +176,4 @@ static inline void ltr(uint16_t v)
 
 int gdt_create_load(struct gdt * gdt, struct tss * tss, void * kstack);
 
-#endif // ARCH_X86_KERNEL_GDT_H
+#endif // _X86_KERNEL_GDT_H

@@ -1,5 +1,5 @@
-#ifndef ISR_H
-#define ISR_H
+#ifndef __ISR_H
+#define __ISR_H
 
 #include <stdnoreturn.h>
 
@@ -50,4 +50,4 @@ noreturn void jmp_to_frame(struct interrupt_frame * frame);
 int isr_reg(unsigned isr, void (* callback)(void));
 int isr_unreg(unsigned isr, void (* callback)(void));
 
-#endif // ISR_H
+#endif // __ISR_H

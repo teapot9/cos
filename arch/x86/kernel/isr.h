@@ -1,5 +1,5 @@
-#ifndef ARCH_X86_KERNEL_ISR_H
-#define ARCH_X86_KERNEL_ISR_H
+#ifndef _X86_KERNEL_ISR_H
+#define _X86_KERNEL_ISR_H
 
 #include "isr_wrapper.h"
 
@@ -22,4 +22,4 @@ struct isr {
 void isr_handler(struct interrupt_frame * frame);
 void maybe_swap_gs(struct interrupt_frame * frame);
 
-#endif // ARCH_X86_KERNEL_ISR_H
+#endif // _X86_KERNEL_ISR_H

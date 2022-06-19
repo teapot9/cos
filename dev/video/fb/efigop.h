@@ -1,5 +1,5 @@
-#ifndef DEV_VIDEO_FB_EFIGOP_H
-#define DEV_VIDEO_FB_EFIGOP_H
+#ifndef _DEV_VIDEO_FB_EFIGOP_H
+#define _DEV_VIDEO_FB_EFIGOP_H
 
 #include <stddef.h>
 #include <firmware/efiapi/console.h>
@@ -12,4 +12,4 @@ struct gop {
 	size_t framebuffer_mapping_size;
 };
 
-#endif // DEV_VIDEO_FB_EFIGOP_H
+#endif // _DEV_VIDEO_FB_EFIGOP_H

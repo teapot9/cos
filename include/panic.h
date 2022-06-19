@@ -3,8 +3,8 @@
  * @brief Kernel panic
  */
 
-#ifndef PANIC_H
-#define PANIC_H
+#ifndef __PANIC_H
+#define __PANIC_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -25,4 +25,4 @@ noreturn void panic(const char * fmt, ...) _isr_available_;
 #ifdef __cplusplus
 }
 #endif
-#endif // PANIC_H
+#endif // __PANIC_H

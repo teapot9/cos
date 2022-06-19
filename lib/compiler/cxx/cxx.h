@@ -1,5 +1,5 @@
-#ifndef LIB_COMPILER_CXX_H
-#define LIB_COMPILER_CXX_H
+#ifndef _LIB_COMPILER_CXX_CXX_H
+#define _LIB_COMPILER_CXX_CXX_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -88,4 +88,4 @@ typedef struct {
 void __cxa_priority_init(ElfXX_Priority_Init * pi,int cnt);
 #endif
 
-#endif // LIB_COMPILER_CXX_H
+#endif // _LIB_COMPILER_CXX_CXX_H

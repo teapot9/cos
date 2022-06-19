@@ -1,5 +1,5 @@
-#ifndef FIRMWARE_EFIAPI_CONSOLE_H
-#define FIRMWARE_EFIAPI_CONSOLE_H
+#ifndef __FIRMWARE_EFIAPI_CONSOLE_H
+#define __FIRMWARE_EFIAPI_CONSOLE_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -232,4 +232,4 @@ struct _efi_graphics_output_protocol {
 #ifdef __cplusplus
 }
 #endif
-#endif // FIRMWARE_EFIAPI_CONSOLE_H
+#endif // __FIRMWARE_EFIAPI_CONSOLE_H

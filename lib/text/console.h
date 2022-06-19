@@ -1,5 +1,5 @@
-#ifndef KERNEL_TEXT_CONSOLE_H
-#define KERNEL_TEXT_CONSOLE_H
+#ifndef _LIB_TEXT_CONSOLE_H
+#define _LIB_TEXT_CONSOLE_H
 
 #include <device.h>
 
@@ -10,4 +10,4 @@ struct console {
 	void (*disable)(const struct device *);
 };
 
-#endif // KERNEL_TEXT_CONSOLE_H
+#endif // _LIB_TEXT_CONSOLE_H

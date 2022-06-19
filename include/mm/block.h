@@ -3,8 +3,8 @@
  * @brief Memory block helpers
  */
 
-#ifndef _MM_BLOCK_H
-#define _MM_BLOCK_H
+#ifndef __MM_BLOCK_H
+#define __MM_BLOCK_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -61,4 +61,4 @@ static inline bool is_inside(void * a1, size_t s1, void * a2, size_t s2)
 #ifdef __cplusplus
 }
 #endif
-#endif // _MM_BLOCK_H
+#endif // __MM_BLOCK_H

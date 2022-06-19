@@ -3,8 +3,8 @@
  * @brief Memory alignment helpers
  */
 
-#ifndef _MM_ALIGN_H
-#define _MM_ALIGN_H
+#ifndef __MM_ALIGN_H
+#define __MM_ALIGN_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -81,4 +81,4 @@ static inline bool is_aligned(void * a, size_t align)
 #ifdef __cplusplus
 }
 #endif
-#endif // _MM_ALIGN_H
+#endif // __MM_ALIGN_H

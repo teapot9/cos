@@ -3,8 +3,8 @@
  * @brief String formatting functions
  */
 
-#ifndef PRINTF_H
-#define PRINTF_H
+#ifndef __PRINTF_H
+#define __PRINTF_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -73,4 +73,4 @@ size_t vsnprintf(char * dst, size_t len, const char * fmt, va_list ap);
 #ifdef __cplusplus
 }
 #endif
-#endif // PRINTF_H
+#endif // __PRINTF_H

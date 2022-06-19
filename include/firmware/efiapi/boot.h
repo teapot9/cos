@@ -1,5 +1,5 @@
-#ifndef FIRMWARE_EFIAPI_BOOT_H
-#define FIRMWARE_EFIAPI_BOOT_H
+#ifndef __FIRMWARE_EFIAPI_BOOT_H
+#define __FIRMWARE_EFIAPI_BOOT_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -349,4 +349,4 @@ typedef struct _efi_boot_services {
 #ifdef __cplusplus
 }
 #endif
-#endif // FIRMWARE_EFIAPI_BOOT_H
+#endif // __FIRMWARE_EFIAPI_BOOT_H

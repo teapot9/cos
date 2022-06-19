@@ -1,5 +1,5 @@
-#ifndef DRIVERS_FIRMWARE_EFISTUB_EFISTUB_H
-#define DRIVERS_FIRMWARE_EFISTUB_EFISTUB_H
+#ifndef _DEV_FIRMWARE_EFISTUB_EFISTUB_H
+#define _DEV_FIRMWARE_EFISTUB_EFISTUB_H
 
 #include <stdbool.h>
 
@@ -27,4 +27,4 @@ extern const struct device * efiboot_dev;
 
 void efistub_parse_configuration_table(void);
 
-#endif // DRIVERS_FIRMWARE_EFISTUB_EFISTUB_H
+#endif // _DEV_FIRMWARE_EFISTUB_EFISTUB_H

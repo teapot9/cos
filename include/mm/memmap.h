@@ -3,8 +3,8 @@
  * @brief Memory map data structure
  */
 
-#ifndef MM_MEMMAP_H
-#define MM_MEMMAP_H
+#ifndef __MM_MEMMAP_H
+#define __MM_MEMMAP_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -170,4 +170,4 @@ int memmap_undef(
 #ifdef __cplusplus
 }
 #endif
-#endif // MM_MEMMAP_H
+#endif // __MM_MEMMAP_H

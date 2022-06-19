@@ -3,8 +3,8 @@
  * @brief Virtual memory manager
  */
 
-#ifndef _MM_VMM_H
-#define _MM_VMM_H
+#ifndef __MM_VMM_H
+#define __MM_VMM_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -91,4 +91,4 @@ extern uintn_t kernel_cr3;
 #ifdef __cplusplus
 }
 #endif
-#endif // _MM_VMM_H
+#endif // __MM_VMM_H

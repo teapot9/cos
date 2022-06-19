@@ -3,8 +3,8 @@
  * @brief Process and threads management
  */
 
-#ifndef TASK_H
-#define TASK_H
+#ifndef __TASK_H
+#define __TASK_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -192,4 +192,4 @@ enum tstate task_get_state(struct thread * t);
 #ifdef __cplusplus
 }
 #endif
-#endif // TASK_H
+#endif // __TASK_H

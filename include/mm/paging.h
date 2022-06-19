@@ -3,8 +3,8 @@
  * @brief VMM paging functions
  */
 
-#ifndef MM_PAGING_H
-#define MM_PAGING_H
+#ifndef __MM_PAGING_H
+#define __MM_PAGING_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -75,4 +75,4 @@ void * page_find_free(pid_t pid, size_t size, size_t align, void * start);
 #ifdef __cplusplus
 }
 #endif
-#endif // MM_PAGING_H
+#endif // __MM_PAGING_H

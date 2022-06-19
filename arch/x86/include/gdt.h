@@ -1,5 +1,5 @@
-#ifndef GDT_H
-#define GDT_H
+#ifndef __GDT_H
+#define __GDT_H
 
 enum gdt_type {
 	GDT_KERN_CS = 1,
@@ -14,4 +14,4 @@ struct tss;
 unsigned int gdt_segment(enum gdt_type);
 void tss_set_kstack(struct tss * tss, void * kstack);
 
-#endif // GDT_H
+#endif // __GDT_H

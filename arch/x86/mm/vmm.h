@@ -1,5 +1,5 @@
-#ifndef MM_VMM_H
-#define MM_VMM_H
+#ifndef _X86_MM_VMM_H
+#define _X86_MM_VMM_H
 
 #include <assert.h>
 #include <stdbool.h>
@@ -18,4 +18,4 @@ void vmm_flush_tlb(void);
 void vmm_full_flush_tlb(void);
 extern bool vmm_paging_not_identity;
 
-#endif // MM_VMM_H
+#endif // _X86_MM_VMM_H

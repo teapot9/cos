@@ -1,5 +1,5 @@
-#ifndef DEV_IRQ_IRQDEV_H
-#define DEV_IRQ_IRQDEV_H
+#ifndef _DEV_IRQ_IRQDEV_H
+#define _DEV_IRQ_IRQDEV_H
 
 #include <stdbool.h>
 
@@ -23,4 +23,4 @@ int irqdev_reg(
 	void (* eoi)(const struct device * dev, unsigned irq)
 );
 
-#endif // DEV_IRQ_IRQDEV_H
+#endif // _DEV_IRQ_IRQDEV_H

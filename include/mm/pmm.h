@@ -3,8 +3,8 @@
  * @brief Physical memory manager
  */
 
-#ifndef _MM_PMM_H
-#define _MM_PMM_H
+#ifndef __MM_PMM_H
+#define __MM_PMM_H
 #ifdef __cplusplus
 extern "C" {
 #endif

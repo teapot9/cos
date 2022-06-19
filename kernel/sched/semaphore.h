@@ -1,5 +1,5 @@
-#ifndef KERNEL_SCHED_SEMAPHORE_H
-#define KERNEL_SCHED_SEMAPHORE_H
+#ifndef _KERNEL_SCHED_SEMAPHORE_H
+#define _KERNEL_SCHED_SEMAPHORE_H
 
 #include <lock.h>
 
@@ -13,4 +13,4 @@ struct semaphore_elt {
 	struct semaphore * s;
 };
 
-#endif // KERNEL_SCHED_SEMAPHORE_H
+#endif // _KERNEL_SCHED_SEMAPHORE_H

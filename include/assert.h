@@ -3,8 +3,8 @@
  * @brief Assertion
  */
 
-#ifndef ASSERT_H
-#define ASSERT_H
+#ifndef __ASSERT_H
+#define __ASSERT_H
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,4 +34,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif // ASSERT_H
+#endif // __ASSERT_H
