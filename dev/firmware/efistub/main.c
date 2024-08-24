@@ -42,7 +42,7 @@ static efi_loaded_image_protocol_t * get_image(
 	return image;
 }
 
-#ifdef BOOTLOADER
+#ifdef BOOT
 static void early_setup(
 	efi_handle_t image_handle,
 	const efi_system_table_t * system_table
@@ -59,7 +59,7 @@ static void early_setup(
 		return;
 	stub.image_handle = image_handle;
 	stub.system_table = system_table;
-#ifdef BOOTLOADER
+#ifdef BOOT
 	stub.image_proto = get_image(image_handle, system_table);
 #else
 	stub.image_proto = image_proto;
@@ -67,7 +67,7 @@ static void early_setup(
 }
 
 /* public: platform_setup.h */
-#ifdef BOOTLOADER
+#ifdef BOOT
 int efistub_init(
 	struct efistub_data ** data,
 	efi_handle_t image_handle,
@@ -85,7 +85,7 @@ int efistub_init(
 	if (efistub_is_init())
 		return 0;
 
-#ifdef BOOTLOADER
+#ifdef BOOT
 	early_setup(image_handle, system_table);
 	*data = &stub;
 #else

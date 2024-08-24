@@ -1,0 +1,74 @@
+menu "General options"
+
+config CMDLINE
+	string "Built-in kernel command-line"
+	default ""
+	help
+	  Set a default kernel cmdline.
+
+config CMDLINE_OVERRIDE
+	bool "Built-in cmdline override normal one"
+	help
+	  Built-in command-line override the one provided by the
+	  firmware / bootloader.
+
+config DEBUG
+	bool "Kernel debugging"
+	default n
+	help
+	  Enable kernel debugging options
+
+config BOOT_BREAKPOINTS
+	bool "Early boot breakpoints"
+	default DEBUG
+	depends on DEBUG
+	help
+	  Show options to enable/disable early boot breakpoints
+
+config BOOT_BREAKPOINT_BOOTLOADER
+	bool "Breakpoint 1: bootloader"
+	default n
+	depends on BOOT_BREAKPOINTS
+	help
+	  Breakpoint as soon as the kernel is loaded by the bootloader.
+
+config BOOT_BREAKPOINT_EARLY
+	bool "Breakpoint 2: early"
+	default n
+	depends on BOOT_BREAKPOINTS
+	help
+	  Breakpoint when kernel starts initializing itself, before scheduling
+	  starts.
+
+config BOOT_BREAKPOINT_CORE
+	bool "Breakpoint 3: core"
+	default n
+	depends on BOOT_BREAKPOINTS
+	help
+	  Breakpoint when kernel initialize core components.
+
+config BOOT_BREAKPOINT_DEVICE
+	bool "Breakpoint 4: device"
+	default n
+	depends on BOOT_BREAKPOINTS
+	help
+	  Breakpoint when kernel initialize device components.
+
+config BOOT_BREAKPOINT_MISC
+	bool "Breakpoint 5: misc"
+	default n
+	depends on BOOT_BREAKPOINTS
+	help
+	  Breakpoint when kernel initialize miscellaneous components.
+
+config BOOT_BREAKPOINT_END
+	bool "Breakpoint 6: end"
+	default n
+	depends on BOOT_BREAKPOINTS
+	help
+	  Breakpoint at the end of kernel initialization, before starting
+	  the first userspace process.
+
+source "kernel/compiler/Kconfig"
+
+endmenu

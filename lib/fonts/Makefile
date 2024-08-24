@@ -1,4 +1,4 @@
-include $(SRC_ROOT)/Makefile.flags
+include $(SRC_ROOT)/scripts/make/flags.mk
 
 obj-$(CONFIG_FONT_BUILTIN_TERMINUS_8X16) += font_ter_v16n.psf.o
 obj-y += fonts.o
@@ -6,7 +6,7 @@ obj-$(CONFIG_FONT_PSF) += psf.o
 
 clean-y += font_ter_v16n.psf.c font_ter_v16n.psf.h
 
-include $(SRC_ROOT)/Makefile.rules
+include $(SRC_ROOT)/scripts/make/rules.mk
 
 $(SRC)/font_ter_v16n.psf:
 	$(NOOP)

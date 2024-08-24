@@ -1,0 +1,32 @@
+config X86
+	def_bool y
+
+config 64BIT
+	bool "64-bit kernel"
+	default y
+	help
+	  Build a 64-bit kernel.
+
+config X86_32
+	def_bool y
+	depends on !64BIT
+
+config X86_64
+	def_bool y
+	depends on 64BIT
+
+choice
+	prompt "Default assembly syntax"
+	default ASM_DEFAULT_INTEL
+	help
+	  When compiling to assembly, this selects the default syntax.
+
+config ASM_DEFAULT_INTEL
+	bool "Intel"
+
+config ASM_DEFAULT_ATT
+	bool "AT&T"
+
+endchoice
+
+source "arch/x86_64/boot/Kconfig"

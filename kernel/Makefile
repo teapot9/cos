@@ -1,7 +1,7 @@
-include $(SRC_ROOT)/Makefile.flags
+include $(SRC_ROOT)/scripts/make/flags.mk
 
-bootloader-y = panic.o device.o cmdline.o halt.o sched/
+boot-y = break.o panic.o device.o cmdline.o halt.o sched/ compiler/
 
-obj-y = panic.o device.o init.o cmdline.o halt.o task.o sched/
+obj-y = break.o panic.o device.o init.o cmdline.o halt.o task.o sched/ compiler/
 
-include $(SRC_ROOT)/Makefile.rules
+include $(SRC_ROOT)/scripts/make/rules.mk

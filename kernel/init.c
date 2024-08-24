@@ -13,6 +13,12 @@
 #include <task.h>
 #include <alloc.h>
 #include <test/compiler.h>
+#include <kconfig.h>
+
+#define INITCALL_EARLY 0
+#define INITCALL_CORE 1
+#define INITCALL_DEVICE 2
+#define INITCALL_MISC 3
 
 extern initcall_entry_t __initcall_early[];
 extern initcall_entry_t __initcall_core[];
@@ -26,13 +32,13 @@ extern constructor_t __constructors_end[];
 static inline initcall_entry_t * initcall_start(size_t lvl)
 {
 	switch (lvl) {
-	case 0:
+	case INITCALL_EARLY:
 		return __initcall_early;
-	case 1:
+	case INITCALL_CORE:
 		return __initcall_core;
-	case 2:
+	case INITCALL_DEVICE:
 		return __initcall_device;
-	case 3:
+	case INITCALL_MISC:
 		return __initcall_misc;
 	default:
 		return __initcall_end;
@@ -64,6 +70,15 @@ static void kernel_initcall_level(size_t level)
 	}
 
 	pr_info("Modules init: start level %d\n", level);
+
+#define maybe_kbreak_init(conf, lvl) do { \
+	if (IS_ENABLED(conf) && level == lvl) \
+		kbreak(); \
+	} while (0)
+	maybe_kbreak_init(CONFIG_BOOT_BREAKPOINT_CORE, INITCALL_CORE);
+	maybe_kbreak_init(CONFIG_BOOT_BREAKPOINT_DEVICE, INITCALL_DEVICE);
+	maybe_kbreak_init(CONFIG_BOOT_BREAKPOINT_MISC, INITCALL_MISC);
+
 	for (initcall_entry_t * fn = initcall_start(level);
 	     fn < initcall_end(level); fn++) {
 		initcall_t call = initcall_from_entry(fn);
@@ -72,6 +87,7 @@ static void kernel_initcall_level(size_t level)
 		if (err)
 			pr_warn("Initcall %p failed, errno = %d\n", call, err);
 	}
+
 	pr_info("Modules init: end level %d\n", level);
 }
 
@@ -97,6 +113,10 @@ static void compiler_tests(void)
 
 static void setup(void)
 {
+#if IS_ENABLED(CONFIG_BOOT_BREAKPOINT_EARLY)
+	kbreak();
+#endif
+
 	enable_nmi();
 	restore_interrupts();
 	constructors();

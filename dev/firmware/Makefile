@@ -1,8 +1,8 @@
-include $(SRC_ROOT)/Makefile.flags
+include $(SRC_ROOT)/scripts/make/flags.mk
 
-bootloader-$(CONFIG_EFISTUB) += efistub/
+boot-$(CONFIG_EFISTUB) += efistub/
 
 obj-$(CONFIG_EFISTUB) += efistub/
 obj-$(CONFIG_ACPI) += acpi/
 
-include $(SRC_ROOT)/Makefile.rules
+include $(SRC_ROOT)/scripts/make/rules.mk

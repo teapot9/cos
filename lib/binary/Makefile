@@ -1,7 +1,7 @@
-include $(SRC_ROOT)/Makefile.flags
+include $(SRC_ROOT)/scripts/make/flags.mk
 
 obj-y = elf.o
-bootloader-y = elf.o
+boot-y = elf.o
 
-include $(SRC_ROOT)/Makefile.rules
+include $(SRC_ROOT)/scripts/make/rules.mk
 

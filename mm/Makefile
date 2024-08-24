@@ -1,6 +1,6 @@
-include $(SRC_ROOT)/Makefile.flags
+include $(SRC_ROOT)/scripts/make/flags.mk
 
-bootloader-y = kmm.o pmm.o pmm_early.o debug.o memmap.o
-obj-y = $(bootloader-y)
+boot-y = kmm.o pmm.o pmm_early.o debug.o memmap.o
+obj-y = $(boot-y)
 
-include $(SRC_ROOT)/Makefile.rules
+include $(SRC_ROOT)/scripts/make/rules.mk

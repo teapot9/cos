@@ -1,0 +1,8 @@
+# vim: ft=screen
+
+startup_message off
+bindkey "^A^[OC" focus right
+bindkey "^A^[OD" focus left
+bindkey "^A^[OA" focus up
+bindkey "^A^[OB" focus down
+bindkey \ quit

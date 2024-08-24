@@ -95,7 +95,7 @@ bool nblock_lock(struct spinlock * s);
  */
 void nblock_unlock(struct spinlock * s);
 
-#ifdef BOOTLOADER
+#ifdef BOOT
 /* Bootloader run in a single thread */
 #define semaphore_lock(x)
 #define semaphore_unlock(x)

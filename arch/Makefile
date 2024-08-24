@@ -1,6 +1,6 @@
-include $(SRC_ROOT)/Makefile.flags
+include $(SRC_ROOT)/scripts/make/flags.mk
 
-obj-$(CONFIG_X86) += x86/
-bootloader-y += $(obj-y)
+obj-y += $(ARCH)/
+boot-y += $(obj-y)
 
-include $(SRC_ROOT)/Makefile.rules
+include $(SRC_ROOT)/scripts/make/rules.mk

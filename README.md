@@ -26,23 +26,16 @@
 
 ### Utilities
 
- - `./boot`: script to boot the kernel
-   - `./boot efi ARGS`: starts kernel with QEMU (ARGS are passed to QEMU)
-   - `./boot egdb ARGS`: starts GDB and use the `uefi.py` lib to debug kernel
- - `uefi.py`: GDB library to load kernel symbols during boot
-   - GDB command `efi`: automatically called by `./boot egdb`:
+ - `scripts/qemu`: scripts to boot the kernel
+ - `scripts/gdb`: scripts to run gdb to debug the kernel (with helpers)
+   - helper command `qq`: kill kernel and quit
+   - helper command `rbreakif`: like `rbreak` but supports a condition
+ - `scripts/screen`: scripts to run gdb and qemu in a screen session
+ - `scripts/gdb/qemu-efi.py`: GDB library to load kernel symbols during boot
+   - GDB command `efi`: automatically called by `./scripts/gdb/qemu-efi`:
      - load kernel symbols to 2 positions:
        - the address where EFI has loaded the kernel
        - the address where the kernel relocates
-     - read the `auto.gdb` file
-   - GDB command `qq`: kill kernel and quit
-   - GDB command `rbreakif`: like `rbreak` but supports a condition
- - `auto.gdb`: commands to run automatically by `uefi.py`
-   - lines starting with `#` are ignored
-   - lines starting with `@` don't produce output to GDB console
-   - lines starting with `*` are executed on when breakpoint is reached
-     (last created breakpoint)
-   - other lines are executed normally
 
 ## Build
 
@@ -57,20 +50,6 @@
 
 ### Run
 
-#### Boot with GDB in a single terminal:
-
-Run the following `boot` shell function:
-```
-boot() { ./boot efi ${QEMU_ARGS} & ./boot egdb "$@" ; kill -0 $! 1>/dev/null 2>&1 && kill $! ; killall qemu-system-x86_64; }
-```
-Extra args are passed to GDB.
-`QEMU_ARGS` environment variable is passed to QEMU as extra args.
-
-#### Boot with GDB in 2 terminal (for GDB and QEMU console):
-
- - Terminal 1: `./boot efi -monitor stdio -display none`
- - Terminal 2: `./boot egdb`
-
 ### Build system
 
 Each directory has:
@@ -78,7 +57,7 @@ Each directory has:
  - A [`Kconfig` file](https://www.kernel.org/doc/html/latest/kbuild/kconfig-language.html)
  - A `Makefile` which lists needed object files:
    - all files in the `obj-y` variable will be built in the final kernel
-   - all files in the `bootloader-y` variable will be built in the bootloader
+   - all files in the `boot-y` variable will be built in the bootloader
      (stage 1 kernel)
    - `Makefile` structure (in order):
      - include `Makefile.flags`

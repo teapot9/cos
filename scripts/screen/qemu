@@ -1,0 +1,12 @@
+# vim: ft=screen
+source scripts/screen/common.rc
+
+split -v
+focus left
+screen -t "debug" sh -c 'sleep 3; tail -f /tmp/qemu-efi/debug.log'
+split
+focus down
+screen -t "qemu" ./scripts/qemu/efi
+focus right
+screen -t "gdb" ./scripts/gdb/qemu
+focus right

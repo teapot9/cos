@@ -1,31 +1,5 @@
 menu "Architecture options"
 
-choice
-	prompt "Default assembly syntax"
-	default ASM_DEFAULT_INTEL
-	help
-	  When compiling to assembly, this selects the default syntax.
-
-config ASM_DEFAULT_INTEL
-	bool "Intel"
-
-config ASM_DEFAULT_ATT
-	bool "AT&T"
-
-endchoice
-
-config CMDLINE
-	string "Built-in kernel command-line"
-	default ""
-	help
-	  Set a default kernel cmdline.
-
-config CMDLINE_OVERRIDE
-	bool "Built-in cmdline override normal one"
-	help
-	  Built-in command-line override the one provided by the
-	  firmware / bootloader.
-
 source "arch/$(ARCH)/Kconfig"
 
 choice
@@ -50,18 +24,5 @@ config CC_OPTIMIZE_OS
 	bool "-Os"
 
 endchoice
-
-config DEBUG
-	bool "Kernel debugging"
-	default n
-	help
-	  Enable kernel debugging options
-
-config KERNEL_FRAME_SIZE
-	int "Kernel stack size"
-	default 1024
-	help
-	  Each CPU has its own kernel stack size used when running
-	  in kernel mode.
 
 endmenu

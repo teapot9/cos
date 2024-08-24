@@ -1,6 +1,6 @@
-include $(SRC_ROOT)/Makefile.flags
+include $(SRC_ROOT)/scripts/make/flags.mk
 
-obj-y = fonts/ text/ compiler/ binary/ list.o memlist.o
-bootloader-y = text/ compiler/ binary/ list.o memlist.o
+obj-y = fonts/ text/ binary/ list.o memlist.o
+boot-y = text/ binary/ list.o memlist.o
 
-include $(SRC_ROOT)/Makefile.rules
+include $(SRC_ROOT)/scripts/make/rules.mk

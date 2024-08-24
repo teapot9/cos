@@ -1,10 +1,5 @@
 menu "Firmware drivers"
 
-menuconfig EFISTUB
-	bool "EFI boot services"
-	help
-	  Driver for EFI boot services
-
 if EFISTUB
 source "dev/firmware/efistub/Kconfig"
 endif

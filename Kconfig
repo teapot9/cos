@@ -1,8 +1,18 @@
 mainmenu "cos $(ARCH) $(COS_VERSION) kernel configuration"
 
+config KERNEL_NAME
+	string
+	default "$(KERNEL_NAME)"
+
+config KERNEL_VERSION
+	string
+	default "$(KERNEL_VERSION)"
+
 source "arch/Kconfig"
 
 source "dev/Kconfig"
+
+source "kernel/Kconfig"
 
 source "lib/Kconfig"
 

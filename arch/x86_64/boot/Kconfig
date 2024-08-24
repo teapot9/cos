@@ -1,0 +1,10 @@
+choice
+	prompt "Bootloader"
+	default EFISTUB
+	help
+	  Select bootable image format.
+
+config EFISTUB
+	bool "Create a bootable EFI image"
+
+endchoice

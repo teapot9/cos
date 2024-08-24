@@ -1,8 +1,8 @@
-include $(SRC_ROOT)/Makefile.flags
+include $(SRC_ROOT)/scripts/make/flags.mk
 
 obj-$(CONFIG_EFISTUB) += main.o exit.o libstub.o
 obj-$(CONFIG_EFISTUB_CONSOLE) += console.o
 
-bootloader-y += $(obj-y)
+boot-y += $(obj-y)
 
-include $(SRC_ROOT)/Makefile.rules
+include $(SRC_ROOT)/scripts/make/rules.mk

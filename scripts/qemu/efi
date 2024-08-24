@@ -1,0 +1,35 @@
+#!/bin/sh
+set -eux
+
+: "${KERNEL=build/arch/$(uname -m)/boot/kernel.efi}"
+: "${BOOT=/tmp/qemu-efi}"
+
+rm -vf "${BOOT}/qemu.log" "${BOOT}/debug.log"
+
+mkdir -pv "${BOOT}/EFI/BOOT"
+cp -v "${KERNEL}" "${BOOT}/EFI/BOOT/BOOTX64.EFI"
+chmod 750 "${BOOT}/EFI/BOOT/BOOTX64.EFI"
+
+cp -v /usr/share/edk2-ovmf/OVMF_CODE.fd "${BOOT}/OVMF_CODE.fd"
+cp -v /usr/share/edk2-ovmf/OVMF_VARS.fd "${BOOT}/OVMF_VARS.fd"
+
+qemu-system-x86_64 \
+	-nodefaults \
+	-d int,cpu_reset,guest_errors \
+	-D "${BOOT}"/qemu.log \
+	-no-reboot \
+	-no-shutdown \
+	-cpu qemu64 \
+	-machine q35 \
+	-m 128 \
+	-smp 2 \
+	-drive if=pflash,format=raw,unit=0,file="${BOOT}"/OVMF_CODE.fd,readonly=on \
+	-drive if=pflash,format=raw,unit=1,file="${BOOT}"/OVMF_VARS.fd,readonly=off \
+	-drive file=fat:rw:fat-type=16:"${BOOT}",format=raw \
+	-debugcon file:"${BOOT}"/debug.log \
+	-serial file:"${BOOT}"/debug.log \
+	-global isa-debugcon.iobase=0x402 \
+	-monitor stdio \
+	-vga std \
+	-s \
+	"$@"

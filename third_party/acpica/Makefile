@@ -1,4 +1,4 @@
-include $(SRC_ROOT)/Makefile.flags
+include $(SRC_ROOT)/scripts/make/flags.mk
 
 CPPFLAGS := $(filter-out -iquote=%, $(CPPFLAGS))
 CPPFLAGS += -I$(BUILD)/include -DBUILDING_ACPICA
@@ -203,4 +203,4 @@ obj- += $(addprefix upstream/source/components/, \
 	utilities/utprint.o \
 )
 
-include $(SRC_ROOT)/Makefile.rules
+include $(SRC_ROOT)/scripts/make/rules.mk

@@ -19,26 +19,28 @@ extern "C" {
  * CONFIG_DEBUG disabled: print warning and continue execution.
  */
 #if IS_ENABLED(CONFIG_DEBUG)
-# ifndef BOOTLOADER
-#  include <asm/asm.h>
-#  define kbreak() do { \
+# define kbreak() do { \
 	pr_debug("reached breakpoint: %s:%d [%s]\n", \
 	         __FILE__, __LINE__, __func__); \
-	asm volatile (intel("int3\n")); \
-	} while (0)
-# else // !BOOTLOADER
-static inline void kbreak() {
-	pr_debug("reached breakpoint\n", 0);
-	bool stop = false;
-	while (!stop);
-}
-# endif // BOOTLOADER
-#else // CONFIG_DEBUG
+	_kbreak(); \
+	} while(0)
+#else // !CONFIG_DEBUG
 # define kbreak() do { \
 	pr_warn("skipping breakpoint: %s:%d [%s]\n", \
 	         __FILE__, __LINE__, __func__); \
-	while (0)
-#endif // !CONFIG_DEBUG
+	} while(0)
+#endif // CONFIG_DEBUG
+
+/**
+ * @brief Breakpoint real function
+ *
+ * This function is only defined if CONFIG_DEBUG is enabled.
+ * This is a non-inlined function that implements a basic breakpoint
+ * (infinite loop waiting for debugger to set a boolean to true).
+ */
+#if IS_ENABLED(CONFIG_DEBUG)
+void _kbreak(void);
+#endif // CONFIG_DEBUG
 
 #ifdef __cplusplus
 }

@@ -1,90 +1,98 @@
-# Root makefile
+# Kernel main makefile
 
-ROOT := $(shell dirname $(abspath $(firstword $(MAKEFILE_LIST))))
-ifdef SRC
-	SRC_ROOT := $(SRC)
-else
-	SRC_ROOT := $(ROOT)
-endif
-ifdef BUILD
-	BUILD_ROOT := $(BUILD)
-else
-	BUILD_ROOT := $(ROOT)
-endif
+# Early variables definitions
+MAKEFILE_DIR := $(shell dirname $(abspath $(firstword $(MAKEFILE_LIST))))
+export SRC_ROOT := $(abspath $(if $(INPUT),$(INPUT),$(MAKEFILE_DIR)))
+export BUILD_ROOT := $(abspath $(if $(OUTPUT),$(OUTPUT),$(MAKEFILE_DIR)/build))
+export CONFIG := $(abspath $(BUILD_ROOT)/.config)
+V ?= 1
 
-#SRC_ROOT := $(ROOT)
-#BUILD_ROOT := $(ROOT)
-export SRC_ROOT
-export BUILD_ROOT
+# Default target
+.PHONY: _all
+_all: image all
 
-V = 1
-ifdef V
-	Q = @
-else
-	Q =
+# Set no-load-kconfigs for targets that work on .config
+ifneq ($(filter menuconfig syncconfig,$(MAKECMDGOALS)),)
+no-load-kconfigs := 1
 endif
 
-include $(SRC_ROOT)/Makefile.flags
-
-KCONFIG ?= .config
-
-sections = $(BUILD)/arch/$(ARCH)/sections.lds
-obj-y = arch/ dev/ kernel/ lib/ mm/ third_party/
-bootloader-y := $(obj-y)
-clean-y += $(COS_KERNEL).elf $(sections)
-clean-y += $(wildcard include/config/*)
-clean-y += include/generated/autoconf.h
-
-
-.PHONY: allx
-allx: image all
-ifeq ($(CONFIG_STACK_USAGE), y)
-ifneq ($(CONFIG_STACK_USAGE_WARN), 0)
-	./scripts/checkstack $(CONFIG_STACK_USAGE_WARN)
-endif
+# Error message for missing .config file
+ifndef no-load-kconfigs
+$(CONFIG):
+	$(error config file not found, please run "make menuconfig" to build one)
 endif
 
+# Load flags
+include $(SRC_ROOT)/scripts/make/flags.mk
+
+# Define build targets
+sections = arch/$(ARCH)/sections.lds
+obj-y := arch/ dev/ kernel/ lib/ mm/
+boot-y := $(obj-y)
+clean-y += $(KERNEL_NAME).elf $(sections) tags include/generated/ include/config/
+
+# Image target
 .PHONY: image
-image: $(BUILD)/$(COS_KERNEL).elf $(BUILD)/bootloader.o
-	$(Q)$(MAKE) -C arch/$(ARCH)/boot SRC_ROOT=$(SRC_ROOT) BUILD_ROOT=$(BUILD_ROOT) image
+image: $(BUILD)/$(KERNEL_NAME).elf $(BUILD)/boot.o
+	$(Q)$(MAKE) $(MAKEOPTS) -C $(SRC_ARCH)/boot $(MAKEARGS) image
 
-$(BUILD)/$(COS_KERNEL).elf: $(BUILD)/modules.o
-	$(SED) -e 's/@@IMAGE_BASE@@/0xffffffff80000000/g' $(SRC)/arch/$(ARCH)/sections.lds.in >$(sections)
-	$(LD) -dT $(sections) $(LDFLAGS) -static -entry=entry_efi_wrapper_s2 -o $@ $^
-#	$(LD) -dT $(sections) $(LDFLAGS) -pie -static -entry=entry_efi_s2 -o $@ $^
+# Kernel ELF image
+.PHONY: $(BUILD)/$(KERNEL_NAME).elf
+$(BUILD)/$(KERNEL_NAME).elf: $(BUILD)/kernel.o
+	$(Q)$(SED) -e 's/@@IMAGE_BASE@@/0xffffffff80000000/g' $(SRC_ARCH)/sections.lds.in >$(BUILD)/$(sections)
+	$(Q)$(LD) -dT $(BUILD)/$(sections) $(LDFLAGS) -static -entry=entry_efi_wrapper_s2 -o $@ $^
 
-include $(SRC_ROOT)/Makefile.rules
+# Build tags file
 
-$(BUILD)/%.a:
-	$(MAKE) -C $(dir $@) SRC_ROOT=$(SRC_ROOT) BUILD_ROOT=$(BUILD_ROOT)
+.PHONY: tags
+tags:
+	$(Q)$(SRC_ROOT)/scripts/tags $(SRC_ROOT) >$(BUILD_ROOT)/tags
 
-MCONF ?= mconf
-CONF ?= conf
+# include-what-you-use rule
 
-include $(BUILD)/include/config/auto.conf.cmd
+IWYU_FLAGS += -Xiwyu --error_always -Xiwyu --check_also=*.h -Xiwyu --verbose=2 -w
+.PHONY: iwyu
+iwyu:
+	$(Q)env CFLAGS="$(IWYU_FLAGS)" CXXFLAGS="$(IWYU_FLAGS)" $(MAKE) -B -k CC=include-what-you-use CXX=include-what-you-use
 
-%.var:
-	@echo $($*)
+# Syntax check rule
 
-.PHONY: noop
-noop:
-	$(NOOP)
+SYNTAX_FLAGS += -fsyntax-only
+.PHONY: syntax
+syntax:
+	$(Q)env CFLAGS="$(SYNTAX_FLAGS)" CXXFLAGS="$(SYNTAX_FLAGS)" $(MAKE) -B -k
 
-.PHONY: menuconfig
-menuconfig:
-	$(MCONF) Kconfig
-
-.PHONY: syncconfig
-syncconfig:
-	$(CONF) --syncconfig Kconfig
+# Define custom rules
 
 .PHONY: rebuild
 rebuild:
 	$(Q)$(MAKE) clean
 	$(Q)$(MAKE) all
 
-$(BUILD)/include/generated/autoconf.h $(BUILD)/include/config/auto.conf $(BUILD)/include/config/auto.conf.cmd: $(KCONFIG)
-	$(CONF) --syncconfig Kconfig
+%.var:
+	@echo $($*)
 
-.PHONY: FORCE
-FORCE:
+# Kconfig rules
+
+ifndef no-load-kconfigs
+include $(BUILD_ROOT)/include/config/auto.conf.cmd
+endif
+
+export KCONFIG_CONFIG := $(CONFIG)
+export KCONFIG_AUTOCONFIG := $(BUILD_ROOT)/include/config/auto.conf
+export KCONFIG_AUTOHEADER := $(BUILD_ROOT)/include/generated/autoconf.h
+export KCONFIG_RUSTCCFG := $(BUILD_ROOT)/include/generated/rustc_cfg
+
+MCONF ?= mconf
+CONF ?= conf
+
+.PHONY: menuconfig
+menuconfig: $(BUILD)
+	$(Q)$(MCONF) Kconfig
+
+.PHONY: syncconfig
+syncconfig:
+	$(Q)$(CONF) --syncconfig Kconfig
+
+# Load default rules
+include $(SRC_ROOT)/scripts/make/rules.mk

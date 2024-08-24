@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eux
+
+gdb \
+	-ex 'set pagination off' \
+	-ex 'source -v scripts/gdb/setup.gdb' \
+	-ex 'source -v scripts/gdb/helpers.gdb' \
+	-ex 'source -v scripts/gdb/efi.gdb' \
+	-ex 'source -v scripts/gdb/always.gdb' \
+	-ex 'set pagination on' \
+	"$@"
